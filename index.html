@@ -198,6 +198,52 @@
       .city-chip { min-height: 38px; padding: 8px 12px; font-size: 0.78rem; }
       .leaflet-control-attribution { margin-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
     }
+
+    /* ThaiWater Live Data */
+    .hydro-summary-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+      margin-bottom: 10px;
+    }
+    .hydro-stat {
+      background: #171f2c; border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 9px; padding: 9px 10px;
+    }
+    .hydro-stat .value { font-size: 1.15rem; font-weight: 700; line-height: 1.1; }
+    .hydro-stat .label { margin-top: 3px; font-size: 0.64rem; color: var(--text-muted); }
+    .hydro-status {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 10px; font-size: 0.68rem; color: var(--text-muted);
+    }
+    .api-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px; border-radius: 999px; background: #334155; color: #cbd5e1;
+    }
+    .api-dot { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; }
+    .api-badge.ok .api-dot { background: #22c55e; }
+    .api-badge.loading .api-dot { background: #f59e0b; }
+    .api-badge.error .api-dot { background: #ef4444; }
+
+    .hydro-legend { display: flex; flex-wrap: wrap; gap: 7px 10px; margin-top: 8px; }
+    .hydro-legend span { font-size: 0.63rem; color: #cbd5e1; }
+    .legend-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      margin-right: 4px; vertical-align: 0;
+    }
+    .hydro-note {
+      margin-top: 9px; padding: 8px 9px; border-radius: 8px;
+      background: rgba(2,132,199,0.08); color: #94a3b8;
+      font-size: 0.63rem; line-height: 1.45;
+    }
+    .refresh-hydro {
+      width: 100%; margin-top: 8px; padding: 7px 10px; border: 0; border-radius: 8px;
+      cursor: pointer; background: #0f172a; color: #cbd5e1; font-family: 'Prompt';
+      font-size: 0.72rem; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .refresh-hydro:hover { background: #172033; color: white; }
+    .leaflet-popup-content { font-family: 'Prompt', sans-serif; }
+    .hydro-popup-title { font-weight: 700; margin-bottom: 4px; }
+    .hydro-popup-row { font-size: 0.78rem; line-height: 1.55; }
+
   </style>
 </head>
 <body>
@@ -291,6 +337,70 @@
       </div>
     </div>
 
+
+    <!-- ThaiWater Live Hydro Data -->
+    <div class="card">
+      <div class="card-title">
+        <i class="fa-solid fa-water"></i> ThaiWater Live
+      </div>
+
+      <div class="hydro-status">
+        <span>ข้อมูลฝน · ระดับน้ำ · เขื่อน</span>
+        <span class="api-badge loading" id="thaiwater-api-badge">
+          <span class="api-dot"></span>
+          <span id="thaiwater-api-text">กำลังเชื่อมต่อ</span>
+        </span>
+      </div>
+
+      <div class="hydro-summary-grid">
+        <div class="hydro-stat">
+          <div class="value" id="stat-rain-stations">--</div>
+          <div class="label">สถานีฝน 24 ชม.</div>
+        </div>
+        <div class="hydro-stat">
+          <div class="value" id="stat-max-rain">--</div>
+          <div class="label">ฝนสูงสุด (มม.)</div>
+        </div>
+        <div class="hydro-stat">
+          <div class="value" id="stat-water-stations">--</div>
+          <div class="label">สถานีระดับน้ำ</div>
+        </div>
+        <div class="hydro-stat">
+          <div class="value" id="stat-overbank">--</div>
+          <div class="label">ล้นตลิ่ง</div>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <div>สถานีระดับน้ำ <small>สีตามสถานการณ์ล่าสุด</small></div>
+        <label class="switch"><input type="checkbox" id="toggle-waterlevel" checked onchange="toggleThaiWaterLayer('waterlevel', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>สถานีฝน 24 ชม. <small>ขนาดจุดตามปริมาณฝน</small></div>
+        <label class="switch"><input type="checkbox" id="toggle-rain" onchange="toggleThaiWaterLayer('rain', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>เขื่อนขนาดใหญ่ <small>แสดงเมื่อมีพิกัดใน API</small></div>
+        <label class="switch"><input type="checkbox" id="toggle-dam" onchange="toggleThaiWaterLayer('dam', this.checked)"><span class="slider"></span></label>
+      </div>
+
+      <div class="hydro-legend">
+        <span><i class="legend-dot" style="background:#22c55e"></i>ปกติ</span>
+        <span><i class="legend-dot" style="background:#eab308"></i>เฝ้าระวัง</span>
+        <span><i class="legend-dot" style="background:#f97316"></i>เตือน</span>
+        <span><i class="legend-dot" style="background:#ef4444"></i>วิกฤต</span>
+        <span><i class="legend-dot" style="background:#a855f7"></i>ล้นตลิ่ง</span>
+      </div>
+
+      <button class="refresh-hydro" onclick="refreshThaiWaterData()">
+        <i class="fa-solid fa-rotate"></i> อัปเดตข้อมูล ThaiWater
+      </button>
+
+      <div class="hydro-note" id="thaiwater-note">
+        แหล่งข้อมูล: ThaiWater / HII · ระบบจะพยายามดึงข้อมูลจาก API โดยตรง
+      </div>
+    </div>
+
     <!-- Map Layers & Overpass API -->
     <div class="card">
       <div class="card-title">
@@ -330,7 +440,7 @@
     </div>
 
     <div class="footer-text">
-      Base Map: ESRI World Imagery | Radar: RainViewer API
+      Base Map: ESRI | Radar: RainViewer | Weather: Open-Meteo | Hydro: ThaiWater/HII
     </div>
 
     </div>
@@ -512,6 +622,281 @@
       } else { fetchWeatherData(13.7563, 100.5018, 'กรุงเทพมหานคร'); }
     }
 
+
+    // 4.5 THAIWATER LIVE API
+    const THAIWATER_BASE = 'https://api-v3.thaiwater.net/api/v1/thaiwater30';
+    const thaiWaterLayers = {
+      waterlevel: L.layerGroup().addTo(map),
+      rain: L.layerGroup(),
+      dam: L.layerGroup()
+    };
+    const thaiWaterEnabled = { waterlevel: true, rain: false, dam: false };
+    let thaiWaterCache = { waterlevel: [], rain: [], dam: [] };
+
+    function setThaiWaterStatus(state, text) {
+      const badge = document.getElementById('thaiwater-api-badge');
+      const label = document.getElementById('thaiwater-api-text');
+      badge.className = `api-badge ${state}`;
+      label.textContent = text;
+    }
+
+    async function fetchThaiWaterJSON(path) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      try {
+        const res = await fetch(`${THAIWATER_BASE}${path}`, {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    function getNested(obj, paths, fallback = null) {
+      for (const path of paths) {
+        let cur = obj;
+        let ok = true;
+        for (const key of path.split('.')) {
+          if (cur == null || !(key in cur)) { ok = false; break; }
+          cur = cur[key];
+        }
+        if (ok && cur !== null && cur !== undefined && cur !== '') return cur;
+      }
+      return fallback;
+    }
+
+    function asNumber(v) {
+      if (v === null || v === undefined || v === '') return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function getLatLng(row) {
+      const lat = asNumber(getNested(row, [
+        'station.tele_station_lat', 'station.latitude', 'station.lat',
+        'geocode.latitude', 'latitude', 'lat', 'dam_lat'
+      ]));
+      const lng = asNumber(getNested(row, [
+        'station.tele_station_long', 'station.longitude', 'station.lng', 'station.lon',
+        'geocode.longitude', 'longitude', 'lng', 'lon', 'dam_long'
+      ]));
+      if (lat === null || lng === null || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+      return [lat, lng];
+    }
+
+    function thaiText(v) {
+      if (v && typeof v === 'object') return v.th || v.en || Object.values(v)[0] || '-';
+      return v ?? '-';
+    }
+
+    function waterColor(row) {
+      const text = String(getNested(row, ['diff_wl_bank_text'], '') || '');
+      const level = Number(getNested(row, ['situation_level'], 0));
+      if (text.startsWith('ล้นตลิ่ง') || level === 5) return '#a855f7';
+      if (level === 4) return '#ef4444';
+      if (level === 3) return '#f97316';
+      if (level === 2) return '#eab308';
+      return '#22c55e';
+    }
+
+    function rainColor(mm) {
+      if (mm >= 90) return '#ef4444';
+      if (mm >= 35) return '#f97316';
+      if (mm >= 10) return '#eab308';
+      return '#38bdf8';
+    }
+
+    function toggleThaiWaterLayer(type, enabled) {
+      thaiWaterEnabled[type] = enabled;
+      const layer = thaiWaterLayers[type];
+      if (enabled) {
+        if (!map.hasLayer(layer)) layer.addTo(map);
+        renderThaiWaterLayer(type);
+      } else if (map.hasLayer(layer)) {
+        map.removeLayer(layer);
+      }
+    }
+
+    function renderThaiWaterLayer(type) {
+      const group = thaiWaterLayers[type];
+      group.clearLayers();
+      if (!thaiWaterEnabled[type]) return;
+
+      if (type === 'waterlevel') {
+        thaiWaterCache.waterlevel.forEach(row => {
+          const ll = getLatLng(row);
+          if (!ll) return;
+
+          const station = thaiText(getNested(row, [
+            'station.tele_station_name', 'station.station_name', 'station.name'
+          ], 'สถานีระดับน้ำ'));
+          const province = thaiText(getNested(row, ['geocode.province_name'], '-'));
+          const wl = getNested(row, ['waterlevel_msl', 'waterlevel_m'], '-');
+          const discharge = getNested(row, ['discharge'], '-');
+          const bankText = getNested(row, ['diff_wl_bank_text'], '-');
+          const bankDiff = getNested(row, ['diff_wl_bank'], '-');
+          const level = getNested(row, ['situation_level'], '-');
+          const datetime = getNested(row, ['waterlevel_datetime', 'datetime'], '-');
+
+          L.circleMarker(ll, {
+            radius: 6, color: '#0f172a', weight: 1,
+            fillColor: waterColor(row), fillOpacity: 0.92
+          }).bindPopup(`
+            <div class="hydro-popup-title"><i class="fa-solid fa-water"></i> ${station}</div>
+            <div class="hydro-popup-row">จังหวัด: ${province}</div>
+            <div class="hydro-popup-row">ระดับน้ำ: <b>${wl}</b> ม.</div>
+            <div class="hydro-popup-row">อัตราการไหล: <b>${discharge}</b> ม³/วินาที</div>
+            <div class="hydro-popup-row">เทียบตลิ่ง: ${bankText} ${bankDiff !== '-' ? `(${bankDiff} ม.)` : ''}</div>
+            <div class="hydro-popup-row">Situation level: ${level}</div>
+            <div class="hydro-popup-row">เวลา: ${datetime}</div>
+          `).addTo(group);
+        });
+      }
+
+      if (type === 'rain') {
+        thaiWaterCache.rain.forEach(row => {
+          const ll = getLatLng(row);
+          if (!ll) return;
+
+          const station = thaiText(getNested(row, [
+            'station.tele_station_name', 'station.station_name', 'station.name'
+          ], 'สถานีฝน'));
+          const province = thaiText(getNested(row, ['geocode.province_name'], '-'));
+          const rain = asNumber(getNested(row, ['rain_24h', 'rainfall_value', 'rainfall24h'], 0)) || 0;
+          const datetime = getNested(row, ['rainfall_datetime', 'datetime'], '-');
+          const radius = Math.max(4, Math.min(15, 4 + Math.sqrt(Math.max(rain, 0)) * 0.75));
+
+          L.circleMarker(ll, {
+            radius, color: '#0f172a', weight: 1,
+            fillColor: rainColor(rain), fillOpacity: 0.78
+          }).bindPopup(`
+            <div class="hydro-popup-title"><i class="fa-solid fa-cloud-rain"></i> ${station}</div>
+            <div class="hydro-popup-row">จังหวัด: ${province}</div>
+            <div class="hydro-popup-row">ฝน 24 ชม.: <b>${rain.toFixed(1)}</b> มม.</div>
+            <div class="hydro-popup-row">เวลา: ${datetime}</div>
+          `).addTo(group);
+        });
+      }
+
+      if (type === 'dam') {
+        thaiWaterCache.dam.forEach(row => {
+          const ll = getLatLng(row);
+          if (!ll) return;
+
+          const name = thaiText(getNested(row, ['dam_name', 'dam.dam_name', 'name'], 'เขื่อน'));
+          const storage = getNested(row, ['dam_storage'], '-');
+          const percent = getNested(row, ['dam_storage_percent'], '-');
+          const inflow = getNested(row, ['dam_inflow'], '-');
+          const released = getNested(row, ['dam_released'], '-');
+
+          L.marker(ll).bindPopup(`
+            <div class="hydro-popup-title"><i class="fa-solid fa-building-columns"></i> ${name}</div>
+            <div class="hydro-popup-row">น้ำกักเก็บ: <b>${storage}</b> ล้าน ลบ.ม.</div>
+            <div class="hydro-popup-row">ความจุ: <b>${percent}%</b></div>
+            <div class="hydro-popup-row">น้ำไหลเข้า: ${inflow} ม³/วินาที</div>
+            <div class="hydro-popup-row">ระบาย: ${released} ม³/วินาที</div>
+          `).addTo(group);
+        });
+      }
+    }
+
+    function normalizeWaterRows(data) {
+      const candidates = [
+        data?.waterlevel_data?.data,
+        data?.data,
+        data?.waterlevel_data,
+        data?.result?.data
+      ];
+      return candidates.find(Array.isArray) || [];
+    }
+
+    function normalizeRainRows(data) {
+      const candidates = [
+        data?.rainfall_data?.data,
+        data?.rain_data?.data,
+        data?.data,
+        data?.result?.data
+      ];
+      return candidates.find(Array.isArray) || [];
+    }
+
+    function normalizeDamRows(data) {
+      const buckets = [
+        data?.dam_hourly, data?.dam_daily,
+        data?.data?.dam_hourly, data?.data?.dam_daily,
+        data?.dam_data?.dam_hourly, data?.dam_data?.dam_daily
+      ].filter(Array.isArray);
+      if (buckets.length) return buckets.flat();
+
+      const direct = [data?.data, data?.dam_data, data?.result?.data].find(Array.isArray);
+      return direct || [];
+    }
+
+    async function refreshThaiWaterData() {
+      setThaiWaterStatus('loading', 'กำลังโหลด');
+      document.getElementById('thaiwater-note').textContent = 'กำลังดึงข้อมูลล่าสุดจาก ThaiWater / HII...';
+
+      const results = await Promise.allSettled([
+        fetchThaiWaterJSON('/public/waterlevel_load'),
+        fetchThaiWaterJSON('/public/rain_24h'),
+        fetchThaiWaterJSON('/analyst/dam?dam_size=1')
+      ]);
+
+      let successes = 0;
+
+      if (results[0].status === 'fulfilled') {
+        thaiWaterCache.waterlevel = normalizeWaterRows(results[0].value);
+        successes++;
+      }
+      if (results[1].status === 'fulfilled') {
+        thaiWaterCache.rain = normalizeRainRows(results[1].value);
+        successes++;
+      }
+      if (results[2].status === 'fulfilled') {
+        thaiWaterCache.dam = normalizeDamRows(results[2].value);
+        successes++;
+      }
+
+      const overbank = thaiWaterCache.waterlevel.filter(row => {
+        const text = String(getNested(row, ['diff_wl_bank_text'], '') || '');
+        return text.startsWith('ล้นตลิ่ง') || Number(getNested(row, ['situation_level'], 0)) === 5;
+      });
+
+      const rainValues = thaiWaterCache.rain
+        .map(row => asNumber(getNested(row, ['rain_24h', 'rainfall_value', 'rainfall24h'], null)))
+        .filter(v => v !== null);
+      const maxRain = rainValues.length ? Math.max(...rainValues) : null;
+
+      document.getElementById('stat-water-stations').textContent =
+        thaiWaterCache.waterlevel.length ? thaiWaterCache.waterlevel.length.toLocaleString('th-TH') : '--';
+      document.getElementById('stat-overbank').textContent =
+        thaiWaterCache.waterlevel.length ? overbank.length.toLocaleString('th-TH') : '--';
+      document.getElementById('stat-rain-stations').textContent =
+        thaiWaterCache.rain.length ? thaiWaterCache.rain.length.toLocaleString('th-TH') : '--';
+      document.getElementById('stat-max-rain').textContent =
+        maxRain !== null ? maxRain.toFixed(1) : '--';
+
+      Object.keys(thaiWaterEnabled).forEach(type => renderThaiWaterLayer(type));
+
+      if (successes === 3) {
+        setThaiWaterStatus('ok', 'ออนไลน์');
+        document.getElementById('thaiwater-note').textContent =
+          `อัปเดตล่าสุดจาก API สำเร็จ · ระดับน้ำ ${thaiWaterCache.waterlevel.length.toLocaleString('th-TH')} สถานี · ฝน ${thaiWaterCache.rain.length.toLocaleString('th-TH')} สถานี`;
+      } else if (successes > 0) {
+        setThaiWaterStatus('loading', `${successes}/3 ชุด`);
+        document.getElementById('thaiwater-note').textContent =
+          'โหลดได้บางชุดข้อมูล บาง endpoint อาจไม่ตอบสนองหรือถูก browser/CORS จำกัด';
+      } else {
+        setThaiWaterStatus('error', 'เชื่อมต่อไม่ได้');
+        document.getElementById('thaiwater-note').textContent =
+          'Browser เรียก ThaiWater API โดยตรงไม่สำเร็จ หาก Console แจ้ง CORS ให้ใช้ backend proxy (FastAPI/Flask) เป็นตัวกลาง';
+      }
+    }
+
+
     // 5. RADAR API (RainViewer)
     let radarLayers = [], radarTimestamps = [], currentIndex = 0;
     let playInterval = null; let isPlaying = false;
@@ -565,6 +950,7 @@
 
     // เริ่มต้นทำงาน (ดึงพิกัด + โหลดเรดาร์ภาพล่าสุดทันที)
     initRadar();
+    refreshThaiWaterData();
     if (window.matchMedia('(max-width: 600px)').matches) {
       fetchWeatherData(13.7563, 100.5018, 'กรุงเทพมหานคร');
     } else {
