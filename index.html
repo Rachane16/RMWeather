@@ -244,6 +244,56 @@
     .hydro-popup-title { font-weight: 700; margin-bottom: 4px; }
     .hydro-popup-row { font-size: 0.78rem; line-height: 1.55; }
 
+
+    /* Source / License Modal */
+    .source-btn {
+      width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08); background: #0f172a; color: #cbd5e1;
+      font-family: 'Prompt'; cursor: pointer; font-size: 0.72rem;
+    }
+    .source-btn:hover { background: #172033; color: #fff; }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(2,6,23,0.72); z-index: 5000;
+      display: none; align-items: center; justify-content: center; padding: 18px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .source-modal {
+      width: min(680px, 96vw); max-height: 86vh; overflow: auto;
+      background: #ffffff; color: #0f172a; border-radius: 16px; padding: 18px 20px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    }
+    .source-modal h2 { margin: 0; font-size: 1.15rem; color: #172554; }
+    .source-close {
+      float: right; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px;
+      width: 38px; height: 38px; cursor: pointer; font-size: 1.2rem; color: #1e3a8a;
+    }
+    .source-row { padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .source-row:last-child { border-bottom: 0; }
+    .source-row small { display:block; color:#64748b; margin-top:3px; line-height:1.45; }
+
+    /* Radar station selector */
+    .radar-station-wrap { margin-top: 10px; }
+    .radar-station-wrap label { display:block; font-size:0.7rem; color:#cbd5e1; margin-bottom:4px; }
+    .radar-station-wrap select {
+      width:100%; padding:8px; border-radius:7px; border:1px solid rgba(255,255,255,0.1);
+      background:#0f172a; color:#fff; font-family:'Prompt'; font-size:0.75rem;
+    }
+    .radar-image-card {
+      margin-top: 10px; border-radius: 10px; overflow: hidden; background:#0f172a;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    .radar-image-card img { display:block; width:100%; min-height:140px; object-fit:cover; }
+    .radar-image-meta {
+      display:flex; justify-content:space-between; gap:8px; padding:7px 9px;
+      font-size:0.65rem; color:#94a3b8;
+    }
+
+    /* Hydrology layer extras */
+    .layer-section-title {
+      margin: 10px 0 8px; font-size: 0.72rem; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+
   </style>
 </head>
 <body>
@@ -325,6 +375,28 @@
         <button class="btn btn-secondary" onclick="getUserGPS()">
           <i class="fa-solid fa-crosshairs"></i> ตำแหน่งฉัน
         </button>
+      </div>
+
+
+      <div class="radar-station-wrap">
+        <label for="radar-station-select">เรดาร์สถานี (TMD / public radar view)</label>
+        <select id="radar-station-select" onchange="changeRadarStation(this.value)">
+          <option value="BKK">กรุงเทพฯ / Composite</option>
+          <option value="SVB240">สุวรรณภูมิ 240 กม.</option>
+          <option value="SVB120">สุวรรณภูมิ 120 กม.</option>
+          <option value="HATYAI">หาดใหญ่</option>
+          <option value="SONGKHLA">สงขลา</option>
+          <option value="PHUKET">ภูเก็ต</option>
+          <option value="KHONKAEN">ขอนแก่น</option>
+          <option value="CHIANGMAI">เชียงใหม่</option>
+        </select>
+        <div class="radar-image-card">
+          <img id="station-radar-image" alt="ภาพเรดาร์สถานี" referrerpolicy="no-referrer">
+          <div class="radar-image-meta">
+            <span id="station-radar-name">Composite</span>
+            <span id="station-radar-note">ภาพจากแหล่งสาธารณะ อาจเปลี่ยน URL ได้</span>
+          </div>
+        </div>
       </div>
 
       <div class="legend-title">ระดับความแรงกลุ่มฝน (dBZ)</div>
@@ -430,6 +502,21 @@
       </div>
     </div>
 
+
+      <div class="layer-section-title">Hydrology / Reference layers</div>
+      <div class="toggle-row">
+        <div>แม่น้ำ/คลองจาก OSM <small>เส้นทางน้ำในพื้นที่ที่กำลังดู</small></div>
+        <label class="switch"><input type="checkbox" id="toggle-waterways" onchange="toggleWaterwayLayer(this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>เขื่อน/อ่างเก็บน้ำจาก OSM <small>จุด/พื้นที่ water reservoir</small></div>
+        <label class="switch"><input type="checkbox" id="toggle-osm-dams" onchange="toggleOsmDamLayer(this.checked)"><span class="slider"></span></label>
+      </div>
+
+      <button class="source-btn" onclick="openSourceModal()">
+        <i class="fa-solid fa-circle-info"></i> ที่มาของข้อมูลและลิขสิทธิ์
+      </button>
+
     <!-- Developer Credit -->
     <div class="dev-credit">
       <img src="https://dl.dropbox.com/scl/fi/nx2b6zyo5cp4hwgtit12b/22-11-66-01-33-23.png?rlkey=khnfawin5mmaxg1vxq5l7nro3&dl=1" alt="RM Logo" class="dev-logo">
@@ -443,6 +530,39 @@
       Base Map: ESRI | Radar: RainViewer | Weather: Open-Meteo | Hydro: ThaiWater/HII
     </div>
 
+    </div>
+  </div>
+
+
+  <div class="modal-backdrop" id="source-modal-backdrop" onclick="if(event.target===this) closeSourceModal()">
+    <div class="source-modal">
+      <button class="source-close" onclick="closeSourceModal()">×</button>
+      <h2>ที่มาของข้อมูลและลิขสิทธิ์</h2>
+
+      <div class="source-row">
+        <b>ระดับน้ำ ฝน และข้อมูลเขื่อน</b>
+        <small>ThaiWater / Hydro-Informatics Institute (HII). ข้อมูลดึงผ่าน API สาธารณะเมื่อ endpoint ตอบสนอง</small>
+      </div>
+      <div class="source-row">
+        <b>สภาพอากาศและพยากรณ์</b>
+        <small>Open-Meteo API</small>
+      </div>
+      <div class="source-row">
+        <b>ภาพเรดาร์แบบเคลื่อนไหว</b>
+        <small>RainViewer public weather maps API</small>
+      </div>
+      <div class="source-row">
+        <b>ขอบเขตจังหวัด อำเภอ ตำบล และเส้นทางน้ำ</b>
+        <small>OpenStreetMap contributors (ODbL) ผ่าน Overpass API</small>
+      </div>
+      <div class="source-row">
+        <b>แผนที่ฐาน</b>
+        <small>Esri World Imagery และ OpenTopoMap / OpenStreetMap contributors / SRTM</small>
+      </div>
+      <div class="source-row">
+        <b>หมายเหตุ</b>
+        <small>เรดาร์บางสถานีของหน่วยงานรัฐอาจไม่มี endpoint ภาพคงที่ที่รับประกันระยะยาว จึงควรใช้ backend proxy หรือปรับ URL ตามแหล่งต้นทางเมื่อนำขึ้น production</small>
+      </div>
     </div>
   </div>
 
@@ -622,6 +742,186 @@
       } else { fetchWeatherData(13.7563, 100.5018, 'กรุงเทพมหานคร'); }
     }
 
+
+
+    // EXTRA HYDROGRAPHIC LAYERS (OpenStreetMap / Overpass)
+    const waterwayLayer = L.layerGroup();
+    const osmDamLayer = L.layerGroup();
+    let waterwaysEnabled = false;
+    let osmDamsEnabled = false;
+
+    function openSourceModal() {
+      document.getElementById('source-modal-backdrop').classList.add('show');
+    }
+    function closeSourceModal() {
+      document.getElementById('source-modal-backdrop').classList.remove('show');
+    }
+
+    function toggleWaterwayLayer(enabled) {
+      waterwaysEnabled = enabled;
+      if (enabled) {
+        if (!map.hasLayer(waterwayLayer)) waterwayLayer.addTo(map);
+        fetchWaterways();
+      } else if (map.hasLayer(waterwayLayer)) {
+        map.removeLayer(waterwayLayer);
+      }
+    }
+
+    function toggleOsmDamLayer(enabled) {
+      osmDamsEnabled = enabled;
+      if (enabled) {
+        if (!map.hasLayer(osmDamLayer)) osmDamLayer.addTo(map);
+        fetchOsmDams();
+      } else if (map.hasLayer(osmDamLayer)) {
+        map.removeLayer(osmDamLayer);
+      }
+    }
+
+    async function overpassFetch(query) {
+      const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: query
+      });
+      if (!response.ok) throw new Error(`Overpass HTTP ${response.status}`);
+      return await response.json();
+    }
+
+    async function fetchWaterways() {
+      if (!waterwaysEnabled) return;
+      const b = map.getBounds();
+      const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
+      const q = `[out:json][timeout:25];
+        (
+          way["waterway"~"river|stream|canal"](${bbox});
+          relation["waterway"~"river|stream|canal"](${bbox});
+        );
+        out geom;`;
+      try {
+        const data = await overpassFetch(q);
+        waterwayLayer.clearLayers();
+        const gj = osmtogeojson(data);
+        L.geoJSON(gj, {
+          style: f => ({
+            color: f?.properties?.tags?.waterway === 'river' ? '#38bdf8' : '#60a5fa',
+            weight: f?.properties?.tags?.waterway === 'river' ? 2.2 : 1.2,
+            opacity: 0.9
+          }),
+          onEachFeature: (f, layer) => {
+            const t = f.properties?.tags || {};
+            const n = t.name || t['name:th'] || t['name:en'] || t.waterway || 'ทางน้ำ';
+            layer.bindPopup(`<b>${n}</b><br>ประเภท: ${t.waterway || '-'}`);
+          }
+        }).addTo(waterwayLayer);
+      } catch (e) {
+        console.error('Waterway Overpass error', e);
+      }
+    }
+
+    async function fetchOsmDams() {
+      if (!osmDamsEnabled) return;
+      const b = map.getBounds();
+      const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
+      const q = `[out:json][timeout:25];
+        (
+          node["waterway"="dam"](${bbox});
+          way["waterway"="dam"](${bbox});
+          relation["waterway"="dam"](${bbox});
+          way["landuse"="reservoir"](${bbox});
+          relation["landuse"="reservoir"](${bbox});
+          way["natural"="water"]["water"="reservoir"](${bbox});
+          relation["natural"="water"]["water"="reservoir"](${bbox});
+        );
+        out center geom;`;
+      try {
+        const data = await overpassFetch(q);
+        osmDamLayer.clearLayers();
+        const gj = osmtogeojson(data);
+        L.geoJSON(gj, {
+          style: { color:'#0ea5e9', weight:1.4, fillColor:'#0ea5e9', fillOpacity:0.18 },
+          pointToLayer: (f, latlng) => L.circleMarker(latlng, {
+            radius: 6, color:'#0f172a', weight:1, fillColor:'#0ea5e9', fillOpacity:.9
+          }),
+          onEachFeature: (f, layer) => {
+            const t = f.properties?.tags || {};
+            const n = t.name || t['name:th'] || t['name:en'] || 'เขื่อน/อ่างเก็บน้ำ';
+            const typ = t.waterway === 'dam' ? 'เขื่อน' : 'อ่างเก็บน้ำ';
+            layer.bindPopup(`<b>${n}</b><br>${typ}`);
+          }
+        }).addTo(osmDamLayer);
+      } catch (e) {
+        console.error('OSM dam Overpass error', e);
+      }
+    }
+
+    map.on('moveend', () => {
+      if (waterwaysEnabled && map.getZoom() >= 8) fetchWaterways();
+      if (osmDamsEnabled && map.getZoom() >= 7) fetchOsmDams();
+    });
+
+    // PUBLIC RADAR IMAGE LINKS
+    // Some agency image URLs can change over time; keep them isolated in this map.
+    const radarStationSources = {
+      BKK: {
+        name: 'Thailand / Bangkok composite',
+        url: 'https://weather.tmd.go.th/bma_ncLoop.php',
+        fallback: 'https://weather.tmd.go.th/THA_Z.php'
+      },
+      SVB240: {
+        name: 'สุวรรณภูมิ 240 กม.',
+        url: 'https://weather.tmd.go.th/svp240.php'
+      },
+      SVB120: {
+        name: 'สุวรรณภูมิ 120 กม.',
+        url: 'https://weather.tmd.go.th/svp120.php'
+      },
+      HATYAI: {
+        name: 'หาดใหญ่',
+        url: 'https://weather.tmd.go.th/hyiLoop.php'
+      },
+      SONGKHLA: {
+        name: 'สงขลา',
+        url: 'https://weather.tmd.go.th/sklLoop.php'
+      },
+      PHUKET: {
+        name: 'ภูเก็ต',
+        url: 'https://weather.tmd.go.th/pktLoop.php'
+      },
+      KHONKAEN: {
+        name: 'ขอนแก่น',
+        url: 'https://weather.tmd.go.th/kknLoop.php'
+      },
+      CHIANGMAI: {
+        name: 'เชียงใหม่',
+        url: 'https://weather.tmd.go.th/cmiLoop.php'
+      }
+    };
+
+    function changeRadarStation(key) {
+      const src = radarStationSources[key] || radarStationSources.BKK;
+      const img = document.getElementById('station-radar-image');
+      document.getElementById('station-radar-name').textContent = src.name;
+      document.getElementById('station-radar-note').textContent = 'คลิกภาพเพื่อเปิดแหล่งต้นทาง';
+      img.onerror = () => {
+        img.removeAttribute('src');
+        img.alt = 'ไม่สามารถฝังภาพเรดาร์สถานีนี้โดยตรงได้';
+        document.getElementById('station-radar-note').textContent = 'แหล่งต้นทางป้องกันการฝังภาพ หรือ URL เปลี่ยน';
+      };
+      // Since many TMD radar pages are HTML viewers rather than direct image files,
+      // show the page as a clickable preview placeholder through a generated data SVG.
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="800" height="420">
+          <rect width="100%" height="100%" fill="#0b2230"/>
+          <text x="50%" y="42%" dominant-baseline="middle" text-anchor="middle"
+                fill="#e2e8f0" font-family="Arial" font-size="28">${src.name}</text>
+          <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+                fill="#7dd3fc" font-family="Arial" font-size="18">เปิดดูภาพเรดาร์ล่าสุดจาก TMD</text>
+          <text x="50%" y="64%" dominant-baseline="middle" text-anchor="middle"
+                fill="#94a3b8" font-family="Arial" font-size="14">บางสถานีไม่อนุญาตให้ฝังภาพโดยตรงในเว็บภายนอก</text>
+        </svg>`;
+      img.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+      img.style.cursor = 'pointer';
+      img.onclick = () => window.open(src.url, '_blank', 'noopener');
+    }
 
     // 4.5 THAIWATER LIVE API
     const THAIWATER_BASE = 'https://api-v3.thaiwater.net/api/v1/thaiwater30';
@@ -950,6 +1250,7 @@
 
     // เริ่มต้นทำงาน (ดึงพิกัด + โหลดเรดาร์ภาพล่าสุดทันที)
     initRadar();
+    changeRadarStation('BKK');
     refreshThaiWaterData();
     if (window.matchMedia('(max-width: 600px)').matches) {
       fetchWeatherData(13.7563, 100.5018, 'กรุงเทพมหานคร');
