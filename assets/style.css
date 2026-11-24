@@ -10,3 +10,4 @@
 @media(max-width:680px){.multiview-grid{grid-template-columns:1fr}.radar-player-top strong{font-size:12px}.radar-player-top{font-size:11px}}
 .camera-cluster{display:flex;align-items:center;justify-content:center;gap:4px;border:2px solid #fff;border-radius:12px;background:#bd743e;color:#fff;box-shadow:0 3px 12px #173d3235;font-size:12px;font-weight:700}.camera-cluster svg{width:17px;height:17px}
 :root{--muted:#65786f}@media(max-width:680px){.nav-item{font-size:11px}.nav-item:last-child span{font-size:10px}.sidebar-title{position:relative}}
+.nav{overflow-y:hidden;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
