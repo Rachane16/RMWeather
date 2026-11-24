@@ -1,0 +1,4 @@
+data/live/
+__pycache__/
+_site/
+*.log
