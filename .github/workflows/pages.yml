@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,3 +52,11 @@ jobs:
           path: _site
       - uses: actions/deploy-pages@v4
         id: deployment
+        continue-on-error: true
+      # Uploaded artifacts can take a few seconds to appear in the Pages API.
+      - name: Wait for artifact metadata after a transient deployment failure
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 10
+      - uses: actions/deploy-pages@v4
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
