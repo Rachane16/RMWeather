@@ -13,12 +13,12 @@ const titles = {overview:'ทุกข้อมูล ในแผนที่�
 const intros = {cameras:'ค้นหาจุดกล้อง คลิกดูภาพขนาดใหญ่ หรือเลือกดูหลายกล้องพร้อมกัน ภาพนิ่งอัปเดตเป็นระยะ',water:'ระดับน้ำและเวลาตรวจวัดรายสถานี สถานีที่ไม่มีเกณฑ์จะแสดงว่าไม่ทราบเกณฑ์',wind:'สนามลมพยากรณ์ NOAA GFS ที่ความสูง 10 เมตร แยกจากค่าลมตรวจวัดของสถานี',radar:'ภาพตรวจวัด TMD ภาคใต้ ภาพพยากรณ์ SWIRLS และเรดาร์ภาพรวม RainViewer',weather:'ข้อมูลตรวจวัดจริงจากสถานี TMD ที่ One Data เผยแพร่ ตรวจสอบเวลารายสถานีก่อนใช้งาน'};
 let view='overview', datasets={}, fetched={}, markers={}, radarFrames=[], radarLayer=null, radarTimer=null, radarKind='radar', windLayer=null, weatherRequest=0, refreshing=false, waterKind='water', nationalRows=[];
 let favoriteSlugs; try { favoriteSlugs = new Set(JSON.parse(localStorage.getItem('rm-favorites')||'[]')); } catch { favoriteSlugs=new Set(); }
-const enabled = {cameras:true,water:true,weather:false,wind:false,radar:false};
+const enabled = {cameras:false,water:false,weather:false,wind:true,radar:true};
 const map = L.map('map',{zoomControl:false,preferCanvas:true,maxZoom:19}).setView([7.0084,100.4767],11);
 L.control.zoom({position:'bottomright'}).addTo(map);
 L.control.scale({position:'bottomleft',imperial:false}).addTo(map);
 const cameraGroup=typeof L.markerClusterGroup==='function'?L.markerClusterGroup({maxClusterRadius:38,disableClusteringAtZoom:16,showCoverageOnHover:false,iconCreateFunction:c=>L.divIcon({className:'camera-cluster',html:`${icon('camera')}<span>${c.getChildCount()}</span>`,iconSize:[43,38]})}):L.layerGroup();
-const groups = {cameras:cameraGroup.addTo(map),water:L.layerGroup().addTo(map),weather:L.layerGroup()};
+const groups = {cameras:cameraGroup,water:L.layerGroup(),weather:L.layerGroup()};
 map.createPane('radar');map.getPane('radar').style.zIndex=350;map.getPane('radar').style.pointerEvents='none';
 const esri = name => `https://server.arcgisonline.com/ArcGIS/rest/services/${name}/MapServer/tile/{z}/{y}/{x}`;
 const osmURL='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -40,22 +40,23 @@ let storedBase;try{storedBase=localStorage.getItem('rm-basemap');document.docume
 setBase(storedBase||'onedata');
 document.querySelectorAll('[data-base]').forEach(b=>b.addEventListener('click',()=>setBase(b.dataset.base)));
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,5500);}
-function openPanel(){ $('sidebar').classList.add('is-open'); }
+function openPanel(){ $('sidebar').hidden=false;$('sidebar').classList.add('is-open');$('layers-toggle').setAttribute('aria-expanded','true');document.querySelector('.drawer-scroll').scrollTop=0; }
 function setEnabled(name,on){ enabled[name]=on;const checkbox=document.querySelector(`[data-layer="${name}"]`);if(checkbox)checkbox.checked=on;
  if(groups[name]){if(on)groups[name].addTo(map);else map.removeLayer(groups[name]);}
+ window.syncLayerMenu?.();
  if(name==='wind')renderWind();if(name==='radar'){ $('radar-player').hidden=!on;if(on)loadRadar();else {stopRadar();if(radarLayer)map.removeLayer(radarLayer);} }
 }
 document.querySelectorAll('[data-layer]').forEach(el=>el.addEventListener('change',()=>setEnabled(el.dataset.layer,el.checked)));
 function selectView(next){
  view=next;$('view-title').textContent=titles[view];document.querySelectorAll('.nav-item').forEach(b=>{b.classList.toggle('active',b.dataset.view===view);b.setAttribute('aria-pressed',String(b.dataset.view===view));});
- $('overview-panel').hidden=view!=='overview';$('category-panel').hidden=view==='overview';$('category-intro').textContent=intros[view]||'';$('search').value='';$('category-tools').innerHTML='';$('search-box').hidden=['wind','radar'].includes(view);
+ $('layer-catalog').hidden=view!=='overview';$('layer-details').hidden=view==='overview';$('category-panel').hidden=view==='overview';$('category-intro').textContent=intros[view]||'';$('search').value='';$('category-tools').innerHTML='';$('search-box').hidden=['wind','radar'].includes(view);
  if(view!=='overview')setEnabled(view,true);
  if(view==='cameras')$('category-tools').innerHTML='<div class="tool-row"><select id="camera-filter" class="control-select" aria-label="กรองกล้อง"><option value="all">กล้องทั้งหมด</option><option value="online">ออนไลน์และภาพไม่เก่า</option><option value="old">ข้อมูลเก่า / ขัดข้อง</option><option value="favorite">กล้องที่บันทึกไว้</option></select><button id="multiview" class="popup-button">ดูพร้อมกัน 4 กล้อง</button></div>';
- if(view==='water'){$('category-tools').innerHTML='<label class="control-label" for="water-source">ชุดข้อมูลน้ำ</label><select id="water-source" class="control-select"><option value="water">RID · สงขลาและใกล้เคียง</option><option value="thaiwater">ThaiWater · ระดับน้ำทั่วประเทศ</option><option value="rain">ThaiWater · ฝนสะสม 24 ชม.</option><option value="dam">ThaiWater · เขื่อนขนาดใหญ่</option></select>';$('water-source').value=waterKind;$('water-source').addEventListener('change',async e=>{waterKind=e.target.value;await loadNational();renderMarkers();renderResults();});}
- if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;loadRadar();});}
+ if(view==='water'){$('category-tools').innerHTML='<label class="control-label" for="water-source">ชุดข้อมูลน้ำ</label><select id="water-source" class="control-select"><option value="water">RID · สงขลาและใกล้เคียง</option><option value="thaiwater">ThaiWater · ระดับน้ำทั่วประเทศ</option><option value="rain">ThaiWater · ฝนสะสม 24 ชม.</option><option value="dam">ThaiWater · เขื่อนขนาดใหญ่</option></select>';$('water-source').value=waterKind;$('water-source').addEventListener('change',async e=>{waterKind=e.target.value;window.syncLayerMenu?.();await loadNational();renderMarkers();renderResults();});}
+ if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;window.syncLayerMenu?.();loadRadar();});}
  if($('camera-filter'))$('camera-filter').addEventListener('change',renderResults);
  if($('multiview'))$('multiview').addEventListener('click',showMultiview);
- renderResults();$('sidebar').scrollTop=0;openPanel();
+ renderResults();document.querySelector('.drawer-scroll').scrollTop=0;openPanel();window.syncLayerMenu?.();
 }
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>selectView(b.dataset.view)));
 $('search').addEventListener('input',renderResults);
@@ -153,28 +154,30 @@ function showRadarFrame(index){
 }
 $('radar-slider').addEventListener('input',e=>{stopRadar();showRadarFrame(Number(e.target.value));});
 $('radar-play').addEventListener('click',()=>{if(radarTimer){stopRadar();return;}if(!radarFrames.length)return;$('radar-play').textContent='Ⅱ';$('radar-play').setAttribute('aria-label','หยุดภาพเรดาร์');radarTimer=setInterval(()=>showRadarFrame((Number($('radar-slider').value)+1)%radarFrames.length),850);});
+let nationalRequest=0;
 async function loadNational(){
- nationalRows=[];if(waterKind==='water')return;toast('กำลังดึงข้อมูล ThaiWater…');
- const root='https://api-v3.thaiwater.net/api/v1/thaiwater30';const path=waterKind==='thaiwater'?'/public/waterlevel_load':waterKind==='rain'?'/public/rain_24h':'/analyst/dam?dam_size=1';
- try{const j=await getJSON(root+path);let rows=waterKind==='thaiwater'?(j.waterlevel_data?.data||j.data):waterKind==='rain'?(j.rainfall_data?.data||j.rain_data?.data||j.data):[...(j.dam_hourly||[]),...(j.dam_daily||[])];if(!Array.isArray(rows))rows=[];
+ const request=++nationalRequest,kind=waterKind;
+ nationalRows=[];if(kind==='water')return;toast('กำลังดึงข้อมูล ThaiWater…');
+ const root='https://api-v3.thaiwater.net/api/v1/thaiwater30';const path=kind==='thaiwater'?'/public/waterlevel_load':kind==='rain'?'/public/rain_24h':'/analyst/dam?dam_size=1';
+ try{const j=await getJSON(root+path);if(request!==nationalRequest||kind!==waterKind)return;let rows=kind==='thaiwater'?(j.waterlevel_data?.data||j.data):kind==='rain'?(j.rainfall_data?.data||j.rain_data?.data||j.data):[...(j.dam_hourly||[]),...(j.dam_daily||[])];if(!Array.isArray(rows))rows=[];
   const th=v=>v&&typeof v==='object'?(v.th||v.en):v;
-  nationalRows=rows.map((r,i)=>({station_code:String(r.id??r.station?.id??i),station_name_th:th(r.station?.tele_station_name||r.dam_name||r.dam?.dam_name)||'สถานี',province_name:th(r.geocode?.province_name),latitude:r.station?.tele_station_lat??r.dam_lat,longitude:r.station?.tele_station_long??r.dam_long,observed_at:r.waterlevel_datetime||r.rainfall_datetime||r.dam_date,level:waterKind==='rain'?r.rain_24h:waterKind==='dam'?r.dam_storage_percent:r.waterlevel_msl,q:r.discharge,level_percent:null}));
+  nationalRows=rows.map((r,i)=>({station_code:String(r.id??r.station?.id??i),station_name_th:th(r.station?.tele_station_name||r.dam_name||r.dam?.dam_name)||'สถานี',province_name:th(r.geocode?.province_name),latitude:r.station?.tele_station_lat??r.dam_lat,longitude:r.station?.tele_station_long??r.dam_long,observed_at:r.waterlevel_datetime||r.rainfall_datetime||r.dam_date,level:kind==='rain'?r.rain_24h:kind==='dam'?r.dam_storage_percent:r.waterlevel_msl,q:r.discharge,level_percent:null}));
   if(!nationalRows.length)toast('แหล่งข้อมูลนี้ยังไม่มีรายการที่รองรับ');
  }catch{toast('โหลด ThaiWater ไม่สำเร็จ กรุณาลองใหม่');}
 }
-document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-place]').forEach(x=>x.classList.toggle('selected',x===b));const [lat,lng,name,zoom]=places[b.dataset.place];map.flyTo([lat,lng],zoom);$('map-context').textContent=name;loadForecast(lat,lng,name);if(innerWidth<=680)$('sidebar').classList.remove('is-open');}));
-map.on('click',e=>loadForecast(e.latlng.lat,e.latlng.lng,`พิกัด ${e.latlng.lat.toFixed(2)}, ${e.latlng.lng.toFixed(2)}`));
+document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-place]').forEach(x=>x.classList.toggle('selected',x===b));const [lat,lng,name,zoom]=places[b.dataset.place];map.flyTo([lat,lng],zoom);$('map-context').textContent=name;loadForecast(lat,lng,name);if(innerWidth<=680)window.closeLayerDrawer?.();}));
+map.on('click',e=>{window.closeLayerDrawer?.();loadForecast(e.latlng.lat,e.latlng.lng,`พิกัด ${e.latlng.lat.toFixed(2)}, ${e.latlng.lng.toFixed(2)}`);});
 $('refresh').addEventListener('click',()=>{refreshData();const c=map.getCenter();loadForecast(c.lat,c.lng,$('place-name').textContent);});
 $('fit').addEventListener('click',()=>{map.flyTo([7.0084,100.4767],11);$('map-context').textContent='หาดใหญ่ · สงขลา';});
 $('locate').addEventListener('click',()=>{if(!navigator.geolocation){toast('เบราว์เซอร์นี้ไม่รองรับตำแหน่ง');return;}navigator.geolocation.getCurrentPosition(p=>{map.flyTo([p.coords.latitude,p.coords.longitude],12);loadForecast(p.coords.latitude,p.coords.longitude,'ตำแหน่งของคุณ');},()=>toast('เข้าถึงตำแหน่งไม่ได้ คุณยังเลือกเมืองหรือคลิกแผนที่ได้'),{timeout:10000});});
 $('theme').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('rm-theme',theme);}catch{}});
-$('mobile-panel').addEventListener('click',openPanel);$('sidebar-close').addEventListener('click',()=>$('sidebar').classList.remove('is-open'));
+$('mobile-panel').addEventListener('click',openPanel);$('sidebar-close').addEventListener('click',()=>window.closeLayerDrawer?.());
 function basePanel(open){$('basemap-panel').hidden=!open;$('basemap-toggle').setAttribute('aria-expanded',String(open));}
 $('basemap-toggle').addEventListener('click',()=>basePanel($('basemap-panel').hidden));$('basemap-close').addEventListener('click',()=>basePanel(false));
 $('sources-open').addEventListener('click',()=>$('sources-dialog').showModal());$('sources-close').addEventListener('click',()=>$('sources-dialog').close());$('detail-close').addEventListener('click',()=>$('detail-dialog').close());
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){basePanel(false);$('sidebar').classList.remove('is-open');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){basePanel(false);window.closeLayerDrawer?.(true);}});
 function tick(){ $('clock').textContent=new Date().toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}); }
 tick();setInterval(tick,30000);setInterval(()=>{if(document.hidden)return;refreshData();const img=$('camera-detail-image');if(img&&$('detail-dialog').open){const url=new URL(img.src);url.searchParams.set('t',Date.now());img.src=url.href;}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopRadar();});
-loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();
+$('radar-player').hidden=false;loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();
