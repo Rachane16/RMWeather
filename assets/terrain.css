@@ -41,3 +41,15 @@
  .terrain-controls output{font-size:12px}
  #bearing-value{display:none}
 }
+@media(max-width:700px){
+ .weather-panel{max-height:calc(100% - 430px)}
+ .terrain-controls{bottom:244px}
+ .basemap-toggle{bottom:306px}
+ .basemap-panel{bottom:357px;max-height:calc(100% - 375px)}
+ .radar-player{bottom:100px}
+ .workspace .map-legend:has(~.radar-player:not([hidden])){bottom:76px}
+ .map-legend>span.muted{display:none}
+ .maplibregl-ctrl-bottom-right{bottom:27px;right:2px}
+ .maplibregl-ctrl-scale{display:none}
+ .maplibregl-ctrl-attrib{max-width:calc(100vw - 24px);font-size:10px}
+}
