@@ -227,6 +227,43 @@
       }
     },
     {
+      "id": "elevation-colors",
+      "type": "color-relief",
+      "source": "hillshade-dem",
+      "paint": {
+        "color-relief-opacity": 0.86,
+        "color-relief-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "elevation"
+          ],
+          0,
+          "rgba(247,245,235,0)",
+          8,
+          "rgba(238,239,215,0.2)",
+          60,
+          "#e8edcf",
+          150,
+          "#cfddba",
+          350,
+          "#a0bb93",
+          650,
+          "#779d79",
+          1000,
+          "#9da783",
+          1500,
+          "#c2b89c",
+          2200,
+          "#e2d6bb",
+          3500,
+          "#f6f1e3"
+        ]
+      }
+    },
+    {
       "id": "water",
       "type": "fill",
       "source": "osm",
@@ -311,12 +348,12 @@
         "elemnt:addon": "terrain"
       },
       "paint": {
-        "hillshade-exaggeration": 0.4,
+        "hillshade-exaggeration": 0.65,
         "hillshade-illumination-direction": 335,
         "hillshade-illumination-anchor": "viewport",
-        "hillshade-shadow-color": "#5b5347",
-        "hillshade-highlight-color": "#ffffff",
-        "hillshade-accent-color": "#6b6354"
+        "hillshade-shadow-color": "#405847",
+        "hillshade-highlight-color": "#fff8df",
+        "hillshade-accent-color": "#6e7f5a"
       }
     },
     {

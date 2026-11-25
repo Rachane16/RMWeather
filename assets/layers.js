@@ -3,7 +3,7 @@
 // The gallery controls the existing map layers and source selectors.
 const rainSources = ['radar', 'nowcast', 'rainviewer'];
 const waterSources = ['water', 'thaiwater', 'rain', 'dam'];
-const layerLabels = {radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'เรดาร์ภาพรวม',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
+const layerLabels = {windycams:'กล้อง Windy สงขลา',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'เรดาร์ภาพรวม',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
 
 function layerIsActive(key) {
   if (rainSources.includes(key)) return enabled.radar && radarKind === key;
@@ -22,11 +22,11 @@ function syncLayerMenu() {
   });
   $('layers-count').textContent = active.length;
   $('active-layer-names').textContent = active.length ? active.join(' · ') : 'ยังไม่ได้เปิดชั้นข้อมูล';
-  $('map-legend').hidden = !['cameras', 'water', 'weather'].some(key => enabled[key]);
+  $('map-legend').hidden = !['cameras', 'water', 'weather', 'windycams'].some(key => enabled[key]);
   const legendItems = $('map-legend').querySelectorAll('span');
-  ['cameras', 'water', 'weather'].forEach((key, i) => { legendItems[i].hidden = !enabled[key]; });
+  ['cameras', 'water', 'weather', 'windycams'].forEach((key, i) => { legendItems[i].hidden = !enabled[key]; });
   legendItems[1].lastChild.textContent = layerLabels[waterKind] || 'ระดับน้ำ';
-  legendItems[3].hidden = $('map-legend').hidden;
+  legendItems[4].hidden = $('map-legend').hidden;
   if(view==='water'){ $('view-title').textContent=layerLabels[waterKind];$('category-intro').textContent=waterKind==='dam'?'ข้อมูลน้ำกักเก็บเขื่อนขนาดใหญ่จาก ThaiWater พร้อมวันที่ข้อมูล':waterKind==='rain'?'ฝนสะสม 24 ชั่วโมงจากสถานีทั่วประเทศ ตรวจสอบเวลาสิ้นสุดช่วงสะสมรายสถานี':intros.water; }
 }
 
@@ -116,7 +116,7 @@ $('weather-collapse').addEventListener('click', () => {
 });
 
 $('reset-layers').addEventListener('click', () => {
-  ['cameras','water','weather'].forEach(key => setEnabled(key, false));
+  ['cameras','water','weather','windycams'].forEach(key => setEnabled(key, false));
   radarKind = 'nowcast';
   setEnabled('radar', true);
   setEnabled('wind', true);

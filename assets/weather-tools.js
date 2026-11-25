@@ -1,7 +1,9 @@
 'use strict';
 
 const toolVisibility = {'weather-map':false,'seven-day':false};
-let forecastSource='model';
+let forecastSource='tmd';
+let windyZoom=8;
+let windyLocation={lat:7.19,lon:100.59,name:'สงขลา'};
 function setWeatherTool(name,on) {
   // Use a single readable workspace for embeds; these do not replace RM layers.
   if(on)Object.keys(toolVisibility).filter(key=>key!==name).forEach(key=>setWeatherTool(key,false));
@@ -9,15 +11,15 @@ function setWeatherTool(name,on) {
   $(`${name}-panel`).hidden=!on;
   document.querySelectorAll(`[data-tool="${name}"]`).forEach(button=>button.setAttribute('aria-pressed',String(on)));
   document.querySelectorAll(`[data-tool-toggle="${name}"]`).forEach(input=>input.checked=on);
-  if(on){closeLayerDrawer();updateWeatherEmbeds();}
+  if(on){closeLayerDrawer();$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
   else if(name==='weather-map')$('windy-frame').removeAttribute('src');
   else $('tmd-frame').removeAttribute('src');
 }
 function assignFrame(id,url) {if($(id).getAttribute('src')!==url)$(id).src=url;}
 function updateWeatherEmbeds() {
-  const p=window.weatherLocation||{lat:7.0084,lon:100.4767,name:'หาดใหญ่'};
+  const p=windyLocation;
   if(toolVisibility['weather-map']){
-    const query=new URLSearchParams({lat:p.lat.toFixed(4),lon:p.lon.toFixed(4),detailLat:p.lat.toFixed(4),detailLon:p.lon.toFixed(4),zoom:Math.min(11,Math.round(map.gl.getZoom())),level:'surface',overlay:$('windy-overlay').value,product:'ecmwf',type:'map',location:'coordinates',metricWind:'km/h',metricTemp:'°C',metricRain:'mm'});
+    const query=new URLSearchParams({lat:p.lat.toFixed(4),lon:p.lon.toFixed(4),detailLat:p.lat.toFixed(4),detailLon:p.lon.toFixed(4),zoom:windyZoom,level:'surface',overlay:$('windy-overlay').value,type:'map',location:'coordinates',metricWind:'km/h',metricTemp:'°C',metricRain:'mm'});
     assignFrame('windy-frame',`https://embed.windy.com/embed2.html?${query}`);
     $('windy-open').href=`https://www.windy.com/?${p.lat.toFixed(3)},${p.lon.toFixed(3)},9`;
   }
@@ -39,7 +41,7 @@ document.querySelectorAll('[data-forecast-source]').forEach(button=>button.addEv
   updateWeatherEmbeds();
 }));
 $('windy-overlay').addEventListener('change',updateWeatherEmbeds);
-$('windy-use-center').addEventListener('click',()=>{const p=map.getCenter();window.weatherLocation={lat:p.lat,lon:p.lng,name:'กลางแผนที่'};updateWeatherEmbeds();});
+$('windy-use-center').addEventListener('click',()=>{const p=map.getCenter();windyLocation={lat:p.lat,lon:p.lng,name:'กลางแผนที่'};windyZoom=Math.min(11,Math.round(map.gl.getZoom()));updateWeatherEmbeds();});
 $('tmd-province').addEventListener('change',updateWeatherEmbeds);
 $('terrain-toggle').addEventListener('click',()=>{
   map.setTerrain(!map.terrain);$('terrain-toggle').setAttribute('aria-pressed',String(map.terrain));
@@ -55,3 +57,5 @@ map.gl.on('move',()=>{
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape')Object.keys(toolVisibility).forEach(name=>setWeatherTool(name,false));});
 $('reset-layers').addEventListener('click',()=>Object.keys(toolVisibility).forEach(name=>setWeatherTool(name,false)));
+
+$('tmd-frame').addEventListener('load',()=>{if(toolVisibility['seven-day'])$('seven-day-panel').scrollTop=0;});
