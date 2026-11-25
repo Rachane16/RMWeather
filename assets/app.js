@@ -26,6 +26,7 @@ const basemaps = [
  {id:'worldtopo',name:'World Topo Map',url:esri('World_Topo_Map'),credit:'Tiles © Esri, HERE, Garmin, USGS, GIS User Community',art:'topo'},
  {id:'opentopo',name:'OpenTopoMap · เดิม',url:'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',maxzoom:17,credit:'© OpenStreetMap, SRTM | © OpenTopoMap (CC-BY-SA)',art:'topo'}
 ];
+const basemapPreferenceKey=matchMedia('(max-width:700px)').matches?'rm-basemap-mobile-v1':'rm-basemap-v3';
 let baseRequest=0;
 async function setBase(id){
  const request=++baseRequest,base=basemaps.find(b=>b.id===id)||basemaps[0];
@@ -34,15 +35,15 @@ async function setBase(id){
   if(request!==baseRequest)return;
   document.querySelectorAll('.basemap-option').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.base===base.id)));
   $('terrain-status').textContent=base.id==='natural'?'ELEMNT · OSM / Protomaps · Mapterhorn DEM · GEBCO':'หมุนและเอียงได้ · 3D ใช้ Mapterhorn DEM';
-  try{localStorage.setItem('rm-basemap-v3',base.id);}catch{}
+  try{localStorage.setItem(basemapPreferenceKey,base.id);}catch{}
  }catch{if(request===baseRequest&&id!=='osm'){toast('พื้นแผนที่นี้ยังโหลดไม่ได้ กำลังใช้ OpenStreetMap');setBase('osm');}}
 }
 $('basemap-grid').innerHTML=basemaps.map(b=>`<button class="basemap-option" data-base="${b.id}" aria-pressed="false"><span class="basemap-preview base-${b.art}" aria-hidden="true"></span><span>${b.name}</span></button>`).join('');
-let storedBase;try{storedBase=localStorage.getItem('rm-basemap-v3');document.documentElement.dataset.theme=localStorage.getItem('rm-theme')||'light';}catch{}
+let storedBase;try{storedBase=localStorage.getItem(basemapPreferenceKey);document.documentElement.dataset.theme=localStorage.getItem('rm-theme')||'light';}catch{}
 setBase(storedBase||'onedata');
 document.querySelectorAll('[data-base]').forEach(b=>b.addEventListener('click',()=>setBase(b.dataset.base)));
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,5500);}
-function openPanel(){ $('sidebar').hidden=false;$('sidebar').classList.add('is-open');$('layers-toggle').setAttribute('aria-expanded','true');document.querySelector('.drawer-scroll').scrollTop=0; }
+function openPanel(){ if(window.workspaceUI){window.workspaceUI.setOpen('sidebar',true);return;} $('sidebar').hidden=false;$('sidebar').classList.add('is-open');$('layers-toggle').setAttribute('aria-expanded','true');document.querySelector('.drawer-scroll').scrollTop=0; }
 function setEnabled(name,on){ const wasOn=enabled[name];enabled[name]=on;if(on&&!wasOn&&['cameras','windycams'].includes(name)){const c=map.getCenter();if(c.lat<6.2||c.lat>8.2||c.lng<99.8||c.lng>101.3)map.flyTo([7.05,100.55],9);}const checkbox=document.querySelector(`[data-layer="${name}"]`);if(checkbox)checkbox.checked=on;
  if(['cameras','water','thaiwater','rain','dam','weather','windycams'].includes(name))map.enablePoints(name,on);
  window.syncLayerMenu?.();
@@ -149,7 +150,7 @@ function setRainEnabled(kind,on){
   rainRequests[kind]=(rainRequests[kind]||0)+1;map.setRain(null,kind);
   if(radarKind===kind){stopRadar();radarKind=Object.keys(rainVisibility).find(k=>rainVisibility[k])||kind;if(rainVisibility[radarKind])loadRadar(radarKind);}
  }
- enabled.radar=Object.values(rainVisibility).some(Boolean);$('radar-player').hidden=!enabled.radar;
+ enabled.radar=Object.values(rainVisibility).some(Boolean);$('radar-player').hidden=true;window.syncTimelineUI?.();
  window.syncLayerMenu?.();
 }
 async function loadRadar(kind=radarKind){
@@ -170,7 +171,7 @@ function showRadarFrame(index){
  const f=radarFrames[index];if(!f)return;const sourceTime=radarKind==='nowcast'?(f.base_time||radarFrames.at(-1)?.frame_time):radarFrames.at(-1)?.frame_time;map.setRain(rainVisibility[radarKind]?f:null,radarKind);
  $('radar-slider').value=index;const d=new Date(f.frame_time);$('radar-time').textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});$('radar-date').textContent=time(f.frame_time);$('radar-status').textContent=`${stale(sourceTime,2)?'ข้อมูลต้นทางยังเป็นเฟรมเก่า · ':''}${radarKind==='nowcast'?'เวลาที่พยากรณ์':'เวลาของภาพ'} · เฟรม ${index+1}/${radarFrames.length}${radarKind==='rod'?' · TMD Composite / PSU':radarKind!=='rainviewer'?' · ครอบคลุมภาคใต้':''}`;
  $('radar-slider').style.setProperty('--progress',`${radarFrames.length>1?index/(radarFrames.length-1)*100:0}%`);
- document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';
+ document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';window.syncTimelineUI?.();
 }
 $('radar-timeline-source').addEventListener('change',event=>{radarKind=event.target.value;setRainEnabled(radarKind,true);});
 $('radar-slider').addEventListener('input',e=>{stopRadar();showRadarFrame(Number(e.target.value));});
@@ -194,22 +195,22 @@ $('refresh').addEventListener('click',()=>{refreshData();const c=map.getCenter()
 $('fit').addEventListener('click',()=>{map.flyTo([7.0084,100.4767],11);});
 let locationRequest=0;
 async function requestCurrentLocation(){
- const request=++locationRequest;
+ const request=++locationRequest;window.locationPending=true;window.updateWeatherLocationNote?.();
  $('location-status').textContent='กำลังระบุตำแหน่งปัจจุบัน…';
- if(!navigator.geolocation){$('location-status').textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่ง · ใช้หาดใหญ่เป็นจุดเริ่มต้น';return;}
+ if(!navigator.geolocation){window.locationPending=false;window.updateWeatherLocationNote?.();$('location-status').textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่ง · ใช้หาดใหญ่เป็นจุดเริ่มต้น';return;}
  navigator.geolocation.getCurrentPosition(position=>{
-  if(request!==locationRequest)return;
+  if(request!==locationRequest)return;window.locationPending=false;window.updateWeatherLocationNote?.();
   const {latitude:lat,longitude:lon}=position.coords;
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
-  window.currentLocation={lat,lon};map.flyTo([lat,lon],10);
+  window.currentLocation={lat,lon};map.setCurrentLocation(lat,lon);map.flyTo([lat,lon],10);
   $('location-status').textContent='ใช้ตำแหน่งปัจจุบันแล้ว';loadForecast(lat,lon,'ตำแหน่งของคุณ');
   window.dispatchEvent(new CustomEvent('rm-current-location',{detail:{lat,lon}}));
- },()=>{if(request===locationRequest)$('location-status').textContent='เข้าถึงตำแหน่งไม่ได้ · ใช้หาดใหญ่หรือเลือกตำแหน่งบนแผนที่';},{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+ },()=>{if(request===locationRequest){window.locationPending=false;window.updateWeatherLocationNote?.();$('location-status').textContent='เข้าถึงตำแหน่งไม่ได้ · ใช้หาดใหญ่หรือเลือกตำแหน่งบนแผนที่';}},{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
 }
 $('locate').addEventListener('click',requestCurrentLocation);
 $('theme').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('rm-theme',theme);}catch{}});
 $('mobile-panel').addEventListener('click',openPanel);$('sidebar-close').addEventListener('click',()=>window.closeLayerDrawer?.());
-function basePanel(open){$('basemap-panel').hidden=!open;$('basemap-toggle').setAttribute('aria-expanded',String(open));}
+function basePanel(open){if(window.workspaceUI){window.workspaceUI.setOpen('basemap',open);return;}$('basemap-panel').hidden=!open;$('basemap-toggle').setAttribute('aria-expanded',String(open));}
 $('basemap-toggle').addEventListener('click',()=>basePanel($('basemap-panel').hidden));$('basemap-close').addEventListener('click',()=>basePanel(false));
 $('sources-open').addEventListener('click',()=>$('sources-dialog').showModal());$('sources-close').addEventListener('click',()=>$('sources-dialog').close());$('detail-close').addEventListener('click',()=>$('detail-dialog').close());$('detail-dialog').addEventListener('close',()=>{$('windy-camera-player')?.remove();});
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
@@ -218,4 +219,4 @@ function tick(){const now=new Date();$('clock').innerHTML=`<time datetime="${now
 
 tick();setInterval(tick,30000);setInterval(()=>{if(document.hidden)return;refreshData();const img=$('camera-detail-image');if(img&&$('detail-dialog').open){const url=new URL(img.src);url.searchParams.set('t',Date.now());img.src=url.href;}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopRadar();});
-$('radar-player').hidden=false;loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();requestCurrentLocation();
+$('radar-player').hidden=true;loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();requestCurrentLocation();

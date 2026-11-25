@@ -11,12 +11,17 @@ function setWeatherTool(name,on) {
   $(`${name}-panel`).hidden=!on;
   document.querySelectorAll(`[data-tool="${name}"]`).forEach(button=>button.setAttribute('aria-pressed',String(on)));
   document.querySelectorAll(`[data-tool-toggle="${name}"]`).forEach(input=>input.checked=on);
-  if(on){if(name==='weather-map'){const p=map.getCenter();windyLocation={lat:p.lat,lon:p.lng};windyZoom=Math.min(12,Math.round(map.gl.getZoom()));}closeLayerDrawer();$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
+  if(on){window.workspaceUI?.closeForWeatherTool();if(name==='weather-map'){const p=window.currentLocation||{lat:map.getCenter().lat,lon:map.getCenter().lng};windyLocation={lat:p.lat,lon:p.lon};windyZoom=10;if(!window.locationPending)requestCurrentLocation();}closeLayerDrawer();$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
   else if(name==='weather-map')$('windy-frame').removeAttribute('src');
   else $('tmd-frame').removeAttribute('src');
 }
 function assignFrame(id,url) {if($(id).getAttribute('src')!==url)$(id).src=url;}
+function updateWeatherLocationNote(){
+  $('windy-location-note').textContent=window.currentLocation?'ตำแหน่งปัจจุบันของคุณ · Windy':window.locationPending?'กำลังค้นหาตำแหน่งปัจจุบัน…':'ตำแหน่งสำรองบนแผนที่หลัก · อนุญาตสิทธิ์เพื่อใช้ตำแหน่งปัจจุบัน';
+}
+window.updateWeatherLocationNote=updateWeatherLocationNote;
 function updateWeatherEmbeds() {
+  updateWeatherLocationNote();
   const p=windyLocation;
   if(toolVisibility['weather-map']){
     const query=new URLSearchParams({lat:p.lat.toFixed(4),lon:p.lon.toFixed(4),detailLat:p.lat.toFixed(4),detailLon:p.lon.toFixed(4),zoom:windyZoom,level:'surface',overlay:$('windy-overlay').value,type:'map',location:'coordinates',metricWind:'km/h',metricTemp:'°C',metricRain:'mm'});
@@ -41,7 +46,7 @@ document.querySelectorAll('[data-forecast-source]').forEach(button=>button.addEv
   updateWeatherEmbeds();
 }));
 $('windy-overlay').addEventListener('change',updateWeatherEmbeds);
-$('windy-use-center').addEventListener('click',()=>{const p=map.getCenter();windyLocation={lat:p.lat,lon:p.lng,name:'กลางแผนที่'};windyZoom=Math.min(11,Math.round(map.gl.getZoom()));updateWeatherEmbeds();});
+$('windy-back-main').addEventListener('click',()=>setWeatherTool('weather-map',false));
 $('tmd-province').addEventListener('change',updateWeatherEmbeds);
 $('terrain-toggle').addEventListener('click',()=>{
   map.setTerrain(!map.terrain);$('terrain-toggle').setAttribute('aria-pressed',String(map.terrain));

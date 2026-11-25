@@ -26,11 +26,12 @@ function syncLayerMenu() {
   const points=['cameras','water','thaiwater','rain','dam','weather','windycams'];
   $('map-legend').hidden=!points.some(key=>enabled[key]);
   $('map-legend').innerHTML=points.filter(key=>enabled[key]).map(key=>`<span><i class="legend-marker ${key}-color"></i>${layerLabels[key]}</span>`).join('')+'<span class="muted">คลิกจุดเพื่อดูรายละเอียด</span>';
-  document.querySelectorAll('#radar-timeline-source option').forEach(option=>option.disabled=!rainVisibility[option.value]);
+
   if(view==='water'){ $('view-title').textContent=layerLabels[waterKind];$('category-intro').textContent=waterKind==='dam'?'ข้อมูลน้ำกักเก็บเขื่อนขนาดใหญ่จาก ThaiWater พร้อมวันที่ข้อมูล':waterKind==='rain'?'ฝนสะสม 24 ชั่วโมงจากสถานีทั่วประเทศ ตรวจสอบเวลาสิ้นสุดช่วงสะสมรายสถานี':intros.water; }
 }
 
 function closeLayerDrawer(restoreFocus = false) {
+  if(window.workspaceUI){window.workspaceUI.setOpen('sidebar',false);if(restoreFocus)$('layers-toggle').focus();return;}
   $('sidebar').hidden = true;
   $('sidebar').classList.remove('is-open');
   $('layers-toggle').setAttribute('aria-expanded', 'false');
@@ -80,7 +81,7 @@ $('layers-toggle').addEventListener('click', () => {
   if (!$('sidebar').hidden) { closeLayerDrawer(); return; }
   showLayerCatalog();
   openPanel();
-  $('layer-search').focus({preventScroll:true});
+  if(!matchMedia('(max-width:700px)').matches)$('layer-search').focus({preventScroll:true});
 });
 $('mobile-panel').addEventListener('click', showLayerCatalog);
 $('layers-back').addEventListener('click', showLayerCatalog);
@@ -100,33 +101,21 @@ $('layer-search').addEventListener('input', () => {
 });
 
 $('forecast-visible').addEventListener('change', event => {
-  $('overview-panel').hidden = !event.target.checked;
+  setWeatherCardVisible(event.target.checked);
 });
-$('weather-collapse').addEventListener('click', () => {
-  const collapsed = $('overview-panel').classList.toggle('is-collapsed');
-  $('weather-panel-body').hidden = collapsed;
-  $('weather-collapse').setAttribute('aria-expanded', String(!collapsed));
-  $('weather-collapse').setAttribute('aria-label', collapsed ? 'ขยายแถบสภาพอากาศ' : 'ย่อแถบสภาพอากาศ');
-  $('weather-collapse').textContent = collapsed ? '+' : '−';
-});
+$('weather-collapse').addEventListener('click',()=>setWeatherCardVisible(false));
 
 $('reset-layers').addEventListener('click', () => {
   ['cameras','water','thaiwater','rain','dam','weather','windycams'].forEach(key => setEnabled(key, false));
   rainSources.forEach(key=>setRainEnabled(key,false));
   setRainEnabled('rainviewer',true);
   setEnabled('wind', true);
-  $('forecast-visible').checked = true;
-  $('overview-panel').hidden = false;
-  $('overview-panel').classList.remove('is-collapsed');
-  $('weather-panel-body').hidden = false;
-  $('weather-collapse').setAttribute('aria-expanded','true');
-  $('weather-collapse').setAttribute('aria-label','ย่อแถบสภาพอากาศ');
-  $('weather-collapse').textContent = '−';
+  setWeatherCardVisible(false);window.setTimelineOpen?.(false);
   $('layer-search').value = '';
   $('layer-search').dispatchEvent(new Event('input'));
   document.querySelector('.drawer-scroll').scrollTop = 0;
   syncLayerMenu();
-  toast('กลับสู่เรดาร์ RainViewer ลม และแถบสภาพอากาศแล้ว');
+  toast('กลับสู่เรดาร์ RainViewer ลม แล้ว');
 });
 
 document.addEventListener('keydown', event => {
@@ -134,4 +123,4 @@ document.addEventListener('keydown', event => {
 });
 syncLayerMenu();
 
-openPanel();
+if(!matchMedia('(max-width:700px)').matches)openPanel();

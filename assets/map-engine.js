@@ -41,6 +41,15 @@ class WeatherMap {
   }
   flyTo(point,zoom,options={}) { this.gl.flyTo({center:[point[1],point[0]],zoom,duration:options.duration?options.duration*1000:900}); }
   getCenter() { return this.gl.getCenter(); }
+  setCurrentLocation(lat,lon){
+    if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
+    if(!this.locationMarker){
+      const element=document.createElement('button');element.type='button';element.className='current-location-marker';
+      element.setAttribute('aria-label','ตำแหน่งปัจจุบันของคุณ');element.title='ตำแหน่งปัจจุบันของคุณ';
+      element.addEventListener('click',event=>{event.stopPropagation();const p=this.locationMarker.getLngLat();this.gl.flyTo({center:[p.lng,p.lat],zoom:Math.max(this.gl.getZoom(),12)});});
+      this.locationMarker=new maplibregl.Marker({element,anchor:'center'}).setLngLat([lon,lat]).addTo(this.gl);
+    }else this.locationMarker.setLngLat([lon,lat]);
+  }
   async setBase(base) {
     const request=++this.sequence;
     const response=await fetch(base.style,{signal:AbortSignal.timeout(20000)});

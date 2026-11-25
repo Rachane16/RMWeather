@@ -2,7 +2,8 @@
 
 RMWeather now starts with One Data Positron, RainViewer radar and GFS wind.
 The v3 basemap preference starts everyone on Positron once, then remembers their
-subsequent basemap selection. The left layer catalogue still opens on arrival.
+subsequent basemap selection. The left catalogue opens on desktop arrival. The later compact-workspace update
+keeps all mobile control windows closed on arrival.
 
 RID, national water, 24-hour rain, dams, station weather and both camera networks
 have independent visibility and data sources. National requests have a separate

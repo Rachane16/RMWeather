@@ -28,8 +28,8 @@ The page requests browser geolocation once at startup, at normal accuracy,
 with a ten-second timeout. Granted coordinates update the native map, local
 forecast and Windy. They are held only in the page session, never written to
 the repository or public snapshots. Denial/unavailability retains Hat Yai and
-a usable location button. Windy starts at the native map's current center each
-time it is opened; the user can also resynchronize it with the center button.
+a usable location button. The subsequent compact-workspace update makes Windy prefer the current device
+fix, refresh its location when opened, and provide a back-to-main-map button.
 Its floating glass controls leave Windy's own logo and zoom controls visible.
 
 ## RODDSS radar

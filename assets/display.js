@@ -1,6 +1,7 @@
 'use strict';
 
 function rightPanel(name,open) {
+  if(window.workspaceUI){window.workspaceUI.setOpen(name,open);return;}
   const panel=$(`${name}-panel`),toggle=$(`${name}-toggle`);
   panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));
   if(open){
