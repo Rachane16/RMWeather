@@ -17,7 +17,14 @@ class WeatherMap {
     this.relief=false;
     this.ready=false;
     this.gl.on('style.load',()=>{this.ready=true;this.restore();});
+    // Cluster counts are drawn locally. A missing remote font used to hide the
+    // whole cluster symbol on Positron (Noto Sans Medium returned HTTP 404).
+    this.gl.on('styleimagemissing',event=>{
+      const match=/^rm-camera-cluster-(\d{1,4})$/.exec(event.id);
+      if(match&&!this.gl.hasImage(event.id))this.gl.addImage(event.id,makeMapIcon('cluster',false,Number(match[1])),{pixelRatio:2});
+    });
     this.gl.on('error',event=>{
+      if(event.error?.name==='AbortError'||/(?:AbortError|signal is aborted|operation was aborted)/i.test(event.error?.message||''))return;
       console.warn('Map renderer:',event.error?.message||'source error');
       const source=event.sourceId;
       if(source?.startsWith('rm-rain-'))document.getElementById('radar-status').textContent='ภาพเฟรมนี้ไม่พร้อม กรุณาเปลี่ยนเวลา';
@@ -93,7 +100,7 @@ class WeatherMap {
       this.gl.addSource(sourceId,{type:'geojson',data,cluster:['cameras','windycams'].includes(id),clusterRadius:38,clusterMaxZoom:15});
       // A nearly transparent hit area covers the full camera-cluster badge.
       this.gl.addLayer({id:`${sourceId}-cluster`,type:'circle',source:sourceId,filter:['has','point_count'],paint:{'circle-radius':25,'circle-color':'#354354','circle-opacity':.001}});
-      this.gl.addLayer({id:`${sourceId}-count`,type:'symbol',source:sourceId,filter:['has','point_count'],layout:{'icon-image':'rm-cluster-camera','icon-allow-overlap':true,'text-field':['get','point_count_abbreviated'],'text-offset':[.6,0],'text-font':['Noto Sans Medium'],'text-size':12,'text-allow-overlap':true},paint:{'text-color':'white'}});
+      this.gl.addLayer({id:`${sourceId}-count`,type:'symbol',source:sourceId,filter:['has','point_count'],layout:{'icon-image':['concat','rm-camera-cluster-',['to-string',['get','point_count']]],'icon-allow-overlap':true,'icon-ignore-placement':true}});
       if(['thaiwater','rain','dam'].includes(id)){
         const colors={thaiwater:'#247cce',rain:'#18a787',dam:'#8b62b0'};
         this.gl.addLayer({id:`${sourceId}-point`,type:'circle',source:sourceId,paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,id==='thaiwater'?4:2.5,12,id==='dam'?8:id==='thaiwater'?7:3.5],'circle-color':colors[id],'circle-opacity':['case',['get','old'],.45,.9],'circle-stroke-color':'#ffffff','circle-stroke-width':id==='dam'?2.5:1.2}});
@@ -124,24 +131,40 @@ class WeatherMap {
     ['point','cluster','count'].forEach(suffix=>this.gl.setLayoutProperty(`${sourceId}-${suffix}`,'visibility',group.on?'visible':'none'));
   }
   setRain(frame,kind='radar') {this.rains.set(kind,frame);this.syncRain(kind);}
+  isRainReady(kind){
+    if(!this.ready)return false;
+    const id=`rm-rain-${kind}`;
+    try{return !this.gl.getSource(id)||this.gl.isSourceLoaded(id);}catch{return true;}
+  }
   syncRain(kind) {
     if(!this.ready)return;
     const keys=kind?[kind]:[...this.rains.keys()];
     keys.forEach(key=>{
       const id=`rm-rain-${key}`;
+      const frame=this.rains.get(key),existing=this.gl.getSource(id);
+      this.rainSignatures??=new Map();
+      const signature=frame?JSON.stringify(makeRainSource(frame)):null;
+      if(existing&&signature&&this.rainSignatures.get(key)===signature)return;
+      if(frame&&existing){
+        const source=makeRainSource(frame);
+        if(source.type==='image'&&typeof existing.updateImage==='function'){existing.updateImage({url:source.url,coordinates:source.coordinates});this.rainSignatures.set(key,signature);return;}
+        if(source.type==='raster'&&typeof existing.setTiles==='function'){existing.setTiles(source.tiles);this.rainSignatures.set(key,signature);return;}
+      }
       if(this.gl.getLayer(id))this.gl.removeLayer(id);
       if(this.gl.getSource(id))this.gl.removeSource(id);
-      const frame=this.rains.get(key);if(!frame)return;
+      if(!frame)return;
       this.gl.addSource(id,makeRainSource(frame));
+      this.rainSignatures.set(key,signature);
       const before=this.gl.getStyle().layers.find(layer=>layer.type==='symbol'||layer.id.startsWith('rm-')&&!layer.id.startsWith('rm-base-')&&!layer.id.startsWith('rm-rain-'))?.id;
       this.gl.addLayer({id,source:id,type:'raster',paint:{'raster-opacity':key==='rainviewer'?.46:.6,'raster-fade-duration':200}},before);
     });
   }
   setWind(records) {
     this.wind?.destroy();this.wind=null;
-    if(records)this.wind=new WindParticles(this.gl,records,this.windContrast||2);
+    if(records)this.wind=new WindParticles(this.gl,records,this.windContrast||2,this.windMotion!==false);
   }
   setWindContrast(value){this.windContrast=value;if(this.wind){this.wind.contrast=value;this.wind.clear();}}
+  setWindMotion(on){this.windMotion=on;if(this.wind){this.wind.motion=on;this.wind.clear();}}
   ensureMapIcons() {
     ['cameras','water','weather','windycams'].forEach(type=>{
       [false,true].forEach(old=>{
@@ -155,12 +178,13 @@ class WeatherMap {
 
 // Original canvas artwork, inspired by the reference's pin / online-badge
 // hierarchy. Raster textures are redrawn per style and remain sharp on retina.
-function makeMapIcon(type,old) {
+function makeMapIcon(type,old,count) {
   const canvas=document.createElement('canvas');canvas.width=type==='cluster'?96:72;canvas.height=type==='cluster'?54:88;
   const c=canvas.getContext('2d');c.lineCap='round';c.lineJoin='round';
   if(type==='cluster'){
     c.fillStyle='#354354';c.strokeStyle='#fff';c.lineWidth=4;c.beginPath();c.roundRect(3,4,90,46,23);c.fill();c.stroke();
     drawCameraGlyph(c,16,16,25,'#fff');
+    if(count!=null){c.fillStyle='#fff';c.font=`600 ${count>99?21:25}px Sarabun, sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(String(count),66,28);}
   }else{
     const color=type==='water'?'#247cff':type==='weather'?'#3f91ed':type==='windycams'?'#985b8e':'#334155';
     c.shadowColor='#243b4d44';c.shadowBlur=5;c.shadowOffsetY=3;
@@ -200,7 +224,8 @@ function sampleWind(records,longitude,latitude) {
   const east=interpolate(u),north=interpolate(v);return east==null||north==null?null:[east,north];
 }
 class WindParticles {
-  constructor(map,records,contrast=2) {
+  constructor(map,records,contrast=2,motion=true) {
+    this.motion=motion;
     this.map=map;this.records=records;this.contrast=contrast;this.canvas=document.createElement('canvas');this.canvas.className='wind-canvas';
     this.canvas.setAttribute('aria-hidden','true');map.getCanvasContainer().appendChild(this.canvas);this.ctx=this.canvas.getContext('2d');this.particles=[];
     this.resize=()=>{
@@ -217,17 +242,17 @@ class WindParticles {
   animate(now) {
     this.raf=requestAnimationFrame(t=>this.animate(t));
     if(document.hidden||this.map.isMoving()||now-this.frame<40)return;
-    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced=!this.motion;
     this.canvas.dataset.motion=reduced?'static':'animated';
     if(reduced&&this.staticDrawn)return;
     const dt=Math.min((now-this.frame)/1000||.04,.08);this.frame=now;
     const c=this.ctx,w=this.width,h=this.height;
-    c.globalCompositeOperation='destination-in';c.fillStyle='rgba(0,0,0,.94)';c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';
-    const count=Math.min(innerWidth<700?700:2600,Math.floor(w*h/(reduced?650:520)));
+    c.globalCompositeOperation='destination-in';c.fillStyle='rgba(0,0,0,.90)';c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';
+    const count=Math.min(innerWidth<700?650:2200,Math.floor(w*h/650));
     while(this.particles.length<count)this.particles.push(this.seed());
     const paths=[new Path2D(),new Path2D(),new Path2D()];
     // Animation is accelerated for readability; the data card gives true m/s.
-    const acceleration=4000/Math.pow(2,Math.max(0,this.map.getZoom()-8));
+    const acceleration=1800/Math.pow(2,Math.max(0,this.map.getZoom()-8));
     this.particles.forEach((p,index)=>{
       const velocity=sampleWind(this.records,p.lon,p.lat);
       if(!velocity||p.age++>90){this.particles[index]=this.seed();return;}
@@ -239,8 +264,8 @@ class WindParticles {
       if(reduced){const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,length=Math.min(24,10+speed);path.lineTo(a.x+dx/n*length,a.y+dy/n*length);}else path.lineTo(b.x,b.y);
     });
     // Cool, fine streaks retain the actual GFS direction and speed pattern.
-    c.lineWidth=.5+this.contrast*.25;c.lineCap='round';
-    ['rgba(47,139,177,.8)','rgba(20,158,173,.88)','rgba(58,117,183,.92)'].forEach((color,i)=>{c.strokeStyle=color;c.stroke(paths[i]);});
+    c.lineWidth=.4+this.contrast*.2;c.lineCap='round';
+    ['rgba(47,139,177,.75)','rgba(20,158,173,.82)','rgba(58,117,183,.86)'].forEach((color,i)=>{c.strokeStyle=color;c.stroke(paths[i]);});
     this.staticDrawn=reduced;
 
   }

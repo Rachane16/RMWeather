@@ -36,7 +36,8 @@ the same switch. Mapterhorn attribution is displayed by the map renderer.
 
 Wind uses the existing bilinear GFS U/V field with fine blue/cyan streaks. The
 animation is accelerated for readability; the field's physical values remain
-unchanged. Reduced-motion and hidden-tab behavior are retained.
+unchanged. Hidden-tab behavior is retained. The subsequent camera/location update makes
+animation the default and provides an explicit pause switch.
 
 The user-provided transparent logo is bundled locally. The header clock uses
 Asia/Bangkok and Thai Buddhist calendar dates. Windy remains an independent,

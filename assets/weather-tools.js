@@ -11,7 +11,7 @@ function setWeatherTool(name,on) {
   $(`${name}-panel`).hidden=!on;
   document.querySelectorAll(`[data-tool="${name}"]`).forEach(button=>button.setAttribute('aria-pressed',String(on)));
   document.querySelectorAll(`[data-tool-toggle="${name}"]`).forEach(input=>input.checked=on);
-  if(on){closeLayerDrawer();$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
+  if(on){if(name==='weather-map'){const p=map.getCenter();windyLocation={lat:p.lat,lon:p.lng};windyZoom=Math.min(12,Math.round(map.gl.getZoom()));}closeLayerDrawer();$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
   else if(name==='weather-map')$('windy-frame').removeAttribute('src');
   else $('tmd-frame').removeAttribute('src');
 }
@@ -59,3 +59,5 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')Object.keys(
 $('reset-layers').addEventListener('click',()=>Object.keys(toolVisibility).forEach(name=>setWeatherTool(name,false)));
 
 $('tmd-frame').addEventListener('load',()=>{if(toolVisibility['seven-day'])$('seven-day-panel').scrollTop=0;});
+
+window.addEventListener('rm-current-location',event=>{windyLocation=event.detail;windyZoom=10;updateWeatherEmbeds();});

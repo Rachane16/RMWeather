@@ -3,6 +3,10 @@ import concurrent.futures
 import base64
 import datetime as dt
 import json
+import hashlib
+import math
+import re
+import ssl
 from pathlib import Path
 import urllib.request
 
@@ -17,6 +21,7 @@ SOURCES = {
     'wind': '/api/v1/data/wind',
     'radar': '/api/v1/data/tmd/weather-map?kind=observ&limit=100',
     'nowcast': '/api/v1/data/tmd/weather-map?kind=swirls&limit=100',
+    'rod': 'https://www.oas.psu.ac.th/rodplatform/RODDSS/radar_catalog_48h.php',
 }
 # Export only display fields; administrative flags and user identifiers stay upstream.
 FIELDS = {
@@ -26,7 +31,72 @@ FIELDS = {
     'weather': 'wmo th en province_name lat lon observed_at t rh p wd ws rain3 rain24 vis',
     'radar': 'objectid base_time frame_time image_url is_now bounds',
     'nowcast': 'objectid base_time frame_time image_url is_now bounds',
+    'rod': 'frame_time image_url bounds',
 }
+ROD_IMAGES = 'https://www.oas.psu.ac.th/rodplatform/live/tmd_radar/'
+
+
+def source_url(name):
+    path = SOURCES[name]
+    return path if path.startswith('https://') else BASE + path
+
+
+def open_url(request, timeout):
+    context = ssl.create_default_context()
+    # Some Windows installations lack the issuer used by the PSU server.
+    # Add the maintained CA bundle; certificate verification stays enabled.
+    try:
+        import certifi
+        context.load_verify_locations(cafile=certifi.where())
+    except ImportError:
+        pass
+    return urllib.request.urlopen(request, timeout=timeout, context=context)
+
+
+def rod_frames(payload):
+    if not isinstance(payload, dict):
+        raise ValueError('Invalid ROD catalog')
+    bounds = payload.get('bounds')
+    if not payload.get('overlay_ready') or not isinstance(bounds, list) or len(bounds) != 4:
+        raise ValueError('ROD radar has no georeference')
+    if not all(isinstance(x, (float, int)) and math.isfinite(x) for x in bounds):
+        raise ValueError('Invalid radar bounds')
+    west, south, east, north = bounds
+    if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
+        raise ValueError('Invalid radar bounds')
+    frames = {}
+    for frame in payload.get('frames', []):
+        path, digest = frame.get('local_rel', ''), frame.get('sha256', '')
+        if not re.fullmatch(r'frames/[A-Za-z0-9_-]+\.png', path) or not re.fullmatch(r'[a-f0-9]{64}', digest):
+            continue
+        try:
+            stamp = dt.datetime.fromisoformat(frame.get('time_utc', '').replace('Z', '+00:00'))
+            if stamp.tzinfo is None:
+                continue
+        except (TypeError, ValueError):
+            continue
+        frames[stamp] = {'frame_time': stamp.astimezone(dt.timezone.utc).isoformat(),
+                         'bounds': [[south, west], [north, east]], 'path': path, 'sha256': digest}
+    return [frames[key] for key in sorted(frames)][-13:]
+
+
+def download_rod(payload):
+    frames = rod_frames(payload)
+    if not frames:
+        raise ValueError('No usable ROD radar frames')
+    folder = OUT / 'radar'
+    folder.mkdir(exist_ok=True)
+    for frame in frames:
+        request = urllib.request.Request(ROD_IMAGES + frame.pop('path'), headers={'User-Agent': 'RMWeather public radar display'})
+        with open_url(request, timeout=25) as response:
+            binary = response.read(5000000)
+        digest = frame.pop('sha256')
+        if not binary.startswith(b'\x89PNG\r\n\x1a\n') or hashlib.sha256(binary).hexdigest() != digest:
+            raise ValueError('ROD radar image checksum mismatch')
+        filename = 'rod-' + digest[:16] + '.png'
+        (folder / filename).write_bytes(binary)
+        frame['image_url'] = 'data/live/radar/' + filename
+    return sanitize('rod', frames)
 
 
 def public_image_url(value):
@@ -50,9 +120,11 @@ def sanitize(name, payload):
 
 
 def download(name):
-    request = urllib.request.Request(BASE + SOURCES[name], headers={'User-Agent': 'RMWeather/2 public weather dashboard', 'Accept': 'application/json'})
-    with urllib.request.urlopen(request, timeout=35) as response:
+    request = urllib.request.Request(source_url(name), headers={'User-Agent': 'RMWeather/2 public weather dashboard', 'Accept': 'application/json'})
+    with open_url(request, timeout=35) as response:
         payload = json.load(response)
+    if name == 'rod':
+        return download_rod(payload)
     if name in ('radar', 'nowcast'):
         # URL mode currently returns broken 404 image routes. The same public API
         # returns PNG bytes when image=url is omitted; publish those with Pages.
@@ -87,7 +159,7 @@ def main():
             name = jobs[job]
             try:
                 data = job.result()
-                envelope = {'fetched_at': now, 'source': BASE + SOURCES[name], 'data': data}
+                envelope = {'fetched_at': now, 'source': source_url(name), 'data': data}
                 (OUT / f'{name}.json').write_text(json.dumps(envelope, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
                 manifest['datasets'][name] = {'ok': True, 'count': len(data) if isinstance(data, list) else None}
                 print(f'{name}: OK')

@@ -4,6 +4,29 @@ const {sampleWind,makeRainSource,WeatherMap}=require('../assets/map-engine.js');
 const header={nx:2,ny:2,lo1:100,la1:8,dx:1,dy:1};
 const records=[{header:{...header,parameterNumber:2},data:[0,2,2,4]},
   {header:{...header,parameterNumber:3},data:[-4,-2,-2,0]}];
+test('camera cluster symbols display their count without requesting remote font glyphs',()=>{
+  const layers=new Map(),sources=new Map();
+  const gl={getSource:id=>sources.get(id),addSource:(id,s)=>sources.set(id,s),addLayer:l=>layers.set(l.id,l),on(){},setLayoutProperty(){}};
+  const map=Object.assign(Object.create(WeatherMap.prototype),{gl,ready:true,groups:new Map([['cameras',{features:[],on:true,onClick(){}}]])});
+  map.syncPoints('cameras');
+  const layout=layers.get('rm-cameras-count').layout;
+  assert.equal(layout['text-font'],undefined);assert.equal(layout['text-field'],undefined);
+  assert.deepEqual(layout['icon-image'],['concat','rm-camera-cluster-',['to-string',['get','point_count']]]);
+});
+test('image playback reuses its source, retains the current texture and skips identical frames',()=>{
+  let updates=0,removed=0;const source={updateImage(){updates++;}};
+  const gl={getSource:()=>source,getLayer:()=>true,removeSource(){removed++;}};
+  const map=Object.assign(Object.create(WeatherMap.prototype),{gl,ready:true,rains:new Map()});
+  const frame={image_url:'one.png',bounds:[[5,96],[12,103]]};
+  map.setRain(frame,'rod');map.setRain({...frame},'rod');map.setRain({...frame,image_url:'two.png'},'rod');
+  assert.equal(updates,2);assert.equal(removed,0);
+});
+test('radar playback waits for an outstanding frame instead of repeatedly aborting its image load',()=>{
+  let loaded=false;
+  const map=Object.assign(Object.create(WeatherMap.prototype),{ready:true,gl:{getSource:()=>({}),isSourceLoaded:()=>loaded}});
+  assert.equal(map.isRainReady('rod'),false);loaded=true;assert.equal(map.isRainReady('rod'),true);
+  map.ready=false;assert.equal(map.isRainReady('rod'),false);
+});
 test('GFS interpolates east and north components with rows running north to south',()=>{
   assert.deepEqual(sampleWind(records,100.5,7.5),[2,-2]);
   assert.deepEqual(sampleWind([...records].reverse(),100,8),[0,-4]);
