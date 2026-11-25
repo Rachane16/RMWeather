@@ -14,7 +14,7 @@ const intros = {windycams:'กล้องในจังหวัดสงข�
 let view='overview', datasets={}, fetched={}, radarFrames=[], radarTimer=null, radarKind='rainviewer', weatherRequest=0, refreshing=false, waterKind='water';
 let favoriteSlugs; try { favoriteSlugs = new Set(JSON.parse(localStorage.getItem('rm-favorites')||'[]')); } catch { favoriteSlugs=new Set(); }
 const enabled = {windycams:false,cameras:false,water:false,thaiwater:false,rain:false,dam:false,weather:false,wind:true,radar:true};
-const rainVisibility={radar:false,nowcast:false,rainviewer:true};
+const rainVisibility={radar:false,nowcast:false,rod:false,rainviewer:true};
 const rainCollections={},rainRequests={};
 const map = new WeatherMap('map');
 const esri = name => `https://server.arcgisonline.com/ArcGIS/rest/services/${name}/MapServer/tile/{z}/{y}/{x}`;
@@ -43,7 +43,7 @@ setBase(storedBase||'onedata');
 document.querySelectorAll('[data-base]').forEach(b=>b.addEventListener('click',()=>setBase(b.dataset.base)));
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,5500);}
 function openPanel(){ $('sidebar').hidden=false;$('sidebar').classList.add('is-open');$('layers-toggle').setAttribute('aria-expanded','true');document.querySelector('.drawer-scroll').scrollTop=0; }
-function setEnabled(name,on){ enabled[name]=on;const checkbox=document.querySelector(`[data-layer="${name}"]`);if(checkbox)checkbox.checked=on;
+function setEnabled(name,on){ const wasOn=enabled[name];enabled[name]=on;if(on&&!wasOn&&['cameras','windycams'].includes(name)){const c=map.getCenter();if(c.lat<6.2||c.lat>8.2||c.lng<99.8||c.lng>101.3)map.flyTo([7.05,100.55],9);}const checkbox=document.querySelector(`[data-layer="${name}"]`);if(checkbox)checkbox.checked=on;
  if(['cameras','water','thaiwater','rain','dam','weather','windycams'].includes(name))map.enablePoints(name,on);
  window.syncLayerMenu?.();
  if(name==='wind')renderWind();if(name==='radar')setRainEnabled(radarKind,on);
@@ -56,7 +56,7 @@ function selectView(next){
  if(view==='cameras')$('category-tools').innerHTML='<div class="tool-row"><select id="camera-filter" class="control-select" aria-label="กรองกล้อง"><option value="all">กล้องทั้งหมด</option><option value="online">ออนไลน์และภาพไม่เก่า</option><option value="old">ข้อมูลเก่า / ขัดข้อง</option><option value="favorite">กล้องที่บันทึกไว้</option></select><button id="multiview" class="popup-button">ดูพร้อมกัน 4 กล้อง</button></div>';
  if(view==='cameras'||view==='windycams'){$('category-tools').insertAdjacentHTML('afterbegin',`<div class="camera-networks"><button data-camera-network="cameras" aria-pressed="${view==='cameras'}">ภาพสถานการณ์น้ำ</button><button data-camera-network="windycams" aria-pressed="${view==='windycams'}">Windy · สงขลา</button></div>`);document.querySelectorAll('[data-camera-network]').forEach(b=>b.addEventListener('click',()=>selectView(b.dataset.cameraNetwork)));}
  if(view==='water'){$('category-tools').innerHTML='<label class="control-label" for="water-source">ชุดข้อมูลน้ำ</label><select id="water-source" class="control-select"><option value="water">RID · สงขลาและใกล้เคียง</option><option value="thaiwater">ThaiWater · ระดับน้ำทั่วประเทศ</option><option value="rain">ThaiWater · ฝนสะสม 24 ชม.</option><option value="dam">ThaiWater · เขื่อนขนาดใหญ่</option></select>';$('water-source').value=waterKind;$('water-source').addEventListener('change',async e=>{waterKind=e.target.value;setEnabled(waterKind,true);window.syncLayerMenu?.();await loadNational(waterKind);renderMarkers();renderResults();});}
- if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;setRainEnabled(radarKind,true);window.syncLayerMenu?.();});}
+ if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option><option value="rod">RODDSS · TMD Composite</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;setRainEnabled(radarKind,true);window.syncLayerMenu?.();});}
  if($('camera-filter'))$('camera-filter').addEventListener('change',renderResults);
  if($('multiview'))$('multiview').addEventListener('click',showMultiview);
  renderResults();document.querySelector('.drawer-scroll').scrollTop=0;openPanel();window.syncLayerMenu?.();
@@ -69,7 +69,7 @@ function idOf(type,row){if(type==='windycams')return row.webcam_id;return type==
 function titleOf(type,row){if(type==='windycams')return row.name;return type==='cameras'?row.camera_name_th:type==='water'?row.station_name_th:row.th;}
 function observed(type,row){return type==='cameras'?row.last_captured_at:row.observed_at;}
 function waterStatus(row){if(stale(row.observed_at))return 'ข้อมูลเก่า / ไม่ทราบเวลา';if(row.level==null)return 'ไม่มีค่าระดับน้ำ';if(row.alert_red!=null&&row.level>=row.alert_red)return 'ถึงเกณฑ์แดงของสถานี';if(row.alert_yellow!=null&&row.level>=row.alert_yellow)return 'ถึงเกณฑ์เหลืองของสถานี';return row.alert_red==null&&row.alert_yellow==null?'ยังไม่ทราบเกณฑ์เตือน':'ต่ำกว่าเกณฑ์เตือนที่ระบุ';}
-function imageFor(row){return safeURL(row.source_img_url)||safeURL(row.image_url);}
+function imageFor(row){return safeURL(row.image_url)||safeURL(row.source_img_url);}
 function renderMarkers(){
  for(const source of ['cameras','water','thaiwater','rain','dam','weather','windycams']){
   const type=['thaiwater','rain','dam'].includes(source)?'water':source, rows=datasets[source]||[];
@@ -89,19 +89,23 @@ function renderResults(){
  $('result-count').textContent=`${rows.length.toLocaleString('th-TH')} รายการ${rows.length>150?' · แสดง 150 รายการแรก กรุณาค้นหาเพื่อเจาะจง':''}`;
  if(!rows.length){target.innerHTML=view==='windycams'?'<div class="empty-state">'+(window.windyWebcamStatus?.ok?'ยังไม่มีกล้องที่ตรงกับคำค้นหา':'รายการกล้อง Windy ยังโหลดไม่ได้ กรุณาลองโหลดข้อมูลใหม่')+'</div>':'<div class="empty-state">ไม่พบรายการที่ตรงกัน<br>ลองเปลี่ยนคำค้นหาหรือโหลดข้อมูลใหม่</div>';return;}
  rows.slice(0,150).forEach(row=>{const b=document.createElement('button');b.className='result-card';const image=view==='cameras'?imageFor(row):'';let value='';if(view==='water')value=`<span class="result-value">${number(row.level)}<small>${waterKind==='rain'?'มม.':waterKind==='dam'?'%':'ม.'}</small></span>`;if(view==='weather')value=`<span class="result-value">${number(row.t)}°</span>`;
- b.innerHTML=`${image?`<img loading="lazy" src="${esc(image)}" alt="ภาพ ${esc(titleOf(view,row))}">`:''}<span class="result-info"><strong>${esc(titleOf(view,row))}</strong><small>${view==='cameras'?(cameraOld(row)?'ภาพเก่า / ขัดข้อง':'ออนไลน์')+' · ':''}${esc(freshness(observed(view,row),view==='cameras'?1:view==='water'&&waterKind==='dam'?48:3))}</small></span>${value}`;
+ b.innerHTML=`${image?`<img loading="lazy" src="${esc(image)}" data-fallback="${esc(safeURL(row.source_img_url))}" alt="ภาพ ${esc(titleOf(view,row))}">`:''}<span class="result-info"><strong>${esc(titleOf(view,row))}</strong><small>${view==='cameras'?(cameraOld(row)?'ภาพเก่า / ขัดข้อง':'ออนไลน์')+' · ':''}${esc(freshness(observed(view,row),view==='cameras'?1:view==='water'&&waterKind==='dam'?48:3))}</small></span>${value}`;
  b.addEventListener('click',()=>{const p=point(view,row);if(p)map.flyTo(p,14,{duration:.6});showDetail(view,row);});target.appendChild(b);
  });
  bindImageErrors(target);
 }
-function bindImageErrors(parent){parent.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{img.removeAttribute('src');img.alt='ภาพยังไม่พร้อม';img.classList.add('image-unavailable');},{once:true}));}
+function bindImageErrors(parent){parent.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{
+ const fallback=safeURL(img.dataset.fallback);img.dataset.fallback='';
+ if(fallback&&fallback!==img.src){img.src=fallback;return;}
+ img.removeAttribute('src');img.alt='ภาพยังไม่พร้อม · ลองโหลดภาพล่าสุดหรือเปิดต้นทาง';img.classList.add('image-unavailable');
+}));}
 function showDetail(type,row,sourceKind=waterKind){
  const content=$('detail-content');const name=titleOf(type,row);let body='';
  if(type==='windycams'){
   const types=Object.keys(row.players||{});const kind=types.includes('live')?'live':types.includes('day')?'day':types[0];const label=k=>({live:'วิดีโอสด',day:'Timelapse · วันนี้',month:'Timelapse · เดือน',year:'Timelapse · ปี',lifetime:'Timelapse · ทั้งหมด'}[k]||k);
   body=`<p class="eyebrow">WINDY WEBCAMS / สงขลา</p><h2>${esc(name)}</h2><p>${esc(freshness(row.observed_at,1))} · ${esc(row.status)}</p><label class="windy-player-label">การเล่นภาพ <select id="windy-player-kind">${types.map(k=>`<option value="${esc(k)}" ${k===kind?'selected':''}>${label(k)}</option>`).join('')}</select></label><iframe id="windy-camera-player" class="windy-camera-player" title="${esc(name)} · Windy Timelapse" src="${esc(safeURL(row.players[kind]))}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><p class="muted">${kind==='live'?'ลิงก์ Live จาก Windy':'ภาพย้อนหลังแบบ Timelapse ไม่ใช่วิดีโอสดต่อเนื่อง'} · เวลาภาพล่าสุดตาม Windy</p><a href="${esc(safeURL(row.detail_url))}" target="_blank" rel="noopener">ดูเว็บแคมนี้บน Windy.com</a>`;
  }else if(type==='cameras'){
-  const url=imageFor(row);body=`<p class="eyebrow">CCTV / ภาพนิ่งอัปเดต</p><h2>${esc(name)}</h2>${url?`<img id="camera-detail-image" class="detail-image" src="${esc(url)}" alt="ภาพจาก ${esc(name)}">`:'<div class="empty-state">ไม่มี URL ภาพสำหรับกล้องนี้</div>'}<div class="detail-meta"><span id="camera-observed">${esc(freshness(row.last_captured_at,1))}</span><span>${esc(row.status||'ไม่ทราบสถานะ')}</span></div><div class="detail-actions"><button id="camera-refresh">โหลดภาพล่าสุด</button><button id="camera-favorite">${favoriteSlugs.has(row.camera_slug)?'นำออกจากรายการบันทึก':'บันทึกกล้องนี้'}</button>${safeURL(row.source_page_url)?`<a href="${esc(safeURL(row.source_page_url))}" target="_blank" rel="noopener">เปิดต้นทาง</a>`:''}</div><p class="muted">ภาพ: ${esc(row.sponsor_name||row.group_name||'HatyaiClimate')} · ข้อมูลรายการจาก One Data</p>`;
+  const url=imageFor(row);body=`<p class="eyebrow">CCTV / ภาพนิ่งอัปเดต</p><h2>${esc(name)}</h2>${url?`<img id="camera-detail-image" class="detail-image" src="${esc(url)}" data-fallback="${esc(safeURL(row.source_img_url))}" alt="ภาพจาก ${esc(name)}">`:'<div class="empty-state">ไม่มี URL ภาพสำหรับกล้องนี้</div>'}<div class="detail-meta"><span id="camera-observed">${esc(freshness(row.last_captured_at,1))}</span><span>${esc(row.status||'ไม่ทราบสถานะ')}</span></div><div class="detail-actions"><button id="camera-refresh">โหลดภาพล่าสุด</button><button id="camera-favorite">${favoriteSlugs.has(row.camera_slug)?'นำออกจากรายการบันทึก':'บันทึกกล้องนี้'}</button>${safeURL(row.source_page_url)?`<a href="${esc(safeURL(row.source_page_url))}" target="_blank" rel="noopener">เปิดต้นทาง</a>`:''}</div><p class="muted">ภาพ: ${esc(row.sponsor_name||row.group_name||'HatyaiClimate')} · ข้อมูลรายการจาก One Data</p>`;
  }else if(type==='water'){
   if(sourceKind==='rain'||sourceKind==='dam'){
    body=`<p class="eyebrow">THAIWATER / ${sourceKind==='dam'?'DAM STORAGE':'RAINFALL'}</p><h2>${esc(name)}</h2><p>${esc(row.province_name)} · ${esc(freshness(row.observed_at,sourceKind==='dam'?48:3))}</p><div class="detail-facts"><div>${sourceKind==='dam'?'น้ำกักเก็บเทียบความจุ':'ฝนสะสม 24 ชั่วโมง'}<strong>${number(row.level)} ${sourceKind==='dam'?'%':'มม.'}</strong></div>${sourceKind==='dam'?`<div>ปริมาตรน้ำกักเก็บ<strong>${number(row.storage)} ล้าน ม³</strong></div>`:''}</div><p class="muted">${sourceKind==='dam'?'ข้อมูลเขื่อนตามวันที่ต้นทาง':'เวลาสิ้นสุดช่วงสะสมตามแต่ละสถานี ไม่ใช่ฝนตั้งแต่เที่ยงคืนเสมอ'}</p><a href="https://www.thaiwater.net/" target="_blank" rel="noopener">ดูข้อมูลต้นทาง ThaiWater</a>`;
@@ -116,12 +120,12 @@ function showDetail(type,row,sourceKind=waterKind){
   $('camera-favorite').addEventListener('click',()=>{favoriteSlugs.has(row.camera_slug)?favoriteSlugs.delete(row.camera_slug):favoriteSlugs.add(row.camera_slug);try{localStorage.setItem('rm-favorites',JSON.stringify([...favoriteSlugs]));}catch{}showDetail(type,row);if(view==='cameras')renderResults();});
  }
 }
-function showMultiview(){const rows=filteredCameras().filter(c=>titleOf('cameras',c)?.includes($('search').value.trim())).slice(0,4);if(!rows.length){toast('ไม่มีกล้องที่ตรงกับตัวกรอง');return;}$('detail-content').innerHTML=`<p class="eyebrow">CCTV / MULTIVIEW</p><h2>ภาพสถานการณ์พร้อมกัน</h2><div class="multiview-grid">${rows.map(c=>`<figure><img class="detail-image" src="${esc(imageFor(c))}" alt="${esc(c.camera_name_th)}"><figcaption>${esc(c.camera_name_th)}<small>${esc(freshness(c.last_captured_at,1))}</small></figcaption></figure>`).join('')}</div><p class="muted">HatyaiClimate / หน่วยงานเจ้าของกล้อง · ภาพนิ่งตามเวลาที่กำกับ</p>`;bindImageErrors($('detail-content'));$('detail-dialog').showModal();}
+function showMultiview(){const rows=filteredCameras().filter(c=>titleOf('cameras',c)?.includes($('search').value.trim())).slice(0,4);if(!rows.length){toast('ไม่มีกล้องที่ตรงกับตัวกรอง');return;}$('detail-content').innerHTML=`<p class="eyebrow">CCTV / MULTIVIEW</p><h2>ภาพสถานการณ์พร้อมกัน</h2><div class="multiview-grid">${rows.map(c=>`<figure><img class="detail-image" src="${esc(imageFor(c))}" data-fallback="${esc(safeURL(c.source_img_url))}" alt="${esc(c.camera_name_th)}"><figcaption>${esc(c.camera_name_th)}<small>${esc(freshness(c.last_captured_at,1))}</small></figcaption></figure>`).join('')}</div><p class="muted">HatyaiClimate / หน่วยงานเจ้าของกล้อง · ภาพนิ่งตามเวลาที่กำกับ</p>`;bindImageErrors($('detail-content'));$('detail-dialog').showModal();}
 function renderWind(){map.setWind(enabled.wind?datasets.wind?.records:null);}
 async function getJSON(url){const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:'no-cache'});if(!r.ok)throw Error(`HTTP ${r.status}`);return r.json();}
 async function refreshData(){
  if(refreshing)return;refreshing=true;$('refresh').disabled=true;$('data-status').textContent='กำลังโหลดข้อมูล…';
- try{const manifest=await getJSON(`data/live/manifest.json?t=${Date.now()}`);const names=['cameras','water','trends','weather','wind','radar','nowcast','windycams'];const results=await Promise.allSettled(names.map(async name=>{const envelope=await getJSON(`data/live/${name}.json?t=${Date.now()}`);datasets[name]=envelope.data;fetched[name]=envelope.fetched_at;if(name==='windycams')window.windyWebcamStatus=envelope;}));
+ try{const manifest=await getJSON(`data/live/manifest.json?t=${Date.now()}`);const names=['cameras','water','trends','weather','wind','radar','nowcast','rod','windycams'];const results=await Promise.allSettled(names.map(async name=>{const envelope=await getJSON(`data/live/${name}.json?t=${Date.now()}`);datasets[name]=envelope.data;fetched[name]=envelope.fetched_at;if(name==='windycams')window.windyWebcamStatus=envelope;}));
   const ok=results.filter(r=>r.status==='fulfilled').length;$('camera-count').textContent=number(datasets.cameras?.length,0);$('water-count').textContent=number(datasets.water?.length,0);$('windy-count').textContent=number(datasets.windycams?.length,0);
   const sourceFailed=Object.values(manifest.datasets||{}).some(d=>!d.ok)||(window.windyWebcamStatus?.configured&&!window.windyWebcamStatus.ok);$('data-status').textContent=`${ok<names.length||sourceFailed?'โหลดได้บางชุด · ':''}${stale(manifest.generated_at,1)?'ไฟล์ข้อมูลเก่า · ':''}อัปเดต ${time(manifest.generated_at)}`;
   renderMarkers();renderResults();if(enabled.wind)renderWind();await Promise.all(Object.keys(rainVisibility).filter(k=>rainVisibility[k]).map(k=>loadRadar(k)));await Promise.all(['thaiwater','rain','dam'].filter(k=>enabled[k]).map(k=>loadNational(k)));
@@ -157,20 +161,20 @@ async function loadRadar(kind=radarKind){
   if(request!==rainRequests[kind]||!rainVisibility[kind])return;
   rainCollections[kind]=frames;map.setRain(frames.at(-1)||null,kind);
   if(kind!==radarKind)return;
-  radarFrames=frames;$('radar-label').textContent=kind==='radar'?'TMD · ตรวจวัดภาคใต้':kind==='nowcast'?'SWIRLS · พยากรณ์ภาคใต้':'RainViewer · เรดาร์';
+  radarFrames=frames;$('radar-label').textContent=kind==='radar'?'TMD · ตรวจวัดภาคใต้':kind==='nowcast'?'SWIRLS · พยากรณ์ภาคใต้':kind==='rod'?'RODDSS · TMD Composite':'RainViewer · เรดาร์';
   $('radar-timeline-source').value=kind;$('radar-slider').max=Math.max(0,frames.length-1);$('radar-play').disabled=!frames.length;
   if(!frames.length){$('radar-status').textContent='ยังไม่มีเฟรมภาพจากแหล่งนี้';$('radar-time').textContent='—';$('radar-date').textContent='—';return;}showRadarFrame(frames.length-1);
  }catch{if(kind===radarKind&&request===rainRequests[kind])$('radar-status').textContent='โหลดภาพเรดาร์ไม่สำเร็จ กรุณาลองใหม่หรือเปลี่ยนแหล่งภาพ';}
 }
 function showRadarFrame(index){
- const f=radarFrames[index];if(!f)return;map.setRain(rainVisibility[radarKind]?f:null,radarKind);
- $('radar-slider').value=index;const d=new Date(f.frame_time);$('radar-time').textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});$('radar-date').textContent=time(f.frame_time);$('radar-status').textContent=`${stale(f.frame_time,2)?'ข้อมูลต้นทางยังเป็นเฟรมเก่า · ':''}${radarKind==='nowcast'?'เวลาที่พยากรณ์':'เวลาของภาพ'} · เฟรม ${index+1}/${radarFrames.length}${radarKind!=='rainviewer'?' · ครอบคลุมภาคใต้':''}`;
+ const f=radarFrames[index];if(!f)return;const sourceTime=radarKind==='nowcast'?(f.base_time||radarFrames.at(-1)?.frame_time):radarFrames.at(-1)?.frame_time;map.setRain(rainVisibility[radarKind]?f:null,radarKind);
+ $('radar-slider').value=index;const d=new Date(f.frame_time);$('radar-time').textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});$('radar-date').textContent=time(f.frame_time);$('radar-status').textContent=`${stale(sourceTime,2)?'ข้อมูลต้นทางยังเป็นเฟรมเก่า · ':''}${radarKind==='nowcast'?'เวลาที่พยากรณ์':'เวลาของภาพ'} · เฟรม ${index+1}/${radarFrames.length}${radarKind==='rod'?' · TMD Composite / PSU':radarKind!=='rainviewer'?' · ครอบคลุมภาคใต้':''}`;
  $('radar-slider').style.setProperty('--progress',`${radarFrames.length>1?index/(radarFrames.length-1)*100:0}%`);
  document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';
 }
 $('radar-timeline-source').addEventListener('change',event=>{radarKind=event.target.value;setRainEnabled(radarKind,true);});
 $('radar-slider').addEventListener('input',e=>{stopRadar();showRadarFrame(Number(e.target.value));});
-$('radar-play').addEventListener('click',()=>{if(radarTimer){stopRadar();return;}if(!radarFrames.length)return;$('radar-play').textContent='Ⅱ';$('radar-play').setAttribute('aria-label','หยุดภาพเรดาร์');radarTimer=setInterval(()=>showRadarFrame((Number($('radar-slider').value)+1)%radarFrames.length),850);});
+$('radar-play').addEventListener('click',()=>{if(radarTimer){stopRadar();return;}if(!radarFrames.length)return;$('radar-play').textContent='Ⅱ';$('radar-play').setAttribute('aria-label','หยุดภาพเรดาร์');radarTimer=setInterval(()=>{if(map.isRainReady(radarKind))showRadarFrame((Number($('radar-slider').value)+1)%radarFrames.length);},850);});
 const nationalRequests={},nationalLoading={};
 async function loadNational(kind=waterKind){
  if(kind==='water')return;
@@ -188,7 +192,21 @@ document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',
 map.onMapClick=p=>{window.closeLayerDrawer?.();loadForecast(p.lat,p.lng,`พิกัด ${p.lat.toFixed(2)}, ${p.lng.toFixed(2)}`);};
 $('refresh').addEventListener('click',()=>{refreshData();const c=map.getCenter();loadForecast(c.lat,c.lng,$('place-name').textContent);});
 $('fit').addEventListener('click',()=>{map.flyTo([7.0084,100.4767],11);});
-$('locate').addEventListener('click',()=>{if(!navigator.geolocation){toast('เบราว์เซอร์นี้ไม่รองรับตำแหน่ง');return;}navigator.geolocation.getCurrentPosition(p=>{map.flyTo([p.coords.latitude,p.coords.longitude],12);loadForecast(p.coords.latitude,p.coords.longitude,'ตำแหน่งของคุณ');},()=>toast('เข้าถึงตำแหน่งไม่ได้ คุณยังเลือกเมืองหรือคลิกแผนที่ได้'),{timeout:10000});});
+let locationRequest=0;
+async function requestCurrentLocation(){
+ const request=++locationRequest;
+ $('location-status').textContent='กำลังระบุตำแหน่งปัจจุบัน…';
+ if(!navigator.geolocation){$('location-status').textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่ง · ใช้หาดใหญ่เป็นจุดเริ่มต้น';return;}
+ navigator.geolocation.getCurrentPosition(position=>{
+  if(request!==locationRequest)return;
+  const {latitude:lat,longitude:lon}=position.coords;
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
+  window.currentLocation={lat,lon};map.flyTo([lat,lon],10);
+  $('location-status').textContent='ใช้ตำแหน่งปัจจุบันแล้ว';loadForecast(lat,lon,'ตำแหน่งของคุณ');
+  window.dispatchEvent(new CustomEvent('rm-current-location',{detail:{lat,lon}}));
+ },()=>{if(request===locationRequest)$('location-status').textContent='เข้าถึงตำแหน่งไม่ได้ · ใช้หาดใหญ่หรือเลือกตำแหน่งบนแผนที่';},{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+}
+$('locate').addEventListener('click',requestCurrentLocation);
 $('theme').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('rm-theme',theme);}catch{}});
 $('mobile-panel').addEventListener('click',openPanel);$('sidebar-close').addEventListener('click',()=>window.closeLayerDrawer?.());
 function basePanel(open){$('basemap-panel').hidden=!open;$('basemap-toggle').setAttribute('aria-expanded',String(open));}
@@ -200,4 +218,4 @@ function tick(){const now=new Date();$('clock').innerHTML=`<time datetime="${now
 
 tick();setInterval(tick,30000);setInterval(()=>{if(document.hidden)return;refreshData();const img=$('camera-detail-image');if(img&&$('detail-dialog').open){const url=new URL(img.src);url.searchParams.set('t',Date.now());img.src=url.href;}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopRadar();});
-$('radar-player').hidden=false;loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();
+$('radar-player').hidden=false;loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();requestCurrentLocation();

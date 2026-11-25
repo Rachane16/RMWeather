@@ -26,3 +26,11 @@ setInterval(()=>{if(!document.hidden&&window.weatherLocation){const p=window.wea
 
 $('relief-toggle').addEventListener('change',event=>map.setRelief(event.target.checked));
 $('basemap-toggle').addEventListener('click',()=>{['display','maptools'].forEach(name=>rightPanel(name,false));});
+
+$('quick-layer-list').innerHTML=[...document.querySelectorAll('.layer-group')].map(group=>`<h4 class="quick-group-title">${group.querySelector('h2').textContent}</h4>`+[...group.querySelectorAll('[data-toggle-layer]')].map(button=>{const key=button.dataset.toggleLayer;return `<label class="forecast-option"><span>${layerLabels[key]}</span><input type="checkbox" data-quick-layer="${key}" aria-label="แสดง ${layerLabels[key]}"></label>`;}).join('')).join('');
+document.querySelectorAll('[data-quick-layer]').forEach(input=>input.addEventListener('change',()=>{
+ const key=input.dataset.quickLayer;
+ if(input.checked)activateSource(key);else if(rainSources.includes(key))setRainEnabled(key,false);else setEnabled(key,false);
+}));
+$('wind-motion').addEventListener('change',event=>map.setWindMotion(event.target.checked));
+syncLayerMenu();

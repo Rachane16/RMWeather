@@ -3,6 +3,23 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const app=fs.readFileSync(require.resolve('../assets/app.js'),'utf8');
+test('historical radar frames do not mislabel an up-to-date provider as stale',()=>{
+  const old='2020-01-01T00:00:00Z',fresh='2026-11-25T09:00:00Z',nodes={};
+  const context={radarKind:'rod',radarFrames:[{frame_time:old},{frame_time:fresh}],rainVisibility:{rod:true,nowcast:true},map:{setRain(){}},time:value=>value,stale:value=>value===old,$:id=>nodes[id]??=( {style:{setProperty(){}}} ),document:{querySelector:()=>({})}};
+  const start=app.indexOf('function showRadarFrame('),end=app.indexOf("$('radar-timeline-source').addEventListener",start);
+  vm.createContext(context);vm.runInContext(app.slice(start,end),context);
+  context.showRadarFrame(0);assert.doesNotMatch(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);
+  context.radarFrames[1].frame_time=old;context.showRadarFrame(0);assert.match(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);
+  context.radarKind='nowcast';context.radarFrames[1].frame_time=fresh;context.radarFrames[0].base_time=old;context.showRadarFrame(0);assert.match(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);
+});
+test('CCTV image failure tries the source once, then exposes an unavailable-image message',()=>{
+  let onError,unavailable=false;
+  const img={src:'https://onedata.example/capture.jpg',dataset:{fallback:'https://camera.example/latest.jpg'},addEventListener:(name,callback)=>onError=callback,removeAttribute(){this.src='';},classList:{add:()=>unavailable=true}};
+  const context={safeURL:value=>value?.startsWith('https://')?value:''};vm.createContext(context);
+  vm.runInContext(app.slice(app.indexOf('function bindImageErrors('),app.indexOf('function showDetail(')),context);
+  context.bindImageErrors({querySelectorAll:()=>[img]});onError();assert.equal(img.src,'https://camera.example/latest.jpg');
+  onError();assert.equal(img.src,'');assert.ok(unavailable);assert.match(img.alt,/ภาพยังไม่พร้อม/);
+});
 function nationalHarness(){
   const pending=[];
   const context={module:{exports:{}},datasets:{},waterKind:'thaiwater',renderResults(){},renderMarkers(){},toast(){},normalizeNationalData:(j,kind)=>j.map(row=>({...row,kind})),getJSON:url=>new Promise((resolve,reject)=>pending.push({url,resolve,reject}))};

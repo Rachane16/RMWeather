@@ -1,9 +1,9 @@
 'use strict';
 
 // The gallery controls the existing map layers and source selectors.
-const rainSources = ['radar', 'nowcast', 'rainviewer'];
+const rainSources = ['radar', 'nowcast', 'rainviewer', 'rod'];
 const waterSources = ['water', 'thaiwater', 'rain', 'dam'];
-const layerLabels = {windycams:'กล้อง Windy สงขลา',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'RainViewer · เรดาร์',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
+const layerLabels = {rod:'เรดาร์ RODDSS',windycams:'กล้อง Windy สงขลา',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'RainViewer · เรดาร์',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
 
 function layerIsActive(key) {
   if (rainSources.includes(key)) return rainVisibility[key];
@@ -20,6 +20,7 @@ function syncLayerMenu() {
     button.closest('.layer-card').classList.toggle('is-active', on);
     if (on) active.push(layerLabels[key]);
   });
+  document.querySelectorAll('[data-quick-layer]').forEach(input=>input.checked=layerIsActive(input.dataset.quickLayer));
   $('layers-count').textContent = active.length;
   $('active-layer-names').textContent = active.length ? active.join(' · ') : 'ยังไม่ได้เปิดชั้นข้อมูล';
   const points=['cameras','water','thaiwater','rain','dam','weather','windycams'];

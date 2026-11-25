@@ -4,6 +4,8 @@
 
 หน้าเริ่มต้นใช้ **One Data Positron** พร้อม **RainViewer · เรดาร์** ลม และแถบสภาพอากาศ โดยเปิด **MAP LAYERS** ทางซ้ายไว้และปิดได้ แต่ละชุดข้อมูลเปิดซ้อนกันได้ รวมถึงระดับน้ำทั่วประเทศ สถานีฝน เขื่อน และแหล่งภาพฝน แถบเวลาใช้ควบคุมแหล่งฝนที่เลือก แผงแผนที่ฐานแยกอยู่บนแถบเครื่องมือขวา พร้อมสวิตช์ภูมิประเทศและเงาเนินเขา ข้อมูลเดิมทั้งหมดรวมถึง ThaiWater ยังอยู่ อ่านรายละเอียดที่ [docs/independent-layers.md](docs/independent-layers.md)
 
+ลมเคลื่อนไหวเป็นค่าเริ่มต้น มีสวิตช์หยุดได้เอง ระบบขอตำแหน่งปัจจุบันเมื่อเปิดเว็บ เมนูชั้นข้อมูลทางซ้ายเป็น 3 คอลัมน์ และมีรายการเปิด–ปิดแบบย่อทางขวา เพิ่มเรดาร์ TMD Composite ผ่าน RODDSS ย้อนหลังประมาณ 3 ชั่วโมง ดู [การแก้กล้อง ลม และตำแหน่ง](docs/cameras-location-rod.md)
+
 เว็บไซต์: https://rachane16.github.io/RMWeather/
 
 ## เปิดในเครื่อง
@@ -11,6 +13,7 @@
 ใช้ Python 3.12 ขึ้นไป และ Node สำหรับตรวจ syntax โดยไม่ต้องติดตั้ง npm packages
 
 ```sh
+python -m pip install certifi
 python scripts/sync_data.py
 python -m http.server 8766 --bind 127.0.0.1
 ```
@@ -32,7 +35,7 @@ python -m unittest discover -s tests
 
 GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต้องตั้ง Settings → Pages → Source เป็น GitHub Actions
 
-เมื่อ push main หรือถึงรอบรอบประมาณทุก 5 นาที (นาที 2, 7, 12 … 57) workflow จะทดสอบ ดึงข้อมูลจาก public API ของ One Data แล้วสร้าง Pages artifact ใหม่ เวลารัน schedule อาจช้าตามคิว GitHub ไม่มี API key และไม่มี credentials ใน frontend
+เมื่อ push main หรือถึงรอบรอบประมาณทุก 5 นาที (นาที 2, 7, 12 … 57) workflow จะทดสอบ ดึงข้อมูลจาก public API ของ One Data และ RODDSS แล้วสร้าง Pages artifact ใหม่ เวลารัน schedule อาจช้าตามคิว GitHub ไม่มี API key และไม่มี credentials ใน frontend
 
 - `index.html`, `assets/style.css`, `assets/app.js`: UI และข้อมูลหลัก
 - `assets/map-engine.js`, `assets/terrain.css`, `assets/styles/natural.json`: แผนที่หลัก MapLibre GL JS, PMTiles, หมุด GeoJSON, ภาพฝน, สนามลม และมุมมอง 2D/3D
@@ -50,7 +53,7 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 
 กล้อง Windy ใช้ API v3 กรองจังหวัดสงขลารหัส TH.68 และประเทศ TH โดยเฉพาะ เก็บ key ใน GitHub Actions secret `WINDY_WEBCAMS_API_KEY` แล้วรัน `scripts/sync_windy.py` หลังอัปเดตข้อมูลหลัก ส่งออกเฉพาะข้อมูลแสดงผลและลิงก์ player ที่ปลอดภัย ไม่ส่งออก key หรือ URL ภาพชั่วคราว การทดสอบวันที่ 25 พ.ย. 2569 พบ 23 กล้องแบบ Timelapse ไม่มีลิงก์ Live ในชุดนี้
 
-เครดิตข้อมูล: One Data / PSU, RID, TMD, HatyaiClimate และหน่วยงานเจ้าของกล้อง, NOAA GFS, Open-Meteo, RainViewer ให้ตรวจเงื่อนไขของแต่ละผู้ให้บริการก่อนนำไปใช้เชิงพาณิชย์
+เครดิตข้อมูล: One Data / PSU, RODDSS / PSU, RID, TMD, HatyaiClimate และหน่วยงานเจ้าของกล้อง, NOAA GFS, Open-Meteo, RainViewer ให้ตรวจเงื่อนไขของแต่ละผู้ให้บริการก่อนนำไปใช้เชิงพาณิชย์
 
 ผลสำรวจต้นทางรอบแรก: [docs/data-source-audit.md](docs/data-source-audit.md)
 
