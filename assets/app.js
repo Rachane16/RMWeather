@@ -175,6 +175,6 @@ $('sources-open').addEventListener('click',()=>$('sources-dialog').showModal());
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){basePanel(false);$('sidebar').classList.remove('is-open');}});
 function tick(){ $('clock').textContent=new Date().toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}); }
-tick();setInterval(tick,30000);setInterval(()=>{if(!document.hidden)refreshData();},300000);
+tick();setInterval(tick,30000);setInterval(()=>{if(document.hidden)return;refreshData();const img=$('camera-detail-image');if(img&&$('detail-dialog').open){const url=new URL(img.src);url.searchParams.set('t',Date.now());img.src=url.href;}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopRadar();});
 loadForecast(7.0084,100.4767,'หาดใหญ่');refreshData();
