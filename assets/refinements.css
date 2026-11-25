@@ -38,3 +38,6 @@
 .legend-marker.camera-color{background:#334155}.legend-marker.water-color{background:#247cff}.legend-marker.weather-color{background:#3f91ed}.map-pin-tooltip{font-family:Sarabun,sans-serif;font-size:13px}.map-pin-tooltip .maplibregl-popup-content{padding:8px 12px;border-radius:9px;color:#263e45;box-shadow:0 4px 18px #19332c33}
 
 #seven-day-panel{overflow:hidden;left:50%;right:auto;transform:translateX(-50%);width:calc(100vw - 40px);max-width:1260px}#seven-day-tmd{display:flex;flex-direction:column;flex:1;min-height:0;gap:10px}#seven-day-tmd .tmd-frame-scroll{min-height:0;flex:1;overflow:auto;margin-top:0}#seven-day-tmd .tool-caption{margin-top:0}#seven-day-panel>header{position:static;flex-shrink:0}#seven-day-tmd>.tmd-province-label,#seven-day-tmd>.tool-caption,#seven-day-tmd>a{flex-shrink:0}@media(max-width:700px){#seven-day-panel{left:12px;right:12px;transform:none;width:auto}#seven-day-tmd{gap:8px}}
+
+/* Keep the close action visible when an embedded player focuses its content. */
+#detail-close{position:sticky;top:-12px;float:right;margin:-12px -12px 0 0;z-index:5;background:var(--surface)}
