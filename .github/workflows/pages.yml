@@ -24,6 +24,8 @@ jobs:
       - run: python -m unittest discover -s tests
       - run: node --check assets/app.js
       - run: node --check assets/layers.js
+      - run: node --check assets/hydro.js
+      - run: node --test tests/hydro.test.js
   deploy:
     if: github.event_name != 'pull_request'
     needs: check

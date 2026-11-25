@@ -27,6 +27,7 @@ function syncLayerMenu() {
   ['cameras', 'water', 'weather'].forEach((key, i) => { legendItems[i].hidden = !enabled[key]; });
   legendItems[1].lastChild.textContent = layerLabels[waterKind] || 'ระดับน้ำ';
   legendItems[3].hidden = $('map-legend').hidden;
+  if(view==='water'){ $('view-title').textContent=layerLabels[waterKind];$('category-intro').textContent=waterKind==='dam'?'ข้อมูลน้ำกักเก็บเขื่อนขนาดใหญ่จาก ThaiWater พร้อมวันที่ข้อมูล':waterKind==='rain'?'ฝนสะสม 24 ชั่วโมงจากสถานีทั่วประเทศ ตรวจสอบเวลาสิ้นสุดช่วงสะสมรายสถานี':intros.water; }
 }
 
 function closeLayerDrawer(restoreFocus = false) {
