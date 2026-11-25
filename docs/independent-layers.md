@@ -23,7 +23,9 @@ frame warnings remain visible; no missing coverage is synthesized.
 RainViewer's current public documentation lists Universal Blue, color ID 2:
 https://www.rainviewer.com/api/color-schemes.html
 The map uses this palette at 46% opacity, preserving intensity colors rather than
-inventing a TMD conversion. The simplified legend indicates relative intensity.
+inventing a TMD conversion. The legend follows the official Universal Blue CSV at 15–55 dBZ, with the same
+46% opacity. It indicates reflectivity rather than an invented rainfall-rate conversion.
+https://www.rainviewer.com/files/rainviewer_api_colors_table.csv
 https://www.rainviewer.com/api/weather-maps-api.html
 
 A separate basemap panel includes a hillshade switch using the existing
