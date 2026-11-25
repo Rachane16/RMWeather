@@ -23,3 +23,6 @@ document.querySelectorAll('[data-tool],[data-tool-toggle]').forEach(control=>con
 }));
 // Current weather updates while the site is left open, alongside station refreshes.
 setInterval(()=>{if(!document.hidden&&window.weatherLocation){const p=window.weatherLocation;loadForecast(p.lat,p.lon,p.name);}},600000);
+
+$('relief-toggle').addEventListener('change',event=>map.setRelief(event.target.checked));
+$('basemap-toggle').addEventListener('click',()=>{['display','maptools'].forEach(name=>rightPanel(name,false));});

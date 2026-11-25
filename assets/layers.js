@@ -3,11 +3,11 @@
 // The gallery controls the existing map layers and source selectors.
 const rainSources = ['radar', 'nowcast', 'rainviewer'];
 const waterSources = ['water', 'thaiwater', 'rain', 'dam'];
-const layerLabels = {windycams:'กล้อง Windy สงขลา',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'เรดาร์ภาพรวม',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
+const layerLabels = {windycams:'กล้อง Windy สงขลา',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'RainViewer · เรดาร์',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
 
 function layerIsActive(key) {
-  if (rainSources.includes(key)) return enabled.radar && radarKind === key;
-  if (waterSources.includes(key)) return enabled.water && waterKind === key;
+  if (rainSources.includes(key)) return rainVisibility[key];
+  if (waterSources.includes(key)) return enabled[key];
   return Boolean(enabled[key]);
 }
 
@@ -22,11 +22,10 @@ function syncLayerMenu() {
   });
   $('layers-count').textContent = active.length;
   $('active-layer-names').textContent = active.length ? active.join(' · ') : 'ยังไม่ได้เปิดชั้นข้อมูล';
-  $('map-legend').hidden = !['cameras', 'water', 'weather', 'windycams'].some(key => enabled[key]);
-  const legendItems = $('map-legend').querySelectorAll('span');
-  ['cameras', 'water', 'weather', 'windycams'].forEach((key, i) => { legendItems[i].hidden = !enabled[key]; });
-  legendItems[1].lastChild.textContent = layerLabels[waterKind] || 'ระดับน้ำ';
-  legendItems[4].hidden = $('map-legend').hidden;
+  const points=['cameras','water','thaiwater','rain','dam','weather','windycams'];
+  $('map-legend').hidden=!points.some(key=>enabled[key]);
+  $('map-legend').innerHTML=points.filter(key=>enabled[key]).map(key=>`<span><i class="legend-marker ${key}-color"></i>${layerLabels[key]}</span>`).join('')+'<span class="muted">คลิกจุดเพื่อดูรายละเอียด</span>';
+  document.querySelectorAll('#radar-timeline-source option').forEach(option=>option.disabled=!rainVisibility[option.value]);
   if(view==='water'){ $('view-title').textContent=layerLabels[waterKind];$('category-intro').textContent=waterKind==='dam'?'ข้อมูลน้ำกักเก็บเขื่อนขนาดใหญ่จาก ThaiWater พร้อมวันที่ข้อมูล':waterKind==='rain'?'ฝนสะสม 24 ชั่วโมงจากสถานีทั่วประเทศ ตรวจสอบเวลาสิ้นสุดช่วงสะสมรายสถานี':intros.water; }
 }
 
@@ -46,19 +45,14 @@ function showLayerCatalog() {
 
 async function activateSource(key, showDetails = false) {
   if (rainSources.includes(key)) {
-    radarKind = key;
-    setEnabled('radar', true);
+    setRainEnabled(key,true);
     if (showDetails) selectView('radar');
   } else if (waterSources.includes(key)) {
     waterKind = key;
-    setEnabled('water', true);
-    // Clear markers from the previously selected source immediately.
-    nationalRows = [];
-    renderMarkers();
+    setEnabled(key,true);
     if (showDetails) selectView('water');
-    await loadNational();
-    renderMarkers();
-    renderResults();
+    await loadNational(key);
+    renderMarkers();renderResults();
   } else {
     setEnabled(key, true);
     if (showDetails) selectView(key);
@@ -70,7 +64,7 @@ document.querySelectorAll('[data-toggle-layer]').forEach(button => {
   button.addEventListener('click', () => {
     const key = button.dataset.toggleLayer;
     if (layerIsActive(key)) {
-      setEnabled(rainSources.includes(key) ? 'radar' : waterSources.includes(key) ? 'water' : key, false);
+      if(rainSources.includes(key))setRainEnabled(key,false);else setEnabled(key,false);
     } else {
       activateSource(key);
     }
@@ -116,9 +110,9 @@ $('weather-collapse').addEventListener('click', () => {
 });
 
 $('reset-layers').addEventListener('click', () => {
-  ['cameras','water','weather','windycams'].forEach(key => setEnabled(key, false));
-  radarKind = 'nowcast';
-  setEnabled('radar', true);
+  ['cameras','water','thaiwater','rain','dam','weather','windycams'].forEach(key => setEnabled(key, false));
+  rainSources.forEach(key=>setRainEnabled(key,false));
+  setRainEnabled('rainviewer',true);
   setEnabled('wind', true);
   $('forecast-visible').checked = true;
   $('overview-panel').hidden = false;
@@ -131,7 +125,7 @@ $('reset-layers').addEventListener('click', () => {
   $('layer-search').dispatchEvent(new Event('input'));
   document.querySelector('.drawer-scroll').scrollTop = 0;
   syncLayerMenu();
-  toast('กลับสู่พยากรณ์ฝน ลม และแถบสภาพอากาศแล้ว');
+  toast('กลับสู่เรดาร์ RainViewer ลม และแถบสภาพอากาศแล้ว');
 });
 
 document.addEventListener('keydown', event => {
