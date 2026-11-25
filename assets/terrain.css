@@ -33,3 +33,11 @@
  .basemap-toggle{bottom:270px}
  .basemap-panel{bottom:321px;max-height:calc(100% - 340px)}
 }
+@media(max-width:360px){
+ .terrain-controls{gap:3px}
+ .terrain-controls button{padding:5px 6px}
+ .terrain-controls label{font-size:0;gap:3px}
+ .terrain-controls input{width:42px}
+ .terrain-controls output{font-size:12px}
+ #bearing-value{display:none}
+}
