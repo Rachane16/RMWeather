@@ -2,7 +2,7 @@
 
 แผนที่ติดตามฝน น้ำ CCTV และลมในประเทศไทย
 
-หน้าเริ่มต้นใช้ **ELEMNT Natural Terrain** และแสดงพยากรณ์ฝน **SWIRLS** ลม และแถบสภาพอากาศ โดยเปิด **MAP LAYERS** ทางซ้ายไว้ สามารถปิดและเปิดใหม่ได้ การ์ดขนาดกระชับรองรับค้นหา เปิด/ปิด และดูรายละเอียดกล้อง/สถานี เมนูหมวดด้านบนรวมแผนที่อากาศ Windy และพยากรณ์ 7 วันจาก Open-Meteo/TMD ที่เลือกเปิด–ปิดได้ ข้อมูลเดิมทั้งหมดรวมถึง ThaiWater ยังอยู่ ภาพฝนและข้อมูลน้ำเลือกแหล่งแสดงได้ครั้งละหนึ่งชุดต่อหมวด
+หน้าเริ่มต้นใช้ **ELEMNT Natural Terrain** และแสดงพยากรณ์ฝน **SWIRLS** ลม และแถบสภาพอากาศ โดยเปิด **MAP LAYERS** ทางซ้ายไว้ สามารถปิดและเปิดใหม่ได้ การ์ดขนาดกระชับรองรับค้นหา เปิด/ปิด และดูรายละเอียดกล้อง/สถานี เมนูหมวดด้านบนอยู่กึ่งกลาง แผง **การแสดงผล** ฝั่งขวาใช้เปิด–ปิดแถบอากาศ แผนที่อากาศ Windy และพยากรณ์ 7 วัน TMD ส่วน **เครื่องมือแผนที่** ที่มุมขวาซ่อนไว้ก่อนและเปิดได้เมื่อใช้งาน ข้อมูลเดิมทั้งหมดรวมถึง ThaiWater ยังอยู่ ภาพฝนและข้อมูลน้ำเลือกแหล่งแสดงได้ครั้งละหนึ่งชุดต่อหมวด
 
 เว็บไซต์: https://rachane16.github.io/RMWeather/
 
@@ -23,6 +23,7 @@ python -m http.server 8766 --bind 127.0.0.1
 node --check assets/app.js
 node --check assets/map-engine.js
 node --check assets/weather-tools.js
+node --check assets/display.js
 node --test tests/*.test.js
 python -m unittest discover -s tests
 ```
@@ -47,10 +48,14 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 
 พื้นแผนที่: ELEMNT Natural Terrain (OSM/Protomaps, เงาภูเขา Mapterhorn และภาพใต้ทะเล GEBCO), OpenStreetMap, Esri World Imagery, Esri World Topo Map, OpenTopoMap และ OpenFreeMap Positron สลับพื้นแผนที่โดยรักษาตำแหน่ง ซูม และมุมมอง ชื่อไทยตามข้อมูล OSM อ่านรายละเอียดและข้อจำกัดที่ [docs/natural-terrain.md](docs/natural-terrain.md)
 
-กล้อง Windy ยังรอ Webcams API key ของเจ้าของเว็บ แผนฟรีต้องสมัครก่อน ไม่ใส่รหัสลับใน repository หรือ frontend
+กล้อง Windy ใช้ API v3 กรองจังหวัดสงขลารหัส TH.68 และประเทศ TH โดยเฉพาะ เก็บ key ใน GitHub Actions secret `WINDY_WEBCAMS_API_KEY` แล้วรัน `scripts/sync_windy.py` หลังอัปเดตข้อมูลหลัก ส่งออกเฉพาะข้อมูลแสดงผลและลิงก์ player ที่ปลอดภัย ไม่ส่งออก key หรือ URL ภาพชั่วคราว การทดสอบวันที่ 25 พ.ย. 2569 พบ 23 กล้องแบบ Timelapse ไม่มีลิงก์ Live ในชุดนี้
 
 เครดิตข้อมูล: One Data / PSU, RID, TMD, HatyaiClimate และหน่วยงานเจ้าของกล้อง, NOAA GFS, Open-Meteo, RainViewer ให้ตรวจเงื่อนไขของแต่ละผู้ให้บริการก่อนนำไปใช้เชิงพาณิชย์
 
 ผลสำรวจต้นทางรอบแรก: [docs/data-source-audit.md](docs/data-source-audit.md)
 
 หน้าเว็บตรวจ snapshot ใหม่ทุก 1 นาทีขณะเปิดใช้งาน ภาพกล้องที่เปิดขนาดใหญ่โหลดใหม่ทุก 1 นาที เวลาตรวจวัดยังอ้างอิง metadata ล่าสุดจากต้นทาง GitHub Actions อาจล่าช้า และ scheduled workflows ของ public repository อาจถูกปิดหลังไม่มี repository activity 60 วัน จึงไม่รับประกันการอัปเดตทุก 5 นาทีตลอดไปโดยไม่มีการดูแล
+
+รายละเอียดการแก้ภาพฝน ภูมิประเทศ และการแสดงผลรอบล่าสุด: [docs/display-fixes.md](docs/display-fixes.md)
+
+UI ใช้ Sarabun 4 น้ำหนักจากไฟล์ที่เจ้าของให้ พร้อมหมุดกล้อง/ระดับน้ำ/อากาศแบบแยกประเภท เส้นลมสีขาวขอบเข้ม และตัวปรับความชัดในเครื่องมือแผนที่

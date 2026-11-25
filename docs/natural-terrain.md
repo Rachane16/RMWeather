@@ -61,16 +61,13 @@ Both categories can be toggled from the top navigation or MAP LAYERS. Only one
 large weather workspace is open at once. Closing it preserves the main layers.
 The Open-Meteo table remains available even if an external iframe is unavailable.
 
-## Windy webcams: pending a key
+## Windy webcams
 
-The owner confirmed they do not yet have a Windy Webcams API key and prefer the
-free plan. No Windy camera count or working camera feed is claimed or fabricated.
-The catalogue links to https://api.windy.com/webcams/pricing to obtain a key.
-Free access permits linked images or an embedded timelapse player, limited image
-size and image URLs valid for 15 minutes according to the current pricing page.
-Docs: https://api.windy.com/webcams/docs . Once a key is available, the next
-integration must request camera metadata and filter actual Songkhla locations,
-retain Windy attribution, and refresh expiring images. Do not commit a key.
+Superseded by the working integration in [display-fixes.md](display-fixes.md).
+The owner supplied a domain-restricted Webcams key, stored only as the encrypted
+GitHub Actions secret `WINDY_WEBCAMS_API_KEY`. Songkhla is Windy region TH.68.
+Only safe metadata and stable timelapse/live embed links are exported; the key
+and signed image URLs are never included in the public artifact.
 
 ## Verification
 
@@ -79,3 +76,5 @@ terrain labels, 3D/pitch, CCTV details and clusters, original satellite basemap,
 working Windy embed, Songkhla TMD seven-day forecast and mobile 390×844 layout.
 Node tests cover geographic wind interpolation and missing/out-of-grid values;
 existing national water/rain/dam normalization and snapshot tests remain in CI.
+
+The latest refinement moves display switches into the right drawer, hides map tools by default, adds elevation color relief, and uses TMD as the initial seven-day forecast. See [display-fixes.md](display-fixes.md).
