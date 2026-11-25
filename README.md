@@ -2,7 +2,7 @@
 
 แผนที่ติดตามฝน น้ำ CCTV และลมในประเทศไทย
 
-หน้าเริ่มต้นแสดงเรดาร์ฝน ลม และแถบสภาพอากาศ กด **ชั้นข้อมูล** ทางซ้ายเพื่อเปิดแกลเลอรี Layer ค้นหาชุดข้อมูล เปิด/ปิดแต่ละชุด หรือดูรายละเอียดกล้องและสถานีได้ ข้อมูลน้ำทั่วประเทศ สถานีฝน และเขื่อนอยู่ในหมวดข้อมูลทั่วประเทศ ภาพฝนและชุดข้อมูลน้ำเลือกแหล่งแสดงได้ครั้งละหนึ่งชุดต่อหมวด ปุ่มคืนค่าเริ่มต้นกลับไปแสดงเฉพาะเรดาร์ ลม และสภาพอากาศ
+หน้าเริ่มต้นใช้ **ELEMNT Natural Terrain** และแสดงพยากรณ์ฝน **SWIRLS** ลม และแถบสภาพอากาศ โดยเปิด **MAP LAYERS** ทางซ้ายไว้ สามารถปิดและเปิดใหม่ได้ การ์ดขนาดกระชับรองรับค้นหา เปิด/ปิด และดูรายละเอียดกล้อง/สถานี เมนูหมวดด้านบนรวมแผนที่อากาศ Windy และพยากรณ์ 7 วันจาก Open-Meteo/TMD ที่เลือกเปิด–ปิดได้ ข้อมูลเดิมทั้งหมดรวมถึง ThaiWater ยังอยู่ ภาพฝนและข้อมูลน้ำเลือกแหล่งแสดงได้ครั้งละหนึ่งชุดต่อหมวด
 
 เว็บไซต์: https://rachane16.github.io/RMWeather/
 
@@ -21,6 +21,9 @@ python -m http.server 8766 --bind 127.0.0.1
 
 ```sh
 node --check assets/app.js
+node --check assets/map-engine.js
+node --check assets/weather-tools.js
+node --test tests/*.test.js
 python -m unittest discover -s tests
 ```
 
@@ -30,7 +33,9 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 
 เมื่อ push main หรือถึงรอบรอบประมาณทุก 5 นาที (นาที 2, 7, 12 … 57) workflow จะทดสอบ ดึงข้อมูลจาก public API ของ One Data แล้วสร้าง Pages artifact ใหม่ เวลารัน schedule อาจช้าตามคิว GitHub ไม่มี API key และไม่มี credentials ใน frontend
 
-- `index.html`, `assets/style.css`, `assets/app.js`: UI และแผนที่ Leaflet
+- `index.html`, `assets/style.css`, `assets/app.js`: UI และข้อมูลหลัก
+- `assets/map-engine.js`, `assets/terrain.css`, `assets/styles/natural.json`: แผนที่หลัก MapLibre GL JS, PMTiles, หมุด GeoJSON, ภาพฝน, สนามลม และมุมมอง 2D/3D
+- `assets/weather-tools.js`: Windy Embed และพยากรณ์ 7 วันแบบเลือกเปิด–ปิด
 - `assets/layers.css`, `assets/layers.js`: แกลเลอรี Layer ฝั่งซ้าย การเลือกแหล่งข้อมูล และแถบสภาพอากาศ
 - `scripts/sync_data.py`: ดึงข้อมูลสาธารณะเฉพาะรายการที่กำหนด ตัด field ผู้ดูแล/ตัวระบุผู้ใช้ออก
 - `data/live/`: ไฟล์ที่สร้างระหว่าง build และถูก gitignore ไม่สร้างประวัติ Git จากภาพแต่ละรอบ
@@ -40,7 +45,9 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 - ถ้าทุกแหล่งล้มเหลว workflow จะไม่เผยแพร่ snapshot ว่าง; ถ้าล้มเหลวบางแหล่ง UI จะแสดงตามข้อมูลที่โหลดได้
 - `legacy.html`: สำเนาเว็บเดิมสำหรับย้อนดูฟังก์ชันและรูปแบบก่อนปรับปรุง
 
-พื้นแผนที่: OpenStreetMap, Esri World Imagery, Esri World Topo Map, OpenTopoMap และ OpenFreeMap Positron (พื้นเดียวกับตัวเลือก Positron ของ One Data)
+พื้นแผนที่: ELEMNT Natural Terrain (OSM/Protomaps, เงาภูเขา Mapterhorn และภาพใต้ทะเล GEBCO), OpenStreetMap, Esri World Imagery, Esri World Topo Map, OpenTopoMap และ OpenFreeMap Positron สลับพื้นแผนที่โดยรักษาตำแหน่ง ซูม และมุมมอง ชื่อไทยตามข้อมูล OSM อ่านรายละเอียดและข้อจำกัดที่ [docs/natural-terrain.md](docs/natural-terrain.md)
+
+กล้อง Windy ยังรอ Webcams API key ของเจ้าของเว็บ แผนฟรีต้องสมัครก่อน ไม่ใส่รหัสลับใน repository หรือ frontend
 
 เครดิตข้อมูล: One Data / PSU, RID, TMD, HatyaiClimate และหน่วยงานเจ้าของกล้อง, NOAA GFS, Open-Meteo, RainViewer ให้ตรวจเงื่อนไขของแต่ละผู้ให้บริการก่อนนำไปใช้เชิงพาณิชย์
 

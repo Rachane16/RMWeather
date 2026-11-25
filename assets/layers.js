@@ -117,7 +117,7 @@ $('weather-collapse').addEventListener('click', () => {
 
 $('reset-layers').addEventListener('click', () => {
   ['cameras','water','weather'].forEach(key => setEnabled(key, false));
-  radarKind = 'radar';
+  radarKind = 'nowcast';
   setEnabled('radar', true);
   setEnabled('wind', true);
   $('forecast-visible').checked = true;
@@ -131,10 +131,12 @@ $('reset-layers').addEventListener('click', () => {
   $('layer-search').dispatchEvent(new Event('input'));
   document.querySelector('.drawer-scroll').scrollTop = 0;
   syncLayerMenu();
-  toast('กลับสู่เรดาร์ฝน ลม และแถบสภาพอากาศแล้ว');
+  toast('กลับสู่พยากรณ์ฝน ลม และแถบสภาพอากาศแล้ว');
 });
 
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && !$('sidebar').hidden) closeLayerDrawer(true);
 });
 syncLayerMenu();
+
+openPanel();
