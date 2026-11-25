@@ -1,0 +1,57 @@
+'use strict';
+
+const toolVisibility = {'weather-map':false,'seven-day':false};
+let forecastSource='model';
+function setWeatherTool(name,on) {
+  // Use a single readable workspace for embeds; these do not replace RM layers.
+  if(on)Object.keys(toolVisibility).filter(key=>key!==name).forEach(key=>setWeatherTool(key,false));
+  toolVisibility[name]=on;
+  $(`${name}-panel`).hidden=!on;
+  document.querySelectorAll(`[data-tool="${name}"]`).forEach(button=>button.setAttribute('aria-pressed',String(on)));
+  document.querySelectorAll(`[data-tool-toggle="${name}"]`).forEach(input=>input.checked=on);
+  if(on){closeLayerDrawer();updateWeatherEmbeds();}
+  else if(name==='weather-map')$('windy-frame').removeAttribute('src');
+  else $('tmd-frame').removeAttribute('src');
+}
+function assignFrame(id,url) {if($(id).getAttribute('src')!==url)$(id).src=url;}
+function updateWeatherEmbeds() {
+  const p=window.weatherLocation||{lat:7.0084,lon:100.4767,name:'หาดใหญ่'};
+  if(toolVisibility['weather-map']){
+    const query=new URLSearchParams({lat:p.lat.toFixed(4),lon:p.lon.toFixed(4),detailLat:p.lat.toFixed(4),detailLon:p.lon.toFixed(4),zoom:Math.min(11,Math.round(map.gl.getZoom())),level:'surface',overlay:$('windy-overlay').value,product:'ecmwf',type:'map',location:'coordinates',metricWind:'km/h',metricTemp:'°C',metricRain:'mm'});
+    assignFrame('windy-frame',`https://embed.windy.com/embed2.html?${query}`);
+    $('windy-open').href=`https://www.windy.com/?${p.lat.toFixed(3)},${p.lon.toFixed(3)},9`;
+  }
+  if(toolVisibility['seven-day']&&forecastSource==='tmd'){
+    const url=`https://www.tmd.go.th/weatherForecast7DaysWidget?province=${encodeURIComponent($('tmd-province').value)}`;
+    assignFrame('tmd-frame',url);$('tmd-open').href=url;
+  }
+}
+window.updateWeatherEmbeds=updateWeatherEmbeds;
+document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>setWeatherTool(button.dataset.tool,!toolVisibility[button.dataset.tool])));
+document.querySelectorAll('[data-tool-toggle]').forEach(input=>input.addEventListener('change',()=>setWeatherTool(input.dataset.toolToggle,input.checked)));
+document.querySelectorAll('[data-close-tool]').forEach(button=>button.addEventListener('click',()=>setWeatherTool(button.dataset.closeTool,false)));
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>Object.keys(toolVisibility).forEach(name=>setWeatherTool(name,false))));
+document.querySelectorAll('[data-forecast-source]').forEach(button=>button.addEventListener('click',()=>{
+  forecastSource=button.dataset.forecastSource;
+  document.querySelectorAll('[data-forecast-source]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  $('seven-day-model').hidden=forecastSource!=='model';$('seven-day-tmd').hidden=forecastSource!=='tmd';
+  if(forecastSource!=='tmd')$('tmd-frame').removeAttribute('src');
+  updateWeatherEmbeds();
+}));
+$('windy-overlay').addEventListener('change',updateWeatherEmbeds);
+$('windy-use-center').addEventListener('click',()=>{const p=map.getCenter();window.weatherLocation={lat:p.lat,lon:p.lng,name:'กลางแผนที่'};updateWeatherEmbeds();});
+$('tmd-province').addEventListener('change',updateWeatherEmbeds);
+$('terrain-toggle').addEventListener('click',()=>{
+  map.setTerrain(!map.terrain);$('terrain-toggle').setAttribute('aria-pressed',String(map.terrain));
+  $('terrain-toggle').innerHTML=map.terrain?'3D <span>/ 2D</span>':'2D <span>/ 3D</span>';
+});
+$('map-pitch').addEventListener('input',event=>map.gl.setPitch(Number(event.target.value)));
+$('map-north').addEventListener('click',()=>map.gl.easeTo({bearing:0,duration:500}));
+$('zoom-in').addEventListener('click',()=>map.gl.zoomIn());
+$('zoom-out').addEventListener('click',()=>map.gl.zoomOut());
+map.gl.on('move',()=>{
+  $('map-pitch').value=Math.round(map.gl.getPitch());$('pitch-value').value=`${Math.round(map.gl.getPitch())}°`;
+  $('bearing-value').textContent=`${Math.round(map.gl.getBearing())}°`;
+});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')Object.keys(toolVisibility).forEach(name=>setWeatherTool(name,false));});
+$('reset-layers').addEventListener('click',()=>Object.keys(toolVisibility).forEach(name=>setWeatherTool(name,false)));

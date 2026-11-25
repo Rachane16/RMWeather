@@ -25,7 +25,9 @@ jobs:
       - run: node --check assets/app.js
       - run: node --check assets/layers.js
       - run: node --check assets/hydro.js
-      - run: node --test tests/hydro.test.js
+      - run: node --check assets/map-engine.js
+      - run: node --check assets/weather-tools.js
+      - run: node --test tests/*.test.js
   deploy:
     if: github.event_name != 'pull_request'
     needs: check
