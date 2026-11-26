@@ -6,6 +6,8 @@
 
 ปุ่มแผนที่ฐานอยู่ด้านล่างขวา Windy ใช้กล่องตัวเลือกเล็กทางซ้ายและมีปุ่มกลับแผนที่หลัก ตำแหน่งที่เบราว์เซอร์อนุญาตจะแสดงหมุดสีน้ำเงินพร้อมใช้เป็นจุดเริ่มต้น Windy ดูรายละเอียด [การจัดหน้าจอคอมพิวเตอร์และมือถือ](docs/compact-workspace.md)
 
+แผนที่อากาศ Windy เลือกได้ 3 มุมมอง: แผนที่เต็ม, แผนที่พร้อมพยากรณ์รายจุด และตารางพยากรณ์อย่างเดียว มีตัวเลือกตำแหน่งฉัน / กลางแผนที่หลัก / หาดใหญ่ พร้อมแสดงพิกัดและความแม่นยำของอุปกรณ์ ดู [การใช้ Windy widgets](docs/windy-widgets.md)
+
 เว็บไซต์: https://rachane16.github.io/RMWeather/
 
 ## เปิดในเครื่อง
@@ -26,6 +28,7 @@ python -m http.server 8766 --bind 127.0.0.1
 node --check assets/app.js
 node --check assets/map-engine.js
 node --check assets/weather-tools.js
+node --check assets/windy-embed.js
 node --check assets/display.js
 node --test tests/*.test.js
 python -m unittest discover -s tests

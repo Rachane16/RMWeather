@@ -197,18 +197,18 @@ map.onMapClick=p=>{window.closeLayerDrawer?.();loadForecast(p.lat,p.lng,`พิ�
 $('refresh').addEventListener('click',()=>{refreshData();const c=map.getCenter();loadForecast(c.lat,c.lng,$('place-name').textContent);});
 $('fit').addEventListener('click',()=>{map.flyTo([7.0084,100.4767],11);});
 let locationRequest=0;
-async function requestCurrentLocation(){
- const request=++locationRequest;window.locationPending=true;window.updateWeatherLocationNote?.();
+async function requestCurrentLocation(precise=false){
+ const request=++locationRequest;window.locationPending=true;window.locationError=null;window.updateWeatherLocationNote?.();
  $('location-status').textContent='กำลังระบุตำแหน่งปัจจุบัน…';
- if(!navigator.geolocation){window.locationPending=false;window.updateWeatherLocationNote?.();$('location-status').textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่ง · ใช้หาดใหญ่เป็นจุดเริ่มต้น';return;}
+ if(!navigator.geolocation){window.locationPending=false;window.locationError='unsupported';window.updateWeatherLocationNote?.();$('location-status').textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่ง · ใช้หาดใหญ่เป็นจุดเริ่มต้น';return;}
  navigator.geolocation.getCurrentPosition(position=>{
-  if(request!==locationRequest)return;window.locationPending=false;window.updateWeatherLocationNote?.();
+  if(request!==locationRequest)return;window.locationPending=false;
   const {latitude:lat,longitude:lon}=position.coords;
-  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
-  window.currentLocation={lat,lon};map.setCurrentLocation(lat,lon);map.flyTo([lat,lon],10);
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){window.locationError='invalid';window.updateWeatherLocationNote?.();return;}
+  window.currentLocation={lat,lon,accuracy:Number.isFinite(position.coords.accuracy)?position.coords.accuracy:null,timestamp:position.timestamp??Date.now()};map.setCurrentLocation(lat,lon);map.flyTo([lat,lon],10);
   $('location-status').textContent='ใช้ตำแหน่งปัจจุบันแล้ว';loadForecast(lat,lon,'ตำแหน่งของคุณ');
   window.dispatchEvent(new CustomEvent('rm-current-location',{detail:{lat,lon}}));
- },()=>{if(request===locationRequest){window.locationPending=false;window.updateWeatherLocationNote?.();$('location-status').textContent='เข้าถึงตำแหน่งไม่ได้ · ใช้หาดใหญ่หรือเลือกตำแหน่งบนแผนที่';}},{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
+ },error=>{if(request===locationRequest){window.locationPending=false;window.locationError=error?.code===1?'denied':error?.code===3?'timeout':'unavailable';window.updateWeatherLocationNote?.();$('location-status').textContent='เข้าถึงตำแหน่งไม่ได้ · ใช้หาดใหญ่หรือเลือกตำแหน่งบนแผนที่';}},{enableHighAccuracy:precise===true,timeout:precise===true?15000:10000,maximumAge:precise===true?0:60000});
 }
 $('locate').addEventListener('click',requestCurrentLocation);
 $('theme').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('rm-theme',theme);}catch{}});

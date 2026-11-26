@@ -2,29 +2,30 @@
 <html lang="th" data-theme="light">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" type="image/png" href="assets/rmweather-icon.png?v=20261126-radargis2">
+<link rel="icon" type="image/png" href="assets/rmweather-icon.png?v=20261126-windy1">
 <meta name="theme-color" content="#102724"><meta name="description" content="RMWeather แผนที่ติดตามฝน ระดับน้ำ กล้อง CCTV และลมในประเทศไทย">
 <title>RMWeather — ฝน น้ำ และภาพสถานการณ์</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="assets/style.css?v=20261126-radargis2">
-<link rel="stylesheet" href="assets/layers.css?v=20261126-radargis2">
+<link rel="stylesheet" href="assets/style.css?v=20261126-windy1">
+<link rel="stylesheet" href="assets/layers.css?v=20261126-windy1">
 <script defer src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
 <script defer src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
-<script defer src="assets/map-engine.js?v=20261126-radargis2"></script>
-<script defer src="assets/hydro.js?v=20261126-radargis2"></script>
-<script defer src="assets/radargis.js?v=20261126-radargis2"></script>
-<script defer src="assets/app.js?v=20261126-radargis2"></script>
-<script defer src="assets/layers.js?v=20261126-radargis2"></script>
-<link rel="stylesheet" href="assets/terrain.css?v=20261126-radargis2">
-<script defer src="assets/weather-tools.js?v=20261126-radargis2"></script>
-<link rel="stylesheet" href="assets/refinements.css?v=20261126-radargis2">
-<script defer src="assets/display.js?v=20261126-radargis2"></script>
-<link rel="stylesheet" href="assets/layer-refresh.css?v=20261126-radargis2">
-<link rel="stylesheet" href="assets/camera-refresh.css?v=20261126-radargis2">
-<link rel="stylesheet" href="assets/workspace-ui.css?v=20261126-radargis2">
-<script defer src="assets/workspace-ui.js?v=20261126-radargis2"></script>
+<script defer src="assets/map-engine.js?v=20261126-windy1"></script>
+<script defer src="assets/hydro.js?v=20261126-windy1"></script>
+<script defer src="assets/radargis.js?v=20261126-windy1"></script>
+<script defer src="assets/app.js?v=20261126-windy1"></script>
+<script defer src="assets/layers.js?v=20261126-windy1"></script>
+<link rel="stylesheet" href="assets/terrain.css?v=20261126-windy1">
+<script defer src="assets/windy-embed.js?v=20261126-windy1"></script>
+<script defer src="assets/weather-tools.js?v=20261126-windy1"></script>
+<link rel="stylesheet" href="assets/refinements.css?v=20261126-windy1">
+<script defer src="assets/display.js?v=20261126-windy1"></script>
+<link rel="stylesheet" href="assets/layer-refresh.css?v=20261126-windy1">
+<link rel="stylesheet" href="assets/camera-refresh.css?v=20261126-windy1">
+<link rel="stylesheet" href="assets/workspace-ui.css?v=20261126-windy1">
+<script defer src="assets/workspace-ui.js?v=20261126-windy1"></script>
 <link rel="preload" as="font" href="assets/fonts/Sarabun-Regular.ttf" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="assets/hydro.css?v=20261126-radargis2"></head>
+<link rel="stylesheet" href="assets/hydro.css?v=20261126-windy1"><link rel="stylesheet" href="assets/windy-widget.css?v=20261126-windy1"></head>
 <body>
 <svg class="svg-defs" aria-hidden="true"><defs>
 <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z M9 3v15M15 6v15"/></symbol>
@@ -70,7 +71,16 @@
 <button id="timeline-toggle" class="timeline-launcher" aria-expanded="false" aria-controls="radar-player"><svg><use href="#i-clock"/></svg><span>ภาพและเวลา<small id="timeline-summary">RainViewer · ล่าสุด</small></span><span class="timeline-chevron" aria-hidden="true">⌃</span></button>
 <section class="radar-player" id="radar-player" hidden><div class="radar-player-top"><strong><svg><use href="#i-radar"/></svg><span id="radar-label">เรดาร์ฝน</span></strong><span id="radar-date">—</span><button id="radar-close" class="icon-button" aria-label="ปิดภาพและเวลา">×</button></div><label class="timeline-source-label">แถบเวลา <select id="radar-timeline-source" aria-label="แหล่งข้อมูลในแถบเวลา"><option value="rainviewer">RainViewer · เรดาร์</option><option value="radargis">TMD RADARGIS</option><option value="rod">RODDSS · TMD Composite</option><option value="radar">TMD · ภาคใต้</option><option value="nowcast">SWIRLS · พยากรณ์</option></select></label><label class="timeline-source-label" id="radargis-product-row" hidden>ผลิตภัณฑ์ <select id="radargis-product" aria-label="ผลิตภัณฑ์ TMD RADARGIS"></select></label><div class="radar-controls"><button id="radar-play" class="play-button" aria-label="เล่นภาพเรดาร์">▶</button><input type="range" id="radar-slider" min="0" max="0" value="0" aria-label="เวลาเฟรมเรดาร์"><span id="radar-time">—</span></div><p id="radar-status" class="muted"></p><a id="radargis-origin" class="radargis-origin" href="https://radargis.tmd.go.th/" target="_blank" rel="noopener" hidden>ข้อมูลเรดาร์ © กรมอุตุนิยมวิทยา · TMD RadarGIS</a><div class="radar-gradient" title="RainViewer Universal Blue · 15–55 dBZ"></div><div class="legend-scale"><span>15 dBZ · สะท้อนต่ำ</span><span>สะท้อนสูง · 55+ dBZ</span></div></section>
 <button id="mobile-panel" class="mobile-panel-button"><svg><use href="#i-layers"/></svg>ชั้นข้อมูล</button>
-<section class="weather-tool-panel" id="weather-map-panel" aria-label="แผนที่อากาศ Windy" hidden><div class="windy-map-bar" id="windy-controls"><header><div><p class="eyebrow">WEATHER MAP</p><h2>แผนที่อากาศ</h2></div><button class="icon-button" data-close-tool="weather-map" aria-label="ปิดแผนที่อากาศ">×</button></header><div class="popup-body" id="windy-controls-body"><div class="weather-tool-controls"><label>ข้อมูล <select id="windy-overlay"><option value="radar">เรดาร์ฝน · ตรวจวัด</option><option value="rain">ฝนพยากรณ์</option><option value="wind">ลมพยากรณ์</option><option value="temp">อุณหภูมิ</option><option value="clouds">เมฆ</option><option value="pressure">ความกดอากาศ</option></select></label><button id="windy-back-main">กลับแผนที่หลัก</button></div><p class="tool-caption" id="windy-location-note">เริ่มที่ตำแหน่งปัจจุบัน · แผนที่อากาศ Windy</p></div></div><iframe id="windy-frame" title="แผนที่อากาศ Windy" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><a id="windy-open" href="https://www.windy.com/" target="_blank" rel="noopener">เปิดแผนที่ต้นทาง Windy</a></section>
+<section class="weather-tool-panel" id="weather-map-panel" aria-label="แผนที่อากาศ Windy" data-windy-view="map" hidden>
+<div class="windy-map-bar" id="windy-controls"><header><div><p class="eyebrow">WEATHER MAP</p><h2>แผนที่อากาศ</h2></div><button class="icon-button" data-close-tool="weather-map" aria-label="ปิดแผนที่อากาศ">×</button></header>
+<div class="popup-body" id="windy-controls-body">
+<div class="windy-location-card"><svg aria-hidden="true"><use href="#i-pin"/></svg><div><strong id="windy-place-name">หาดใหญ่</strong><span id="windy-coordinates">7.0084°N, 100.4767°E</span></div></div>
+<div class="weather-tool-controls"><label>มุมมอง<select id="windy-view" aria-label="มุมมอง Windy"><option value="map">แผนที่เต็ม</option><option value="map-forecast">แผนที่ + พยากรณ์รายจุด</option><option value="forecast">ตารางพยากรณ์อย่างเดียว</option></select></label><label id="windy-overlay-row">ข้อมูล<select id="windy-overlay" aria-label="ชั้นข้อมูล Windy"></select></label><label class="windy-point-option" id="windy-point-toggle-row"><span>แสดงตารางพยากรณ์รายจุด</span><input id="windy-point-toggle" type="checkbox" role="switch"></label></div>
+<div class="windy-location-actions" role="group" aria-label="ตำแหน่งพยากรณ์"><button data-windy-location="device" aria-pressed="true">ตำแหน่งฉัน</button><button data-windy-location="map" aria-pressed="false">กลางแผนที่</button><button data-windy-location="hatyai" aria-pressed="false">หาดใหญ่</button></div>
+<p id="windy-location-note" class="tool-caption" role="status">ใช้หาดใหญ่ระหว่างรอตำแหน่งอุปกรณ์</p><p class="windy-layer-hint" id="windy-layer-hint">เปิดเมนูชั้นข้อมูลในแผนที่ Windy เพื่อเลือกข้อมูลเพิ่มเติม</p>
+<button id="windy-back-main">กลับแผนที่หลัก</button></div></div>
+<div id="windy-frame-wrap"><iframe id="windy-frame" title="แผนที่อากาศและพยากรณ์ Windy" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+<a class="windy-source-link" id="windy-open" href="https://www.windy.com/" target="_blank" rel="noopener">เปิดตำแหน่งนี้บน Windy</a></section>
 <section class="weather-tool-panel" id="seven-day-panel" aria-label="พยากรณ์อากาศ 7 วัน" hidden><header><div><p class="eyebrow">7 DAY FORECAST</p><h2>พยากรณ์อากาศ 7 วัน</h2></div><button class="icon-button" data-close-tool="seven-day" aria-label="ปิดพยากรณ์ 7 วัน">×</button></header><div id="seven-day-model" hidden><p class="tool-caption">พยากรณ์แบบจำลองที่ <strong id="seven-day-place">หาดใหญ่</strong> · เปลี่ยนเมืองหรือคลิกแผนที่เพื่อเลือกพิกัด</p><div class="forecast-table-scroll"><table class="forecast-table"><thead><tr><th>วัน</th><th>สภาพอากาศ</th><th>ต่ำสุด–สูงสุด</th><th>โอกาสฝน</th></tr></thead><tbody id="seven-day-rows"><tr><td colspan="4">กำลังโหลดพยากรณ์…</td></tr></tbody></table></div><a href="https://open-meteo.com/" target="_blank" rel="noopener">ข้อมูลพยากรณ์ Open-Meteo</a></div><div id="seven-day-tmd"><label class="tmd-province-label">จังหวัด <select id="tmd-province"><option>สงขลา</option><option>นครศรีธรรมราช</option><option>พัทลุง</option><option>สตูล</option><option>ปัตตานี</option><option>ยะลา</option><option>นราธิวาส</option><option>กรุงเทพมหานคร</option><option>เชียงใหม่</option><option>ขอนแก่น</option><option>ระยอง</option></select></label><p class="tool-caption">วิดเจ็ตทางการ TMD · เลื่อนแนวนอนเพื่อดูครบ 7 วันบนจอเล็ก</p><div class="tmd-frame-scroll"><iframe id="tmd-frame" title="พยากรณ์อากาศ 7 วัน กรมอุตุนิยมวิทยา" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div><a id="tmd-open" href="https://www.tmd.go.th/" target="_blank" rel="noopener">เปิดพยากรณ์ต้นทาง TMD</a></div></section>
 <div class="toast" id="toast" role="status" hidden></div>
 </main>
