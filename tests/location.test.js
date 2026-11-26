@@ -20,3 +20,10 @@ test('denied location keeps the usable fallback and ignores a superseded locatio
   h.ctx.requestCurrentLocation();h.ctx.requestCurrentLocation();h.pending[1].ok({coords:{latitude:8,longitude:101}});
   assert.equal(h.moves.length,0);h.pending[2].ok({coords:{latitude:7,longitude:100}});assert.equal(h.moves.length,1);
 });
+
+test('explicit precise requests bypass cached coarse fixes and retain accuracy metadata',()=>{
+ const h=harness();h.ctx.requestCurrentLocation(true);
+ assert.equal(h.pending[0].options.enableHighAccuracy,true);assert.equal(h.pending[0].options.maximumAge,0);
+ h.pending[0].ok({timestamp:123456,coords:{latitude:7.1,longitude:100.6,accuracy:12000}});
+ assert.equal(h.ctx.window.currentLocation.accuracy,12000);assert.equal(h.ctx.window.currentLocation.timestamp,123456);
+});

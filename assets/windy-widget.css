@@ -1,0 +1,41 @@
+/* Windy owns the iframe; these compact controls configure its documented URL. */
+#weather-map-panel #windy-frame-wrap{position:absolute;inset:0;pointer-events:auto;z-index:0}
+#weather-map-panel #windy-frame{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;background:var(--soft);min-height:0}
+#weather-map-panel .windy-map-bar{display:flex;flex-direction:column;max-height:calc(100% - 95px);overflow:hidden;pointer-events:auto;z-index:3;background:rgba(255,255,255,.87);backdrop-filter:blur(12px);border:1px solid #ffffffa0;box-shadow:0 6px 30px #153f3330}
+#weather-map-panel .windy-map-bar>header{flex-shrink:0}
+#weather-map-panel .windy-map-bar>.popup-body{overflow-y:auto;min-height:0;scrollbar-width:thin}
+#weather-map-panel .windy-location-card{display:flex;align-items:center;gap:8px;padding:10px 11px;margin:0 0 13px;background:#e5f2ed;border-radius:11px;color:#135d4e}
+.windy-location-card>div{min-width:0}.windy-location-card strong{display:block;font-size:14px;font-weight:600}.windy-location-card span{display:block;font-size:12px;line-height:1.6;font-variant-numeric:tabular-nums;color:#4c6b62}
+#weather-map-panel .weather-tool-controls{display:grid;gap:10px}
+#weather-map-panel .weather-tool-controls label{display:grid;grid-template-columns:47px minmax(0,1fr);gap:6px;align-items:center;font-size:13px}
+#weather-map-panel .weather-tool-controls select{width:100%;min-width:0;max-width:none;font-size:13px;min-height:38px;background:var(--surface);border-color:var(--line)}
+#weather-map-panel .weather-tool-controls .windy-point-option{grid-template-columns:1fr auto;padding:7px 0;font-size:12px}
+.windy-point-option input{appearance:none;position:relative;width:35px;height:21px;border-radius:20px;background:#ccd9d4;border:0;margin:0;cursor:pointer;transition:background .15s}
+.windy-point-option input:after{content:'';position:absolute;left:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #173e392e;transition:transform .15s}
+.windy-point-option input:checked{background:#168473}.windy-point-option input:checked:after{transform:translateX(14px)}
+.windy-location-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:12px 0 9px}
+.windy-location-actions button{font-size:12px;white-space:nowrap;min-height:35px;padding:6px 4px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px}
+.windy-location-actions button[aria-pressed=true]{background:#d7eee5;color:#0c6855;border-color:#8dc8b6}
+#weather-map-panel #windy-location-note{font-size:12px;line-height:1.65;margin:8px 0;color:var(--ink)}
+.windy-layer-hint{font-size:11px;line-height:1.6;color:var(--muted);margin:7px 0 12px}
+#weather-map-panel #windy-back-main{font-size:13px;min-height:37px;padding:8px 10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px}
+#weather-map-panel[data-windy-view=map-forecast] .windy-map-bar{max-height:calc(100% - 280px)}
+#weather-map-panel[data-windy-view=forecast] #windy-frame-wrap{inset:auto 18px 50px 18px;height:225px;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px #0e3b302d;background:var(--surface);border:1px solid var(--line)}
+#weather-map-panel[data-windy-view=forecast] .windy-map-bar{max-height:calc(100% - 350px)}
+#weather-map-panel[data-windy-view=forecast] .windy-layer-hint{display:none}
+#weather-map-panel .windy-map-bar.is-minimized{max-height:none}
+[data-theme=dark] #weather-map-panel .windy-map-bar{background:rgba(24,46,43,.92);border-color:#8db4a630}
+[data-theme=dark] #weather-map-panel .windy-location-card{background:#244b3f;color:#d1eadf}[data-theme=dark] .windy-location-card span{color:#b5ccc3}
+[data-theme=dark] .windy-location-actions button[aria-pressed=true]{background:#255849;color:#d6f5e7}
+@media(max-width:700px){
+ #weather-map-panel .windy-map-bar{width:min(300px,calc(100vw - 70px));max-height:calc(100% - 130px);top:56px;left:12px;padding:11px}
+ #weather-map-panel .windy-map-bar .popup-body{margin-top:10px}
+ #weather-map-panel .weather-tool-controls select{font-size:12px;min-height:37px}
+ #weather-map-panel .weather-tool-controls label{font-size:12px;grid-template-columns:40px minmax(0,1fr)}
+ .windy-location-actions button{font-size:11px;min-height:36px}.windy-location-card span{font-size:11px}
+ #weather-map-panel #windy-location-note{font-size:11px}
+ #weather-map-panel[data-windy-view=map-forecast] .windy-map-bar{max-height:calc(100% - 280px)}
+ #weather-map-panel[data-windy-view=forecast] .windy-map-bar{max-height:calc(100% - 350px)}
+ #weather-map-panel[data-windy-view=forecast] #windy-frame-wrap{left:10px;right:10px;bottom:48px;height:215px;border-radius:12px}
+ #weather-map-panel .windy-map-bar.is-minimized{max-height:none}
+}
