@@ -38,4 +38,7 @@ tasks.configureEach {
         if (!releaseKey) throw new GradleException('Configure the RMWEATHER signing environment before a release build; no debug-key fallback is allowed.')
     }
 }
-dependencies { testImplementation 'junit:junit:4.13.2' }
+dependencies {
+    implementation 'androidx.activity:activity:1.13.0'
+    testImplementation 'junit:junit:4.13.2'
+}

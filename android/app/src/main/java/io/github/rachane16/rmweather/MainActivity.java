@@ -2,7 +2,8 @@ package io.github.rachane16.rmweather;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedCallback;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,7 +30,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import java.util.Collections;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends ComponentActivity {
     private static final int LOCATION_REQUEST = 10;
     private WebView web;
     private FrameLayout root;
@@ -121,7 +122,9 @@ public final class MainActivity extends Activity {
         FrameLayout.LayoutParams loading = new FrameLayout.LayoutParams(dp(40), dp(40), Gravity.CENTER);
         root.addView(progress, loading);
         createOfflineView();
-        if (Build.VERSION.SDK_INT >= 33) getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::goBack);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() { goBack(); }
+        });
         if (state == null || web.restoreState(state) == null) loadHome();
     }
 
@@ -174,7 +177,6 @@ public final class MainActivity extends Activity {
             if (!"true".equals(closed)) { if (web.canGoBack()) web.goBack(); else finish(); }
         });
     }
-    @SuppressWarnings("deprecation") @Override public void onBackPressed() { goBack(); }
     @Override protected void onSaveInstanceState(Bundle state) { web.saveState(state); super.onSaveInstanceState(state); }
     @Override protected void onPause() { web.onPause(); super.onPause(); }
     @Override protected void onResume() { super.onResume(); if (web != null) web.onResume(); }
