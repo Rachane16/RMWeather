@@ -1,9 +1,9 @@
 'use strict';
 
-// Palette sampled from the owner's reference; rainfall totals in mm / 3 h.
-const DEVELOPMENT_RAIN_STOPS=[[.3,0,20,220],[2,0,164,255],[7,115,229,95],[15,255,211,0],[50,251,86,0],[500,180,3,0]];
+// Windy-style thresholds sampled from the owner's reference, rates in mm/h.
+const DEVELOPMENT_RAIN_STOPS=[[0,39,17,158],[.6,0,148,143],[3,102,208,81],[12,244,184,18],[50,204,74,83],[200,155,15,109]];
 function developmentRainColour(value){
-  if(value==null||!Number.isFinite(value)||value<.3)return [0,0,0,0];
+  if(value==null||!Number.isFinite(value)||value<=0)return [0,0,0,0];
   let hi=DEVELOPMENT_RAIN_STOPS.findIndex(p=>p[0]>=value);if(hi<0)hi=DEVELOPMENT_RAIN_STOPS.length-1;
   const low=DEVELOPMENT_RAIN_STOPS[Math.max(0,hi-1)],high=DEVELOPMENT_RAIN_STOPS[hi],weight=hi===0?0:Math.min(1,(value-low[0])/(high[0]-low[0]));
   return [1,2,3].map(k=>Math.round(low[k]+(high[k]-low[k])*weight)).concat(205);

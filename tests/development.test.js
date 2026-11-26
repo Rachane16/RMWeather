@@ -35,9 +35,9 @@ test('PNG point sampling is bounds checked and reports colour intervals or unkno
  assert.equal(range([0,255,0,0],[[0,255,0]],[1]).min,null);
  assert.equal(range([255,255,255,255],[[0,0,0]],[1]).min,null);
 });
-test('all model maps use the reference rainfall palette and hide values below 0.3 mm/3h',()=>{
- assert.deepEqual(rainColour(.3),[0,20,220,205]);assert.deepEqual(rainColour(2),[0,164,255,205]);
- assert.deepEqual(rainColour(7),[115,229,95,205]);assert.deepEqual(rainColour(15),[255,211,0,205]);
- assert.deepEqual(rainColour(50),[251,86,0,205]);assert.deepEqual(rainColour(500),[180,3,0,205]);
- assert.deepEqual(rainColour(800),[180,3,0,205]);assert.equal(rainColour(.2)[3],0);assert.equal(rainColour(null)[3],0);
+test('rain intensity follows the Windy reference thresholds in mm/h and preserves light rain',()=>{
+ assert.deepEqual(rainColour(.6),[0,148,143,205]);assert.deepEqual(rainColour(3),[102,208,81,205]);
+ assert.deepEqual(rainColour(12),[244,184,18,205]);assert.deepEqual(rainColour(50),[204,74,83,205]);
+ assert.deepEqual(rainColour(200),[155,15,109,205]);assert.deepEqual(rainColour(800),[155,15,109,205]);
+ assert.equal(rainColour(.2)[3],205);assert.equal(rainColour(0)[3],0);assert.equal(rainColour(null)[3],0);
 });
