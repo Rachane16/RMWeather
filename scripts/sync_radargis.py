@@ -164,26 +164,37 @@ def cache_image(frame):
 def probe():
     """Runner connectivity evidence, including failures; never claims an outage is healthy."""
     report = {'checked_at': dt.datetime.now(dt.timezone.utc).isoformat(), 'api_ok': False, 'images': []}
+    samples = []
     try:
         request = urllib.request.Request(BASE + '/api/overlays', headers=HEADERS)
         with open_url(request, timeout=30) as response:
             payload = json.load(response)
             report['rate_headers'] = {key: response.headers[key] for key in ('Retry-After', 'X-RateLimit-Limit', 'X-RateLimit-Remaining') if response.headers.get(key)}
         products = products_from_catalog({'overlays': payload})
-        report.update(api_ok=True, products=len(products), frames=sum(len(p['frames']) for p in products))
-        for product in [p for p in products if p['id'] in ('dbz', 'dbz-nowcast')]:
-            frame = product['frames'][-1]
-            result = {'product': product['id'], 'valid_time': frame['frame_time'], 'url': frame['remote_url']}
-            try:
-                with open_url(urllib.request.Request(frame['remote_url'], headers=HEADERS), timeout=30) as response:
-                    binary = response.read(8000001)
-                result['ok'] = binary.startswith(b'\x89PNG\r\n\x1a\n') and len(binary) <= 8000000
-                result['bytes'] = len(binary)
-            except Exception as error:
-                result.update(ok=False, error=f'{type(error).__name__}: {error}')
-            report['images'].append(result)
+        report.update(api_ok=True, products=len(products), frames=sum(len(p['frames']) for p in products), catalog_source='live_api')
+        samples = [(p['id'], p['frames'][-1]['frame_time'], p['frames'][-1]['remote_url']) for p in products if p['id'] in ('dbz', 'dbz-nowcast')]
     except Exception as error:
         report['error'] = f'{type(error).__name__}: {error}'
+        # Test PNG access separately even if the runner cannot read JSON. These
+        # URLs came from a validated live response, not guessed filenames.
+        seed = ROOT / 'data' / 'radargis-fallback' / 'catalog.json'
+        if seed.exists():
+            products = json.loads(seed.read_text(encoding='utf-8')).get('data', {}).get('products', [])
+            samples = [(p['id'], p['frames'][-1]['frame_time'], p['frames'][-1].get('source_url', '')) for p in products if p['id'] in ('dbz', 'dbz-nowcast')]
+            report['catalog_source'] = 'dated_fallback'
+    for key, stamp, url in samples:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme != 'https' or parsed.netloc != 'radargis.tmd.go.th' or not re.fullmatch(r'/products/[A-Za-z0-9_/-]+\.png', parsed.path) or '..' in parsed.path:
+            continue
+        result = {'product': key, 'valid_time': stamp, 'url': url}
+        try:
+            with open_url(urllib.request.Request(url, headers=HEADERS), timeout=30) as response:
+                binary = response.read(8000001)
+            result['ok'] = binary.startswith(b'\x89PNG\r\n\x1a\n') and len(binary) <= 8000000
+            result['bytes'] = len(binary)
+        except Exception as error:
+            result.update(ok=False, error=f'{type(error).__name__}: {error}')
+        report['images'].append(result)
     report['ok'] = report['api_ok'] and len(report['images']) == 2 and all(row['ok'] for row in report['images'])
     Path('_radargis_probe.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
     print(json.dumps(report, ensure_ascii=True))
