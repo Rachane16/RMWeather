@@ -30,6 +30,7 @@ jobs:
       - run: node --check assets/weather-tools.js
       - run: node --check assets/windy-embed.js
       - run: node --check assets/display.js
+      - run: node --check assets/development.js
       - run: node --check assets/workspace-ui.js
       - run: node --test tests/*.test.js
       - name: Check public RadarGIS access from the runner
