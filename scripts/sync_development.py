@@ -203,8 +203,10 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     if not args.seed and fallback.exists():
         shutil.copytree(fallback, out, dirs_exist_ok=True, copy_function=lambda src, dst: dst if Path(dst).exists() else shutil.copy2(src, dst))
+    clpp_ok = False
     try:
         fetch_clpp(out)
+        clpp_ok = True
     except Exception as error:
         print('CLPP update unavailable; retain dated cache:', str(error)[:180], flush=True)
     if not args.clpp_only:
@@ -221,6 +223,7 @@ def main():
                 print('Forecast update unavailable; retain dated cache:', model, str(error)[:140], flush=True)
     manifest = dict(collected_at=int(time.time()), models=[dict(id=m, name=n, file=m+'.json') for m, n in MODELS.items() if (out/(m+'.json')).exists()])
     save(out / 'manifest.json', manifest)
+    save(out / 'health.json', dict(attempted_at=int(time.time()), clpp_ok=clpp_ok))
     import os
     if os.environ.get('GITHUB_OUTPUT'):
         fingerprint = hashlib.sha256(b''.join((out/(m+'.json')).read_bytes() for m in MODELS if (out/(m+'.json')).exists())).hexdigest()[:24]

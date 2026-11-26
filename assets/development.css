@@ -28,4 +28,5 @@
 }
 
 .development-nav[data-active=true]::after{content:"";width:6px;height:6px;border-radius:50%;background:#1c9c76;margin-left:4px}
+.development-review[data-stale=true]{background:#fff1d6;color:#77511b}
 #development-clear{margin-top:8px}#development-fit,#development-clear{width:100%;font-size:12px}

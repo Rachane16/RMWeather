@@ -6,12 +6,15 @@
  const panel=$('development-dialog'),launcher=$('development-open');
  document.querySelector('.workspace').append(panel,$('development-timeline'));
  const state={modelRain:false,modelWind:false,clppRadar:false,provinces:false,stations:false,point:false};
- const data={model:null,clpp:null,stations:null,geo:null},indices={model:0,clpp:0};
+ const data={model:null,clpp:null,stations:null,geo:null,health:null},indices={model:0,clpp:0};
  let source='model',timer=null,modelRequest=0,pointRequest=0,popup=null,minimized=false,windKey='',stationKey='',provinceKey='';
  const textures=new Map(),images=new Map();
  const date=stamp=>time(new Date(stamp*1000).toISOString());
  const lag=stamp=>Math.max(0,Math.floor((Date.now()/1000-stamp)/60));
- function open(on){panel.hidden=!on;launcher.setAttribute('aria-expanded',String(on));if(on)window.workspaceUI?.setOpen('sidebar',false);}
+ function open(on){
+  panel.hidden=!on;launcher.setAttribute('aria-expanded',String(on));
+  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('sidebar',false);}
+ }
  launcher.addEventListener('click',()=>open(panel.hidden));$('development-close').addEventListener('click',()=>open(false));
  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();open(false);launcher.focus();}});
  async function resource(file){
@@ -28,9 +31,10 @@
   if(message){$('development-status').textContent=message;return;}
   const parts=[];
   if((state.modelRain||state.modelWind)&&data.model)parts.push(`${data.model.name} · เก็บข้อมูล ${date(data.model.collected_at)}${lag(data.model.collected_at)>720?' · สำเนาเก่า':''}`);
-  if(Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))&&data.clpp)parts.push(`CLPP · ฐานเรดาร์ ${date(data.clpp.generated)} · ล่าช้า ${lag(data.clpp.generated)} นาที`);
+  if(Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))&&data.clpp)parts.push(`${data.health?.clpp_ok===false?'อัปเดตไม่สำเร็จ · ใช้สำเนา ':''}CLPP · ฐานเรดาร์ ${date(data.clpp.generated)} · ล่าช้า ${lag(data.clpp.generated)} นาที`);
   if(state.stations&&data.stations)parts.push(`สถานี ${data.stations.rows.length.toLocaleString()} จุด · ตรวจเวลารายสถานี`);
   $('development-status').textContent=parts.join(' / ')||'เลือกชั้นข้อมูลที่ต้องการ';
+  $('development-status').dataset.stale=String(Boolean(data.clpp&&Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))&&(data.health?.clpp_ok===false||lag(data.clpp.generated)>90)));
   launcher.dataset.active=String(Object.values(state).some(Boolean));
  }
  async function loadModel(){
@@ -46,6 +50,7 @@
   const result=await resource('clpp.json');
   if(!result.payload.frames?.length)throw Error('ภาพ CLPP ไม่พร้อม');
   data.clpp={...result.payload,base:result.base};
+  try{data.health=(await resource('health.json')).payload;}catch{data.health=null;}
   indices.clpp=Math.max(0,data.clpp.frames.findIndex(f=>f.kind==='present'));
  }
  async function activate(key,on){
@@ -152,7 +157,7 @@
   $('development-play').disabled=!frames.length;$('development-slider').disabled=!frames.length;
   $('development-time').textContent=f?date(f.time):'กำลังโหลด';
   $('development-time-info').textContent=!f?'ยังไม่มีเฟรม':source==='model'?`${data.model.name} · ฝนช่วง ${date(f.start)}–${date(f.time)} · หน่วย มม./3 ชม. · ลมเฉลี่ย 3 ชม.`:`${f.kind==='nowcast'?'คาดการณ์ +'+f.offset_min+' นาที':f.kind==='present'?'ตรวจวัดล่าสุด':'ตรวจวัดย้อนหลัง'} · ฐานข้อมูลล่าช้า ${lag(data.clpp.generated)} นาที · หน่วย มม./ชม.`;
-  $('development-credit').textContent=source==='model'&&data.model?`${data.model.name} / Open-Meteo · ${data.model.license} · กริดตัวอย่าง 1.5°`:'CLPP / ONWR · ต้นทาง RadarGIS · สำเนาอัปเดตทุก 5 นาทีเมื่อแหล่งข้อมูลพร้อม';
+  $('development-credit').textContent=source==='model'&&data.model?`${data.model.name} / Open-Meteo · ${data.model.license} · กริดตัวอย่าง 1.5°`:`CLPP / ONWR · ต้นทาง RadarGIS · ${data.health?.clpp_ok===false?'อัปเดตไม่สำเร็จ ใช้สำเนาตามเวลาที่กำกับ':'ตรวจข้อมูลทุก 5 นาทีเมื่อแหล่งข้อมูลพร้อม'}`;
  }
  function stop(){if(timer)clearInterval(timer);timer=null;$('development-play').textContent='▶';$('development-play').setAttribute('aria-label','เล่นข้อมูลทดลอง');}
  $('development-slider').addEventListener('input',e=>{indices[source]=Number(e.target.value);render();});
@@ -199,6 +204,8 @@
   originalClick?.(point);
  };
  map.gl.on('style.load',()=>renderProvinces());
+ document.querySelectorAll('#layers-toggle,#display-toggle,#maptools-toggle,#basemap-toggle,.category-nav [data-view],.category-nav [data-tool]').forEach(button=>button.addEventListener('click',()=>open(false)));
+ document.querySelectorAll('.category-nav [data-view]').forEach(button=>button.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);++pointRequest;stop();popup?.remove();render();}));
  setInterval(async()=>{
   if(!Object.values(state).some(Boolean))return;
   try{
