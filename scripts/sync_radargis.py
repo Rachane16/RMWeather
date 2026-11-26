@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import re
+import shutil
 import sys
 import urllib.error
 import urllib.parse
@@ -136,7 +137,7 @@ def prepare():
     key = hashlib.sha256(json.dumps(products_from_catalog(catalog), sort_keys=True).encode()).hexdigest()[:24]
     if os.environ.get('GITHUB_OUTPUT'):
         with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as stream:
-            stream.write(f'key={key}\n')
+            stream.write(f'key={key if products_from_catalog(catalog) else "unavailable"}\n')
     print(f'RadarGIS catalog: {len(products_from_catalog(catalog))} products, {len(errors)} source errors')
 
 
@@ -165,6 +166,17 @@ def main():
     catalog = json.loads(CATALOG.read_text(encoding='utf-8'))
     previous_path = OUT / 'radargis.json'
     previous = json.loads(previous_path.read_text(encoding='utf-8')) if previous_path.exists() else {}
+    # A dated, validated public snapshot supplies the first known-good image set.
+    # It is a fallback only; a current upstream catalog always takes precedence.
+    seed = ROOT / 'data' / 'radargis-fallback'
+    if not previous.get('data', {}).get('products') and (seed / 'catalog.json').exists():
+        previous = json.loads((seed / 'catalog.json').read_text(encoding='utf-8'))
+        (OUT / 'radargis').mkdir(parents=True, exist_ok=True)
+        for product in previous['data']['products']:
+            for frame in product['frames']:
+                name = Path(frame['image_url']).name
+                if re.fullmatch(r'[a-f0-9]{24}\.png', name):
+                    shutil.copyfile(seed / name, OUT / 'radargis' / name)
     old_products = {p['id']: p for p in previous.get('data', {}).get('products', [])}
     products = products_from_catalog(catalog)
     published = []
@@ -187,9 +199,14 @@ def main():
     now = dt.datetime.now(dt.timezone.utc).isoformat()
     data = {'products': published, 'checked_at': now}
     envelope = {'fetched_at': now, 'source': BASE, 'ok': bool(products) and not errors, 'data': data}
+    if not products:
+        envelope['retained_from'] = previous.get('retained_from') or previous.get('fetched_at')
     if errors:
         envelope['error'] = ', '.join(sorted(set(errors)))
     previous_path.write_text(json.dumps(envelope, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as stream:
+            stream.write(f'ok={str(envelope["ok"]).lower()}\n')
     retained = {Path(f['image_url']).name for p in published for f in p['frames']}
     for path in (OUT / 'radargis').glob('*.png'):
         if path.name not in retained:

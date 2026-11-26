@@ -68,3 +68,18 @@ class RadarGISTests(unittest.TestCase):
             result = json.loads((out/'radargis.json').read_text(encoding='utf-8'))
             self.assertFalse(result['ok'])
             self.assertEqual(result['data']['products'], previous['data']['products'])
+
+    def test_first_failed_refresh_uses_dated_public_seed_without_faking_frame_time(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder);out = root/'output';out.mkdir()
+            seed = root/'data'/'radargis-fallback';seed.mkdir(parents=True)
+            name = 'a'*24+'.png';(seed/name).write_bytes(b'\x89PNG\r\n\x1a\nfixture')
+            old = {'fetched_at':'2026-11-26T02:30Z', 'data':{'products':[{'id':'dbz','frames':[{'image_url':'data/live/radargis/'+name,'frame_time':'2026-11-26T02:15Z'}]}]}}
+            (seed/'catalog.json').write_text(json.dumps(old))
+            catalog = root/'catalog.json';catalog.write_text(json.dumps({'errors':['HTTPError HTTP 403']}))
+            with patch.object(radar,'ROOT',root),patch.object(radar,'OUT',out),patch.object(radar,'CATALOG',catalog):
+                radar.main()
+            result=json.loads((out/'radargis.json').read_text(encoding='utf-8'))
+            self.assertFalse(result['ok']);self.assertEqual(result['retained_from'],old['fetched_at'])
+            self.assertEqual(result['data']['products'][0]['frames'][0]['frame_time'],'2026-11-26T02:15Z')
+            self.assertTrue((out/'radargis'/name).exists())

@@ -12,6 +12,8 @@ The optional RadarGIS layer offers dBZ, rain rate, lightning risk, their nowcast
 
 JSON and images did not provide cross-origin headers at verification. Actions publishes validated PNGs on the same origin as the website. A content-derived Actions cache reuses images until the upstream catalog changes. URLs are restricted to the source host and expected paths, bounds and zoned times are validated, and failed updates retain cached products with an error status. Old image assets are pruned only after a replacement catalog is assembled. Upstream checks are scheduled every five minutes; the browser refreshes published catalogs every minute. Actions scheduling, publishing and source processing can add delay.
 
+Some GitHub runners received HTTP 403 while others could read the same public endpoints. The collector identifies RMWeather, supplies the public-map referrer and can parse the map's embedded initial JSON catalog without executing scripts. Only successful, complete refreshes save a new cache; a failed catalog fetch restores the most recent successful cache rather than an older empty cache. A dated public fallback in `data/radargis-fallback` supplies initial images when no successful runner cache exists. Fallback images keep their actual observation/forecast times and failures remain visible; they are not relabeled as fresh observations.
+
 ## ThaiWater details
 
 National rainfall, river level and dam layers still load independently. Normalization retains station IDs, address, agency, sponsor, basin, source timestamps and measurement units. Unzoned station timestamps are interpreted as ICT. Date-only dam reports stay date-only.
