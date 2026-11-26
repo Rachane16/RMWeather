@@ -52,15 +52,24 @@ jobs:
       - name: Read TMD RadarGIS catalog
         id: radargis_catalog
         run: python scripts/sync_radargis.py --catalog
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
+        id: radargis_cache
         with:
           path: |
             data/live/radargis.json
             data/live/radargis
-          key: radargis-v1-${{ steps.radargis_catalog.outputs.key }}
-          restore-keys: radargis-v1-
+          key: radargis-v2-${{ steps.radargis_catalog.outputs.key }}
+          restore-keys: radargis-v2-
       - name: Update TMD RadarGIS overlays
+        id: radargis_sync
         run: python scripts/sync_radargis.py
+      - uses: actions/cache/save@v4
+        if: steps.radargis_sync.outputs.ok == 'true' && steps.radargis_cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            data/live/radargis.json
+            data/live/radargis
+          key: radargis-v2-${{ steps.radargis_catalog.outputs.key }}
       - name: Update Thailand Windy webcams
         run: python scripts/sync_windy.py
         env:
