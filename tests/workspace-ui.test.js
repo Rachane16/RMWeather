@@ -40,3 +40,10 @@ test('advance forecast is opt-in and replaces playback without changing desktop 
  const mobile=new WorkspacePanels(true);mobile.setOpen('advance',true);mobile.setOpen('display',true);
  assert.equal(mobile.open.advance,false);assert.equal(mobile.open.display,true);
 });
+test('experimental time dropdown stays closed on arrival and replaces other playback windows independently of layers',()=>{
+ const ui=new WorkspacePanels(true);assert.equal(ui.open.development,false);
+ ui.setOpen('timeline',true);ui.setOpen('development',true);
+ assert.equal(ui.open.timeline,false);assert.equal(ui.open.development,true);
+ ui.setOpen('advance',true);assert.equal(ui.open.development,false);
+ ui.setOpen('development',true);ui.setMobile(false);assert.equal(ui.open.development,false);
+});

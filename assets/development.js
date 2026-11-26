@@ -3,12 +3,12 @@
 // Experimental sources have their own visibility and clock. Existing map layers
 // remain intact; the ordinary wind resumes when model wind is disabled.
 (()=>{
- const panel=$('development-dialog'),launcher=$('development-open');
+ const panel=$('development-dialog'),launcher=$('development-open'),nav=$('development-nav');
  document.querySelector('.workspace').append(panel,$('development-timeline'),launcher);
- const state={modelRain:false,modelWind:false,clppRadar:false,provinces:false,stations:false,point:false};
- const data={model:null,clpp:null,stations:null,geo:null,health:null},indices={model:0,clpp:0};
- let source='model',timer=null,modelRequest=0,pointRequest=0,popup=null,minimized=false,windKey='',stationKey='',provinceKey='',imageRequest=0,clppLoading=false;
- const textures=new Map(),images=new Map();
+ const state={modelRain:false,modelWind:false,clppRadar:false,provinces:false};
+ const data={model:null,clpp:null,geo:null,health:null},indices={model:0,clpp:0};
+ let source='model',timer=null,modelRequest=0,popup=null,windKey='',provinceKey='',imageRequest=0,clppLoading=false;
+ const textures=new Map();
  const modelInfo={
   ecmwf_ifs:['ECMWF IFS HRES','โมเดลหลัก · ECMWF','9 กม.','6 ชั่วโมง',.5,'ecmwf-api','แบบจำลองฟิสิกส์ความละเอียดสูง ใช้เปรียบเทียบฝนและลม'],
   gfs_global:['GFS','โมเดลหลัก · NOAA','ประมาณ 25 กม.','6 ชั่วโมง',1.5,'gfs-api','แบบจำลองสหรัฐฯ สำหรับเทียบแนวโน้มฝนและลม'],
@@ -33,10 +33,10 @@
   $('development-model-link').href='https://open-meteo.com/en/docs'+(info[5]?'/'+info[5]:'');
  }
  function open(on){
-  panel.hidden=!on;launcher.setAttribute('aria-expanded',String(on));
-  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('sidebar',false);collapseClock(true);}
+  panel.hidden=!on;launcher.setAttribute('aria-expanded',String(on));nav.classList.toggle('active',on);nav.setAttribute('aria-pressed',String(on));
+  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('sidebar',false);window.workspaceUI?.setOpen('development',false);}
  }
- launcher.addEventListener('click',async()=>{if(!panel.hidden){open(false);return;}if(await window.developmentAccess.ensure())open(true);});$('development-close').addEventListener('click',()=>open(false));
+ [launcher,nav].forEach(button=>button.addEventListener('click',async()=>{if(!panel.hidden){open(false);return;}if(await window.developmentAccess.ensure())open(true);}));$('development-close').addEventListener('click',()=>open(false));
  $('development-logout').addEventListener('click',()=>window.developmentAccess.logout());
  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();open(false);launcher.focus();}});
  async function resource(file){
@@ -47,7 +47,6 @@
   const parts=[];
   if((state.modelRain||state.modelWind)&&data.model)parts.push(`${data.model.name} · เก็บข้อมูล ${date(data.model.collected_at)}${lag(data.model.collected_at)>720?' · สำเนาเก่า':''}`);
   if(Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))&&data.clpp)parts.push(`${data.health?.clpp_ok===false?'อัปเดตไม่สำเร็จ · ใช้สำเนา ':''}CLPP · ฐานเรดาร์ ${date(data.clpp.generated)} · ล่าช้า ${lag(data.clpp.generated)} นาที`);
-  if(state.stations&&data.stations)parts.push(`สถานี ${data.stations.rows.length.toLocaleString()} จุด · ตรวจเวลารายสถานี`);
   $('development-status').textContent=parts.join(' / ')||'เลือกชั้นข้อมูลที่ต้องการ';
   $('development-status').dataset.stale=String(Boolean(data.clpp&&Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))&&(data.health?.clpp_ok===false||lag(data.clpp.generated)>90)));
   launcher.dataset.active=String(Object.values(state).some(Boolean));
@@ -70,16 +69,15 @@
  }
  async function activate(key,on){
   state[key]=on;stop();
-  if(!on){++pointRequest;popup?.remove();}
+  if(!on)popup?.remove();
   try{
    if(on){
     status('กำลังโหลดชุดข้อมูล…');
     if(key.startsWith('model')){source='model';if(!data.model)await loadModel();}
     else{
      if(!data.clpp)await loadCLPP();
-     if(key==='clppRadar'||key==='point')source='clpp';
+     if(key==='clppRadar')source='clpp';
      if(key==='provinces'&&!data.geo)data.geo=(await resource('provinces.json')).payload;
-     if(key==='stations'&&!data.stations){const p=(await resource('stations.json')).payload;data.stations={...p,rows:developmentStations(p)};}
     }
    }
    render();
@@ -87,9 +85,23 @@
  }
  document.querySelectorAll('[data-development]').forEach(input=>input.addEventListener('change',()=>activate(input.dataset.development,input.checked)));
  $('development-model').addEventListener('change',async()=>{++modelRequest;stop();data.model=null;render();if(state.modelRain||state.modelWind){try{await loadModel();}catch(e){status(e.message);}}});
- $('development-station-window').addEventListener('change',render);
- $('development-clear').addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);++pointRequest;stop();popup?.remove();render();});
- $('development-fit').addEventListener('click',()=>{open(false);map.gl.fitBounds([[95,1.5],[110,22.5]],{padding:35,duration:900});});
+ async function goCurrent(){
+  stop();source='model';
+  if(!state.modelRain&&!state.modelWind)state.modelRain=true;
+  try{
+   if(!data.model)await loadModel();
+   if(!data.model)return;
+   const current=developmentCurrentFrame(data.model.frames);indices.model=current.index;render();
+   if(!current.current)status('ไม่มีเฟรมครอบคลุมเวลาปัจจุบัน · แสดงช่วงใกล้ที่สุดตามเวลาที่กำกับ');
+  }catch(error){status(error.message);}
+ }
+ $('development-now').addEventListener('click',goCurrent);
+ function updateNow(){
+  $('development-now-time').textContent=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+  const current=data.model?developmentCurrentFrame(data.model.frames):null;
+  $('development-now').classList.toggle('is-current',Boolean(current?.current&&indices.model===current.index&&(state.modelRain||state.modelWind)));
+ }
+ setInterval(updateNow,60000);
  function texture(frame,model){
   const key=model.id+model.collected_at+frame.time;if(textures.has(key))return textures.get(key);
   const g=model.grid,canvas=document.createElement('canvas');canvas.width=420;canvas.height=560;
@@ -99,8 +111,9 @@
   for(let y=0;y<canvas.height;y++){
    const lat=(2*Math.atan(Math.exp(n+(s-n)*y/(canvas.height-1)))-Math.PI/2)*180/Math.PI;
    for(let x=0;x<canvas.width;x++){
-    const value=developmentSample(frame.rain,g,g.west+(east-g.west)*x/(canvas.width-1),lat);
-    const colour=developmentRainColour(value);if(!colour[3])continue;
+    const lon=g.west+(east-g.west)*x/(canvas.width-1),mask=developmentRegionMask(g,lon,lat);if(!mask)continue;
+    const value=developmentSample(frame.rain,g,lon,lat);
+    const colour=developmentRainColour(value);colour[3]=Math.round(colour[3]*mask);if(!colour[3])continue;
     const i=(y*canvas.width+x)*4;
     for(let k=0;k<4;k++)pixels.data[i+k]=colour[k];
    }
@@ -125,18 +138,7 @@
    clppLoading=true;
    clppImage(radar).then(url=>{if(pendingImage===imageRequest&&state.clppRadar)map.setRain({image_url:url,bounds:radar.bounds},'development-clpp');}).catch(()=>{if(pendingImage===imageRequest)status('ภาพทดลองไม่พร้อม กรุณาลองใหม่');}).finally(()=>{if(pendingImage===imageRequest)clppLoading=false;});
   }else{clppLoading=false;map.setRain(null,'development-clpp');}
-  renderStations();renderProvinces();renderClock();status();
- }
- function renderStations(){
-  if(!data.stations)return;
-  const window24=$('development-station-window').value==='24h';
-  const key=[data.stations.generated,window24,state.stations].join(':');
-  if(stationKey===key)return;stationKey=key;
-  const features=data.stations.rows.map((s,index)=>{
-   const value=window24?s.mm24:s.mm,observed=window24?s.obs24:s.obs;
-   return {type:'Feature',geometry:{type:'Point',coordinates:[s.lon,s.lat]},properties:{index,old:!observed||age(observed)>1.5,title:`${s.name} · ${number(value)} มม.`,amount:value??-1}};
-  });
-  map.setPoints('devstations',features,state.stations,index=>showStation(data.stations.rows[index]));
+  renderProvinces();renderClock();updateNow();status();
  }
  function renderProvinces(){
   if(!map.ready)return;
@@ -154,26 +156,23 @@
   map.gl.setLayoutProperty(id,'visibility','visible');
  }
  function showPopup(point,html){popup?.remove();popup=new maplibregl.Popup({className:'development-popup',maxWidth:'330px',closeOnClick:false}).setLngLat(point).setHTML(html).addTo(map.gl);return popup;}
- function showStation(s){
-  const derived=s.src===1?'อนุมานจากผลต่างฝนสะสม':s.src===0?'รายงานจากสถานี':'ไม่ทราบประเภท';
-  showPopup([s.lon,s.lat],`<h3>${esc(s.name)}</h3><p>${esc(s.prov)} · ${esc(s.agency)}</p><dl><dt>ฝน 1 ชั่วโมง</dt><dd>${number(s.mm)} มม.</dd><dt>ฝน 24 ชั่วโมง</dt><dd>${number(s.mm24)} มม.</dd></dl><p>1 ชม.: ${esc(freshness(s.obs,1.5))}<br>24 ชม.: ${esc(freshness(s.obs24,1.5))}</p><small>ค่า 1 ชม.: ${esc(derived)} · แหล่งรายงาน ${esc(s.provider)}<br>CLPP / หน่วยงานเจ้าของสถานี · ค่า — คือไม่มีข้อมูล ไม่ใช่ 0</small>`);
- }
  function showProvince(feature,point){
   const p=feature.properties,stats=data.clpp.zones.accum;
   showPopup(point,`<h3>${esc(p.name_th)}</h3><p>ฝนสะสมคาดการณ์ล่วงหน้า ${number(stats.window_min,0)} นาที</p><dl><dt>ค่าเฉลี่ยทั้งจังหวัด</dt><dd>${number(p.mean_mm)} มม.</dd><dt>ค่าสูงสุดในจังหวัด</dt><dd>${number(p.max_mm)} มม.</dd></dl><p>ฐานเวลา ${esc(date(data.clpp.generated))}<br>ล่าช้า ${lag(data.clpp.generated)} นาที</p><small>CLPP / RadarGIS · ${number(stats.frames_used,0)} เฟรม<br>ค่าสูงสุดเป็นตำแหน่งหนึ่งในจังหวัด ไม่ใช่ฝนทั่วทั้งจังหวัด</small>`);
  }
  function renderClock(){
-  const modelOn=state.modelRain||state.modelWind,clppOn=state.clppRadar||state.point;
-  $('development-timeline').hidden=!modelOn&&!clppOn;
+  const modelOn=state.modelRain||state.modelWind,clppOn=state.clppRadar;
   const options=$('development-time-source').options;options[0].disabled=!modelOn;options[1].disabled=!clppOn;
-  if(source==='model'&&!modelOn)source='clpp';if(source==='clpp'&&!clppOn)source='model';
+  if(source==='model'&&!modelOn&&clppOn)source='clpp';if(source==='clpp'&&!clppOn&&modelOn)source='model';
   $('development-time-source').value=source;
-  const frames=data[source]?.frames||[],index=indices[source],f=frames[index];
+  const active=source==='model'?modelOn:clppOn,frames=active?data[source]?.frames||[]:[],index=indices[source],f=frames[index];
   $('development-slider').max=Math.max(0,frames.length-1);$('development-slider').value=index;
   $('development-play').disabled=!frames.length;$('development-slider').disabled=!frames.length;
-  $('development-time').textContent=f?date(f.time):'กำลังโหลด';
-  $('development-time-info').textContent=!f?'ยังไม่มีเฟรม':source==='model'?`${data.model.name} · ${date(f.start)}–${date(f.time)} · อัตราฝนเฉลี่ย 3 ชม. (mm/h) · ลมเฉลี่ย 3 ชม.`:`${f.kind==='nowcast'?'คาดการณ์ +'+f.offset_min+' นาที':f.kind==='present'?'ตรวจวัดล่าสุด':'ตรวจวัดย้อนหลัง'} · ฐานข้อมูลล่าช้า ${lag(data.clpp.generated)} นาที · หน่วย มม./ชม.`;
-  $('development-credit').textContent=source==='model'&&data.model?`${data.model.name} / Open-Meteo · ${data.model.license} · กริดแสดงผล ${data.model.grid.step}° · ไทยและทะเลรอบข้าง · แคช 12 ชม.`:`CLPP / ONWR · สีและเกณฑ์ต้นทาง RadarGIS · ${data.health?.clpp_ok===false?'อัปเดตไม่สำเร็จ ใช้สำเนาตามเวลาที่กำกับ':'ตรวจข้อมูลทุก 5 นาทีเมื่อแหล่งข้อมูลพร้อม'}`;
+  $('development-time').textContent=f?date(f.time):'เลือกชุดข้อมูล';
+  $('development-frame-count').textContent=f?`${index+1} / ${frames.length} เฟรม`:'ยังไม่มีเฟรม';
+  $('development-time-summary').textContent=f?`${source==='model'?data.model.name:'CLPP'} · ${date(f.time)}`:'เลือกชุดข้อมูลทดลอง';
+  $('development-time-info').textContent=!f?'เปิดฝนพยากรณ์ ลม หรือเรดาร์ เพื่อเลือกช่วงเวลา':source==='model'?`${date(f.start)}–${date(f.time)} · อัตราฝนและลมเฉลี่ย 3 ชม.`:`${f.kind==='nowcast'?'คาดการณ์ +'+f.offset_min+' นาที':f.kind==='present'?'ตรวจวัดล่าสุด':'ตรวจวัดย้อนหลัง'} · ข้อมูลล่าช้า ${lag(data.clpp.generated)} นาที`;
+  $('development-credit').textContent=source==='model'&&data.model?`${data.model.name} / Open-Meteo · ${data.model.license} · กริด ${data.model.grid.step}° · แคช 12 ชม.`:data.clpp?`CLPP / ONWR · สีต้นทาง RadarGIS · ${data.health?.clpp_ok===false?'ใช้สำเนาตามเวลาที่กำกับ':'อัปเดตเมื่อแหล่งข้อมูลพร้อม'}`:'';
   const stops=source==='model'?DEVELOPMENT_RAIN_STOPS:(data.clpp?.levels_mm_hr||[]).map((v,i)=>[v,...data.clpp.levels_rgb[i]]);
   if(stops.length){
    $('development-scale').style.background=`linear-gradient(90deg,${stops.map((s,i)=>`rgb(${s.slice(1).join(',')}) ${i/(stops.length-1)*100}%`).join(',')})`;
@@ -189,63 +188,39 @@
   $('development-play').textContent='Ⅱ';$('development-play').setAttribute('aria-label','หยุดข้อมูลทดลอง');
   timer=setInterval(()=>{const frames=data[source]?.frames||[];if(document.hidden||!frames.length)return;if(source==='clpp'&&state.clppRadar&&(clppLoading||!map.isRainReady('development-clpp')))return;indices[source]=(indices[source]+1)%frames.length;render();},1100);
  });
- function collapseClock(on){minimized=on;$('development-timeline').classList.toggle('is-collapsed',on);$('development-timeline-body').hidden=minimized;$('development-timeline-minimize').textContent=minimized?'+':'−';$('development-timeline-minimize').setAttribute('aria-expanded',String(!minimized));$('development-timeline-minimize').setAttribute('aria-label',minimized?'เปิดเวลาข้อมูลทดลอง':'ย่อเวลาข้อมูลทดลอง');}
- $('development-timeline-minimize').addEventListener('click',()=>{collapseClock(!minimized);if(!minimized)open(false);});
- async function imageData(frame){
-  const url=await clppImage(frame);if(images.has(url))return images.get(url);
-  const pending=new Promise((resolve,reject)=>{
-   const img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);resolve(ctx.getImageData(0,0,c.width,c.height));}catch(e){reject(e);}};img.onerror=()=>reject(Error('ภาพเฟรมไม่พร้อม'));img.src=url;
-  });
-  if(images.size>35)images.clear();images.set(url,pending);
-  try{return await pending;}catch(e){images.delete(url);throw e;}
- }
- async function showPoint(point){
-  const request=++pointRequest,current=data.clpp;
-  const target=showPopup(point,'<h3>แนวโน้มฝนรายจุด</h3><p>กำลังอ่านภาพ…</p>');
-  const frames=current.frames.filter(f=>f.offset_min>=0);
-  const values=await Promise.all(frames.map(async f=>{
-   try{const pixels=await imageData(f),xy=developmentPixelPosition(f.bounds,point.lng,point.lat,pixels.width,pixels.height);
-    if(!xy)return {frame:f,text:'นอกขอบเขตภาพ'};
-    const index=(xy[1]*pixels.width+xy[0])*4,range=developmentColourRange(pixels.data.slice(index,index+4),current.levels_rgb,current.levels_mm_hr);
-    return {frame:f,text:range.text};
-   }catch{return {frame:f,text:'ภาพไม่พร้อม'};}
-  }));
-  if(request!==pointRequest||!state.point||!target.isOpen())return;
-  target.setHTML(`<h3>แนวโน้มฝนรายจุด · CLPP</h3><small>${point.lat.toFixed(4)}, ${point.lng.toFixed(4)} · ฐาน ${esc(date(current.generated))}</small><p>ช่วงค่าจากสีภาพ (มม./ชม.) · ค่าประมาณ</p><table>${values.map(v=>`<tr><td>${v.frame.offset_min===0?'ขณะตรวจวัด':'+'+v.frame.offset_min+' นาที'}</td><td>${esc(v.text)}</td></tr>`).join('')}</table><small>ภาพไม่มีสีอาจไม่มีฝนหรือไม่มีข้อมูล · ไม่แทนค่าเป็นศูนย์ · ไม่ใช่ค่าดิบจาก API รายจุด<br>CLPP / RadarGIS · ล่าช้า ${lag(current.generated)} นาที</small>`);
- }
+ window.addEventListener('development-clock-open',()=>{if(window.workspaceUI?.isOpen('development'))open(false);});
  const originalClick=map.onMapClick;
  map.onMapClick=point=>{
-  if(state.point&&data.clpp){showPoint(point);return;}
   if(state.provinces&&map.gl.getLayer('rm-development-provinces')){
    const features=map.gl.queryRenderedFeatures(map.gl.project(point),{layers:['rm-development-provinces']});
    if(features.length){showProvince(features[0],point);return;}
   }
-  if((state.modelRain||state.modelWind)&&data.model){
+  if((state.modelRain||state.modelWind)&&data.model&&developmentRegionMask(data.model.grid,point.lng,point.lat)>0){
    const f=data.model.frames[indices.model],g=data.model.grid,r=developmentSample(f.rain,g,point.lng,point.lat),u=developmentSample(f.u,g,point.lng,point.lat),v=developmentSample(f.v,g,point.lng,point.lat);
    showPopup(point,`<h3>${esc(data.model.name)}</h3><p>${esc(date(f.start))}–${esc(date(f.time))}</p><dl><dt>อัตราฝนเฉลี่ย 3 ชม.</dt><dd>${number(r)} mm/h</dd><dt>ฝนสะสมในช่วง 3 ชม.</dt><dd>${number(r==null?null:r*3)} มม.</dd><dt>ลมเฉลี่ยที่ 10 เมตร</dt><dd>${number(u==null||v==null?null:Math.hypot(u,v))} ม./วินาที</dd></dl><small>ค่าประมาณจากกริดแสดงผลไทยและทะเล ${data.model.grid.step}° ไม่ใช่ค่าตรวจวัดที่ตำแหน่งนี้<br>${esc(data.model.name)} / Open-Meteo · ${esc(data.model.license)}</small>`);return;
   }
   originalClick?.(point);
  };
  map.gl.on('style.load',()=>renderProvinces());
- window.addEventListener('development-unlocked',()=>{launcher.title='กำลังพัฒนา';launcher.setAttribute('aria-label','กำลังพัฒนา · เข้าสู่ระบบแล้ว');});
+ window.addEventListener('development-unlocked',()=>{launcher.title='กำลังพัฒนา';launcher.setAttribute('aria-label','กำลังพัฒนา · เข้าสู่ระบบแล้ว');document.querySelector('.workspace').dataset.developmentMode='true';$('development-timeline-toggle').hidden=false;renderClock();});
  window.addEventListener('development-locked',()=>{
   launcher.title='กำลังพัฒนา · เข้าสู่ระบบ';launcher.setAttribute('aria-label',launcher.title);
-  Object.keys(state).forEach(k=>state[k]=false);++pointRequest;++modelRequest;++imageRequest;stop();popup?.remove();open(false);
-  Object.keys(data).forEach(k=>data[k]=null);images.clear();textures.clear();windKey='';stationKey='';provinceKey='';
-  map.setRain(null,'development-model');map.setRain(null,'development-clpp');map.setExperimentalWind(null);map.setPoints('devstations',[],false,()=>{});
+  Object.keys(state).forEach(k=>state[k]=false);++modelRequest;++imageRequest;stop();popup?.remove();open(false);
+  Object.keys(data).forEach(k=>data[k]=null);textures.clear();windKey='';provinceKey='';
+  map.setRain(null,'development-model');map.setRain(null,'development-clpp');map.setExperimentalWind(null);window.workspaceUI?.setOpen('development',false);$('development-timeline-toggle').hidden=true;document.querySelector('.workspace').dataset.developmentMode='false';
   if(map.gl.getLayer('rm-development-provinces'))map.gl.removeLayer('rm-development-provinces');
   if(map.gl.getSource('rm-development-provinces'))map.gl.removeSource('rm-development-provinces');
   render();
  });
  document.querySelectorAll('#layers-toggle,#display-toggle,#maptools-toggle,#basemap-toggle,.category-nav [data-view],.category-nav [data-tool]').forEach(button=>button.addEventListener('click',()=>open(false)));
- document.querySelectorAll('.category-nav [data-view]').forEach(button=>button.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);++pointRequest;stop();popup?.remove();render();}));
+ document.querySelectorAll('.category-nav [data-view]').forEach(button=>button.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);++modelRequest;stop();popup?.remove();render();}));
  setInterval(async()=>{
   if(!Object.values(state).some(Boolean))return;
   try{
-   if(Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))){await loadCLPP();if(state.stations){const p=(await resource('stations.json')).payload;data.stations={...p,rows:developmentStations(p)};}}
+   if(Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))){await loadCLPP();}
    if(state.modelRain||state.modelWind)await loadModel();
    render();
   }catch(e){status('อัปเดตไม่สำเร็จ · คงข้อมูลเดิมตามเวลาที่กำกับ');}
  },300000);
- modelProfile();
+ modelProfile();updateNow();renderClock();
 })();
