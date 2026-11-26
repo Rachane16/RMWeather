@@ -21,7 +21,7 @@ function setWeatherTool(name,on) {
     if(windySelection.mode==='device')windySelection.select('device',window.currentLocation);
     windyLocation=windySelection.point;windyZoom=10;
     if(windySelection.mode==='device'&&!window.locationPending)requestCurrentLocation(true);
-  }closeLayerDrawer();$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
+  }$(`${name}-panel`).scrollTop=0;updateWeatherEmbeds();}
   else if(name==='weather-map')$('windy-frame').removeAttribute('src');
   else $('tmd-frame').removeAttribute('src');
 }

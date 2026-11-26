@@ -34,7 +34,12 @@ jobs:
       - run: node --test tests/*.test.js
       - name: Check public RadarGIS access from the runner
         if: github.event_name == 'pull_request'
-        run: python scripts/sync_radargis.py --catalog
+        run: python scripts/sync_radargis.py --probe
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'pull_request'
+        with:
+          name: radargis-connectivity
+          path: _radargis_probe.json
   deploy:
     if: github.event_name != 'pull_request'
     needs: check

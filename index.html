@@ -2,30 +2,30 @@
 <html lang="th" data-theme="light">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" type="image/png" href="assets/rmweather-icon.png?v=20261126-interface1">
+<link rel="icon" type="image/png" href="assets/rmweather-icon.png?v=20261126-radar-ui2">
 <meta name="theme-color" content="#102724"><meta name="description" content="RMWeather แผนที่ติดตามฝน ระดับน้ำ กล้อง CCTV และลมในประเทศไทย">
 <title>RMWeather — ฝน น้ำ และภาพสถานการณ์</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="assets/style.css?v=20261126-interface1">
-<link rel="stylesheet" href="assets/layers.css?v=20261126-interface1">
+<link rel="stylesheet" href="assets/style.css?v=20261126-radar-ui2">
+<link rel="stylesheet" href="assets/layers.css?v=20261126-radar-ui2">
 <script defer src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
 <script defer src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
-<script defer src="assets/map-engine.js?v=20261126-interface1"></script>
-<script defer src="assets/hydro.js?v=20261126-interface1"></script>
-<script defer src="assets/radargis.js?v=20261126-interface1"></script>
-<script defer src="assets/app.js?v=20261126-interface1"></script>
-<script defer src="assets/layers.js?v=20261126-interface1"></script>
-<link rel="stylesheet" href="assets/terrain.css?v=20261126-interface1">
-<script defer src="assets/windy-embed.js?v=20261126-interface1"></script>
-<script defer src="assets/weather-tools.js?v=20261126-interface1"></script>
-<link rel="stylesheet" href="assets/refinements.css?v=20261126-interface1">
-<script defer src="assets/display.js?v=20261126-interface1"></script>
-<link rel="stylesheet" href="assets/layer-refresh.css?v=20261126-interface1">
-<link rel="stylesheet" href="assets/camera-refresh.css?v=20261126-interface1">
-<link rel="stylesheet" href="assets/workspace-ui.css?v=20261126-interface1">
-<script defer src="assets/workspace-ui.js?v=20261126-interface1"></script>
+<script defer src="assets/map-engine.js?v=20261126-radar-ui2"></script>
+<script defer src="assets/hydro.js?v=20261126-radar-ui2"></script>
+<script defer src="assets/radargis.js?v=20261126-radar-ui2"></script>
+<script defer src="assets/app.js?v=20261126-radar-ui2"></script>
+<script defer src="assets/layers.js?v=20261126-radar-ui2"></script>
+<link rel="stylesheet" href="assets/terrain.css?v=20261126-radar-ui2">
+<script defer src="assets/windy-embed.js?v=20261126-radar-ui2"></script>
+<script defer src="assets/weather-tools.js?v=20261126-radar-ui2"></script>
+<link rel="stylesheet" href="assets/refinements.css?v=20261126-radar-ui2">
+<script defer src="assets/display.js?v=20261126-radar-ui2"></script>
+<link rel="stylesheet" href="assets/layer-refresh.css?v=20261126-radar-ui2">
+<link rel="stylesheet" href="assets/camera-refresh.css?v=20261126-radar-ui2">
+<link rel="stylesheet" href="assets/workspace-ui.css?v=20261126-radar-ui2">
+<script defer src="assets/workspace-ui.js?v=20261126-radar-ui2"></script>
 <link rel="preload" as="font" href="assets/fonts/Sarabun-Regular.ttf" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="assets/hydro.css?v=20261126-interface1"><link rel="stylesheet" href="assets/windy-widget.css?v=20261126-interface1"><link rel="stylesheet" href="assets/interface-update.css?v=20261126-interface1"></head>
+<link rel="stylesheet" href="assets/hydro.css?v=20261126-radar-ui2"><link rel="stylesheet" href="assets/windy-widget.css?v=20261126-radar-ui2"><link rel="stylesheet" href="assets/interface-update.css?v=20261126-radar-ui2"></head>
 <body>
 <svg class="svg-defs" aria-hidden="true"><defs>
 <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z M9 3v15M15 6v15"/></symbol>
@@ -57,14 +57,14 @@
 </aside>
 <section id="overview-panel" class="weather-panel" aria-label="แถบสภาพอากาศ" hidden><div class="weather-panel-header"><span>สภาพอากาศ</span><button id="weather-collapse" class="icon-button" aria-expanded="true" aria-controls="weather-panel-body" aria-label="ปิดสภาพอากาศ">×</button></div><div id="weather-panel-body"><div class="place-chips"><button data-place="hatyai" class="selected">หาดใหญ่</button><button data-place="songkhla">สงขลา</button><button data-place="bangkok">กรุงเทพฯ</button><button data-place="chiangmai">เชียงใหม่</button><button data-place="khonkaen">ขอนแก่น</button><button data-place="rayong">ระยอง</button></div><section class="weather-hero" data-sky="cloud"><div class="hero-top"><span><svg><use href="#i-pin"/></svg><span id="place-name">หาดใหญ่</span></span><span class="hero-pill">อากาศขณะนี้</span></div><div class="hero-main"><div><div class="temperature-line"><span id="temperature">—</span><span class="degree">°C</span></div><p id="condition">กำลังโหลดอากาศ</p><span id="weather-range" class="weather-range">ต่ำสุด — / สูงสุด —</span></div><div class="weather-illustration"><span class="weather-orbit"></span><svg class="hero-weather" aria-hidden="true"><use id="weather-symbol" href="#i-cloud"/></svg></div></div><div class="weather-metrics"><div><svg><use href="#i-drop"/></svg><span>ความชื้น</span><strong id="humidity">—</strong></div><div><svg><use href="#i-wind"/></svg><span>ลม 10 เมตร</span><strong id="weather-wind">—</strong></div><div><svg><use href="#i-rain"/></svg><span>ฝนปัจจุบัน</span><strong id="precipitation">—</strong></div></div><small class="hero-source" id="weather-time">Open-Meteo · ข้อมูลแบบจำลอง</small><div class="forecast" id="forecast" hidden></div></section><button class="weather-forecast-link" data-tool="seven-day">ดูพยากรณ์ 7 วันจาก TMD <svg><use href="#i-sun"/></svg></button></div></section>
 <div class="right-launchers" role="group" aria-label="เลเยอร์และมุมมอง"><button id="display-toggle" class="map-button" aria-label="ชั้นข้อมูลและการแสดงผล" title="ชั้นข้อมูล" aria-controls="display-panel" aria-expanded="false"><svg><use href="#i-layers"/></svg><span>ชั้นข้อมูล</span></button><button id="maptools-toggle" class="map-button" aria-label="เครื่องมือแผนที่" title="เครื่องมือแผนที่" aria-controls="maptools-panel" aria-expanded="false"><svg><use href="#i-cube"/></svg><span>มุมมองแผนที่</span></button><button id="locate-quick" class="map-button" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน"><svg><use href="#i-pin"/></svg></button></div>
-<section id="display-panel" class="right-panel" aria-label="การแสดงผล" hidden><header><div><p class="eyebrow">DISPLAY LAYERS</p><h2>การแสดงผล</h2></div><button id="display-close" class="icon-button" aria-label="ปิดการแสดงผล">×</button></header><div class="popup-body" id="display-body"><label class="forecast-option"><span><svg><use href="#i-sun"/></svg>แถบสภาพอากาศ</span><input type="checkbox" id="forecast-visible"></label><label class="forecast-option"><span><svg><use href="#i-map"/></svg>แผนที่อากาศ · Windy</span><input type="checkbox" data-tool-toggle="weather-map"></label><label class="forecast-option"><span><svg><use href="#i-sun"/></svg>พยากรณ์อากาศ 7 วัน</span><input type="checkbox" data-tool-toggle="seven-day"></label><section class="quick-layers"><p class="eyebrow">MAP LAYERS</p><h3>เลือกชั้นข้อมูล</h3><div id="quick-layer-list"></div></section></div></section>
+<section id="display-panel" class="right-panel" aria-label="การแสดงผล" hidden><header><div><p class="eyebrow">DISPLAY LAYERS</p><h2>การแสดงผล</h2></div><button id="display-close" class="icon-button" aria-label="ปิดการแสดงผล">×</button></header><div class="popup-body" id="display-body"><section class="quick-layers"><p class="eyebrow">MAP LAYERS</p><h3>เลือกชั้นข้อมูล</h3><div id="quick-layer-list"></div></section><section class="display-extras"><h3>การแสดงผลเพิ่มเติม</h3><label class="forecast-option"><span><svg><use href="#i-sun"/></svg>แถบสภาพอากาศ</span><input type="checkbox" id="forecast-visible"></label><label class="forecast-option"><span><svg><use href="#i-sun"/></svg>พยากรณ์อากาศ 7 วัน</span><input type="checkbox" data-tool-toggle="seven-day"></label></section></div></section>
 <section id="maptools-panel" class="right-panel" aria-label="เครื่องมือแผนที่" hidden><header><div><p class="eyebrow">MAP CONTROLS</p><h2>เครื่องมือแผนที่</h2></div><button id="maptools-close" class="icon-button" aria-label="ปิดเครื่องมือแผนที่">×</button></header><div class="popup-body" id="maptools-body"><div class="map-actions"><button id="locate" class="map-button" title="ตำแหน่งของฉัน"><svg><use href="#i-pin"/></svg><span>ตำแหน่งฉัน</span></button><button id="fit" class="map-button" title="กลับสู่หาดใหญ่"><svg><use href="#i-map"/></svg><span>คืนค่าแผนที่</span></button></div><div class="terrain-controls" aria-label="มุมมองแผนที่"><button id="zoom-in" aria-label="ซูมเข้า">+</button><button id="zoom-out" aria-label="ซูมออก">−</button><button id="terrain-toggle" aria-pressed="false" title="สลับ 2D / 3D Terrain">2D <span>/ 3D</span></button><label>เอียง <input id="map-pitch" type="range" min="0" max="70" value="0" aria-label="มุมเอียงแผนที่"><output id="pitch-value">0°</output></label><button id="map-north" title="หมุนกลับทิศเหนือ" aria-label="หมุนกลับทิศเหนือ">N <span id="bearing-value">0°</span></button></div><p id="location-status" class="location-status" role="status">กำลังระบุตำแหน่งปัจจุบัน…</p><p class="panel-hint">ลากด้วยปุ่มเมาส์ขวาเพื่อหมุน/เอียง บนมือถือใช้สองนิ้ว</p></div></section>
 
 
 
 <section class="basemap-panel" id="basemap-panel" hidden><header class="section-heading"><h2>แผนที่ฐาน</h2><button id="basemap-close" class="icon-button" aria-label="ปิดตัวเลือกแผนที่"><svg><use href="#i-close"/></svg></button></header><div class="popup-body" id="basemap-body"><p class="eyebrow">BASEMAP LAYERS</p><div id="basemap-grid" class="basemap-grid"></div><div class="base-data-options"><h3>ข้อมูลแผนที่ฐาน</h3><label class="forecast-option">ภูมิประเทศและเงาเนินเขา<input type="checkbox" id="relief-toggle" role="switch"></label><p class="muted">เปิดเงาภูเขาบนแผนที่ฐานที่เลือก · ปรับ 2D/3D ได้ในมุมมองแผนที่</p></div><p class="muted">ELEMNT Natural Terrain · โทนธรรมชาติพร้อมเงาภูเขาและภูมิประเทศใต้ทะเล GEBCO<br>ชื่อไทยแสดงตามข้อมูล OpenStreetMap</p><div class="elevation-legend"><span>ที่ราบ</span><i></i><span>ภูเขาสูง</span></div></div></section>
 
-<button id="basemap-toggle" class="map-button basemap-toggle" title="แผนที่ฐาน" aria-label="แผนที่ฐาน" aria-expanded="false" aria-controls="basemap-panel"><svg><use href="#i-layers"/></svg><span>แผนที่ฐาน</span></button>
+<div class="map-zoom-controls" aria-label="ซูมแผนที่"><button id="map-zoom-in" aria-label="ซูมแผนที่เข้า">+</button><button id="map-zoom-out" aria-label="ซูมแผนที่ออก">−</button></div><button id="basemap-toggle" class="map-button basemap-toggle" title="แผนที่ฐาน" aria-label="แผนที่ฐาน" aria-expanded="false" aria-controls="basemap-panel"><svg><use href="#i-layers"/></svg><span>แผนที่ฐาน</span></button>
 <a id="elemnt-credit" class="elemnt-credit" href="https://elemnt.earth" target="_blank" rel="noopener">Powered by ELEMNT</a>
 <div id="terrain-status" class="terrain-status" role="status">กำลังโหลด ELEMNT Natural Terrain…</div>
 <div class="map-legend" id="map-legend" hidden><span><i class="legend-marker camera-color"></i>CCTV</span><span><i class="legend-marker water-color"></i>ระดับน้ำ</span><span><i class="legend-marker weather-color"></i>อากาศจากสถานี</span><span><i class="legend-marker windy-color"></i>Windy</span><span class="muted">คลิกหมุดเพื่อดูรายละเอียด</span></div>

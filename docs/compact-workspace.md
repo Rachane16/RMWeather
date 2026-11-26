@@ -16,9 +16,8 @@ other map data intact. Closing the dropdown stops playback and restores the
 latest available frame. Its compact summary always reports the provider's actual
 latest frame time, rather than substituting the wall clock for an observation.
 
-On mobile only one native control popup is open at a time. Opening weather, the
-catalogue, basemaps, map tools or the timeline dismisses the previous popup while
-leaving data layers enabled. The catalogue and display headers have close buttons only; other tool controls
+Other control popups replace one another, while an explicitly opened catalogue
+remains until closed. Data-layer visibility is independent of these windows. The catalogue and display headers have close buttons only; other tool controls
 remain above scrolling content. Search does not autofocus on phones. Returning
 to the mobile default closes popups. Controls leave room for source attribution.
 
@@ -51,3 +50,13 @@ Clicking Overview restores RainViewer, wind, Songkhla CCTV, RID water and statio
 Layer catalogue switches still support independent overlapping data sets. The
 seven-day forecast has been removed from the category bar; it remains available
 through Display Layers.
+
+
+The catalogue now remains open until the user closes it, including after map
+clicks, layer changes and opening another control. Main categories toggle off on
+a repeated click. On phones category clicks update map points/overlays without
+opening the results drawer; details are opened explicitly through map points or
+catalogue detail actions. Display Layers shares the catalogue green theme and
+mirrors its order, including Windy beside RainViewer and wind; weather widgets
+are below the data controls. Forecast table width is capped at 1600px on wide
+screens. Direct zoom buttons sit above the separate basemap launcher.

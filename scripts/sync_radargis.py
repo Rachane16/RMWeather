@@ -65,7 +65,9 @@ def utc_stamp(value):
         raise ValueError('Missing frame time')
     stamp = dt.datetime.fromisoformat(value.replace(' UTC', '+00:00').replace('Z', '+00:00'))
     if stamp.tzinfo is None:
-        raise ValueError('Frame time needs a timezone')
+        # Only called with valid_time: the provider defines this field as UTC.
+        # valid_dt_ts is currently seven hours off; valid_dt_iso is unzoned.
+        stamp = stamp.replace(tzinfo=dt.timezone.utc)
     return stamp.astimezone(dt.timezone.utc).isoformat()
 
 
@@ -156,7 +158,49 @@ def cache_image(frame):
         if not binary.startswith(b'\x89PNG\r\n\x1a\n') or len(binary) > 8000000:
             raise ValueError('Invalid RadarGIS image')
         path.write_bytes(binary)
-    return {**frame, 'image_url': 'data/live/radargis/' + name, 'attribution': 'เรดาร์ © <a href="https://radargis.tmd.go.th/">TMD RadarGIS</a>'}
+    return {**frame, 'source_url': url, 'image_url': 'data/live/radargis/' + name, 'attribution': 'เรดาร์ © <a href="https://radargis.tmd.go.th/">TMD RadarGIS</a>'}
+
+
+def probe():
+    """Runner connectivity evidence, including failures; never claims an outage is healthy."""
+    report = {'checked_at': dt.datetime.now(dt.timezone.utc).isoformat(), 'api_ok': False, 'images': []}
+    samples = []
+    try:
+        request = urllib.request.Request(BASE + '/api/overlays', headers=HEADERS)
+        with open_url(request, timeout=30) as response:
+            payload = json.load(response)
+            report['rate_headers'] = {key: response.headers[key] for key in ('Retry-After', 'X-RateLimit-Limit', 'X-RateLimit-Remaining') if response.headers.get(key)}
+        products = products_from_catalog({'overlays': payload})
+        report.update(api_ok=True, products=len(products), frames=sum(len(p['frames']) for p in products), catalog_source='live_api')
+        samples = [(p['id'], p['frames'][-1]['frame_time'], p['frames'][-1]['remote_url']) for p in products if p['id'] in ('dbz', 'dbz-nowcast')]
+    except Exception as error:
+        report['error'] = f'{type(error).__name__}: {error}'
+        # Test PNG access separately even if the runner cannot read JSON. These
+        # URLs came from a validated live response, not guessed filenames.
+        seed = ROOT / 'data' / 'radargis-fallback' / 'catalog.json'
+        if seed.exists():
+            products = json.loads(seed.read_text(encoding='utf-8')).get('data', {}).get('products', [])
+            samples = [(p['id'], p['frames'][-1]['frame_time'], p['frames'][-1].get('source_url', '')) for p in products if p['id'] in ('dbz', 'dbz-nowcast')]
+            report['catalog_source'] = 'dated_fallback'
+    for key, stamp, url in samples:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme != 'https' or parsed.netloc != 'radargis.tmd.go.th' or not re.fullmatch(r'/products/[A-Za-z0-9_/-]+\.png', parsed.path) or '..' in parsed.path:
+            continue
+        result = {'product': key, 'valid_time': stamp, 'url': url}
+        try:
+            with open_url(urllib.request.Request(url, headers=HEADERS), timeout=30) as response:
+                binary = response.read(8000001)
+            result['ok'] = binary.startswith(b'\x89PNG\r\n\x1a\n') and len(binary) <= 8000000
+            result['bytes'] = len(binary)
+        except Exception as error:
+            result.update(ok=False, error=f'{type(error).__name__}: {error}')
+        report['images'].append(result)
+    report['ok'] = report['api_ok'] and len(report['images']) == 2 and all(row['ok'] for row in report['images'])
+    Path('_radargis_probe.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+    print(json.dumps(report, ensure_ascii=True))
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
+            stream.write('### RadarGIS runner connectivity\n```json\n' + json.dumps(report, ensure_ascii=False, indent=2) + '\n```\n')
 
 
 def main():
@@ -215,4 +259,4 @@ def main():
 
 
 if __name__ == '__main__':
-    prepare() if '--catalog' in sys.argv else main()
+    probe() if '--probe' in sys.argv else prepare() if '--catalog' in sys.argv else main()

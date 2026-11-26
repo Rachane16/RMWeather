@@ -18,7 +18,7 @@ test('mobile begins with no popups; desktop retains only the layer catalogue',()
 test('phone popups replace each other without coupling window state to map layer state',()=>{
   const ui=new WorkspacePanels(true);
   ui.setOpen('sidebar',true);ui.setOpen('display',true);
-  assert.equal(ui.open.sidebar,false);assert.equal(ui.open.display,true);
+  assert.equal(ui.open.sidebar,true);assert.equal(ui.open.display,true);
   ui.setOpen('weather',true);assert.equal(ui.open.display,false);
   ui.setOpen('timeline',true);assert.equal(ui.open.weather,false);assert.equal(ui.open.timeline,true);
 });

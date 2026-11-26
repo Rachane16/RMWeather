@@ -29,3 +29,45 @@ The Songkhla CCTV layer combines HatyaiClimate/OneData cameras with Windy camera
 ## Validation
 
 Python and Node tests exercise scope filtering, independent overlays, datum and missing-value handling, source timestamps, camera deduplication, forecast run/time validation, cache reuse and failed-refresh retention. Browser checks cover real station metadata, playback/product switching, centered controls and clean mobile startup.
+
+
+## Timestamp and connectivity audit — 26 November 2026
+
+The live `/api/overlays` response contained six radar families and 60 frames:
+8 observations each for dBZ, rain rate and lightning proxy, and 12 nowcast frames
+each through +180 minutes. Four accumulation products remain available separately.
+The actual public response, reduced to schema fields, is retained in
+`tests/fixtures/radargis-live-schema.json`; no JSON file accompanied the latest
+message, so this captured live response supplies the regression fixture.
+
+`valid_time` is the sole authoritative radar validity timestamp. It is parsed as
+UTC (including when its UTC suffix is omitted), persisted with an explicit UTC
+zone, and formatted once in Asia/Bangkok. In the captured response `valid_dt_ts`
+is 420 minutes earlier, and `valid_dt_iso` has no zone. Neither is used.
+`latest_update` is also ignored for observation age. A frame at 07:45 UTC is
+14:45 ICT, regardless of the epoch or future nowcast metadata.
+
+For each observed family the timeline includes its observations and the matching
+nowcast run through +180 minutes. It starts at the latest observation, restores
+that frame after playback closes, and identifies forecast frames separately.
+A nowcast from a different issue time is not merged into the observed sequence.
+The original six products remain selectable. Latency is measured from the latest
+observed timestamp or the forecast issue timestamp, never from future validity.
+Dynamic source URLs, including their `?v=` values, are retained as `source_url`
+and included in the cache identity. Bounds come directly from the response.
+
+`--probe` records an actual API request and observed/forecast PNG requests from
+the Actions runner in a downloadable `radargis-connectivity` artifact and the job
+summary. Its `ok` value reports connectivity independently of the general CI
+result; a source failure retains the existing cached/fallback radar rather than
+breaking publication. The normal five-minute schedule and same-origin caching
+remain in place. First-run fallback PNGs were refreshed from the validated live
+snapshot and keep their real timestamps; they are never labeled current merely
+because a deployment is new.
+
+No explicit reuse licence, published API rate limit, or rate-limit response
+headers were found in the public page/API during this check. Public accessibility
+is not permission to redistribute without conditions; authorization and an SLA
+remain unconfirmed. Attribution to TMD is retained. Requests are centralized in
+Actions, cached by versioned URL, and limited to three concurrent image reads;
+browsers read the published cache instead of multiplying upstream requests.
