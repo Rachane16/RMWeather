@@ -1,5 +1,9 @@
 /* Public forecast controls share the catalogue's proportions. */
 .development-dialog{width:360px;z-index:1005;max-height:calc(100% - 156px)}
+@media(min-width:701px){
+ .sidebar.layer-drawer{bottom:124px}
+ .development-dialog{max-height:calc(100% - 200px)}
+}
 .development-header{padding:13px 16px}.development-header h2{font-size:22px}.development-header #development-close{margin-left:auto}
 .development-body{padding:0 15px 8px}.development-group{padding:13px 0}.development-model-card{padding:12px}.development-model-card h4{font-size:19px}
 .development-launcher{left:190px;top:20px;bottom:auto;width:auto;height:44px;display:flex;gap:7px;padding:0 12px;font:500 13px Sarabun,sans-serif}
@@ -49,3 +53,13 @@
  .topbar .top-actions{gap:2px}.topbar .top-actions #clock{min-width:68px}
  .topbar #clock strong{font-size:19px}
 }
+/* Leave one readable attribution line below the separate, compact legend. */
+.workspace .development-map-legend{bottom:22px;padding:3px 8px;line-height:1}
+.workspace .development-map-legend>span{font-size:9px;line-height:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.workspace .development-map-legend .development-colour-key{height:5px;margin-top:2px;position:relative}
+.workspace .development-map-legend .development-scale{height:5px;margin-right:29px}
+.workspace .development-map-legend .development-colour-key>span{position:absolute;right:0;top:-2px;width:26px;font-size:9px;line-height:10px}
+.workspace .development-map-legend .development-scale-labels{font-size:9px;line-height:9px;margin-top:2px;width:calc(100% - 35px)}
+.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-bottom-right{bottom:3px}
+.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib{max-width:calc(100vw - 12px);font-size:9px;line-height:14px}
+.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib-inner{white-space:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
