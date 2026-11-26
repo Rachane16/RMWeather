@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">RMWeather</string>
+    <string name="connecting">กำลังเปิด RMWeather…</string>
+    <string name="offline_title">เชื่อมต่อ RMWeather ไม่ได้</string>
+    <string name="offline_message">ตรวจสอบอินเทอร์เน็ต แล้วลองเชื่อมต่อใหม่</string>
+    <string name="retry">ลองเชื่อมต่อใหม่</string>
+    <string name="open_browser">เปิดผ่านเบราว์เซอร์</string>
+</resources>
