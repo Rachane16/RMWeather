@@ -18,8 +18,9 @@ test('model wind uses east/north m/s components and falls back to ordinary wind'
  m.setWind('new original');assert.equal(m.active,records);m.setExperimentalWind(null);assert.equal(m.active,'new original');
 });
 test('clock chooses current interval rather than the furthest forecast',()=>{
- assert.equal(latest([{time:100},{time:200},{time:300}],250),1);
+ assert.equal(latest([{time:100},{time:200},{time:300}],250),2);
  assert.equal(latest([{time:100},{time:200}],50),0);
+ assert.equal(latest([{time:100},{time:200}],350),1);
 });
 test('station compact field order is read dynamically; null is not zero',()=>{
  const result=stations({fields:['lon','name','obs24','lat','mm24','obs','mm'],stations:[[100,'test',null,7,null,null,0],[999,'invalid',null,7,0,null,0]]});

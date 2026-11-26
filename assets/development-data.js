@@ -14,7 +14,7 @@ function developmentWind(frame,grid){
   return [2,3].map((parameterNumber,i)=>({header:{parameterNumber,nx:grid.nx,ny:grid.ny,lo1:grid.west,la1:grid.north,dx:grid.step,dy:grid.step},data:i?frame.v:frame.u}));
 }
 function developmentLatest(frames,now=Date.now()/1000){
-  let i=frames.findLastIndex(f=>f.time<=now);return Math.max(0,i);
+  const i=frames.findIndex(f=>f.time>=now);return i<0?Math.max(0,frames.length-1):i;
 }
 function developmentStations(payload){
   const fields=payload.fields;
