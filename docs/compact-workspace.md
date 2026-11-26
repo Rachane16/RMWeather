@@ -18,15 +18,15 @@ latest frame time, rather than substituting the wall clock for an observation.
 
 On mobile only one native control popup is open at a time. Opening weather, the
 catalogue, basemaps, map tools or the timeline dismisses the previous popup while
-leaving data layers enabled. Headers keep minimize/expand and close buttons
-visible above scrolling content. Search does not autofocus on phones. Returning
+leaving data layers enabled. The catalogue and display headers have close buttons only; other tool controls
+remain above scrolling content. Search does not autofocus on phones. Returning
 to the mobile default closes popups. Controls leave room for source attribution.
 
 Windy retains its full interactive map and attribution, with a small floating
-control box on the left. The box can minimize and begins minimized on mobile.
+control box on the left. The box minimizes to a layers icon and begins as that icon on mobile.
 The "กลับแผนที่หลัก" button closes Windy. On opening, Windy prefers the device
 location and asks for a refreshed fix unless one is already pending. A temporary
-map-center fallback remains usable, with an explicit location-status caption.
+Hat Yai fallback remains usable, with an explicit location-status caption.
 
 A valid geolocation fix creates or updates one blue MapLibre DOM marker. It
 survives basemap changes and can be clicked to recenter. Denial never invents a
@@ -43,3 +43,11 @@ historical-frame selection and latest-frame restoration, popup minimization,
 weather access through layers, the Windy back button and readable attribution.
 The test browser denied device geolocation; location-marker behavior was tested
 with deterministic fixes rather than fabricating a real device location.
+
+
+The main category bar is available on phones as a horizontally scrollable row.
+Selecting CCTV, water, wind, rain or stations replaces the prior category overlays.
+Clicking Overview restores RainViewer, wind, Songkhla CCTV, RID water and stations.
+Layer catalogue switches still support independent overlapping data sets. The
+seven-day forecast has been removed from the category bar; it remains available
+through Display Layers.

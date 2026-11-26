@@ -1,6 +1,7 @@
 'use strict';
 
 const toolVisibility = {'weather-map':false,'seven-day':false};
+window.weatherToolVisibility=toolVisibility;
 let forecastSource='tmd';
 let windyZoom=8;
 let windyView='map';
@@ -13,6 +14,9 @@ function setWeatherTool(name,on) {
   $(`${name}-panel`).hidden=!on;
   document.querySelectorAll(`[data-tool="${name}"]`).forEach(button=>button.setAttribute('aria-pressed',String(on)));
   document.querySelectorAll(`[data-tool-toggle="${name}"]`).forEach(input=>input.checked=on);
+  if(on)window.setActiveCategory?.(name);
+  else if(document.querySelector(`.category-nav [data-tool="${name}"].active`))window.setActiveCategory?.(view);
+  window.syncLayerMenu?.();
   if(on){window.workspaceUI?.closeForWeatherTool();if(name==='weather-map'){
     if(windySelection.mode==='device')windySelection.select('device',window.currentLocation);
     windyLocation=windySelection.point;windyZoom=10;
@@ -45,9 +49,6 @@ function updateWeatherEmbeds() {
   const p=windyLocation;
   if(toolVisibility['weather-map']){
     $('weather-map-panel').dataset.windyView=windyView;
-    $('windy-view').value=windyView;
-    $('windy-overlay-row').hidden=windyView==='forecast';
-    $('windy-point-toggle-row').hidden=windyView==='forecast';
     $('windy-point-toggle').checked=windyView==='map-forecast';
     assignFrame('windy-frame',buildWindyEmbedURL({point:p,view:windyView,overlay:$('windy-overlay').value,zoom:windyZoom}));
     $('windy-open').href=`https://www.windy.com/?${p.lat.toFixed(3)},${p.lon.toFixed(3)},9`;
@@ -71,7 +72,6 @@ document.querySelectorAll('[data-forecast-source]').forEach(button=>button.addEv
   updateWeatherEmbeds();
 }));
 $('windy-overlay').addEventListener('change',updateWeatherEmbeds);
-$('windy-view').addEventListener('change',event=>{windyView=event.target.value;updateWeatherEmbeds();});
 $('windy-point-toggle').addEventListener('change',event=>{windyView=event.target.checked?'map-forecast':'map';updateWeatherEmbeds();});
 document.querySelectorAll('[data-windy-location]').forEach(button=>button.addEventListener('click',()=>{
   const mode=button.dataset.windyLocation;
