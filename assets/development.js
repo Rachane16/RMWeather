@@ -42,7 +42,7 @@
   return {payload:await window.developmentAccess.json(file)};
  }
  function status(message){
-  if(message){$('development-status').textContent=message;return;}
+  if(message){$('development-status').textContent=message;if(window.workspaceUI?.isOpen('development'))$('development-time-info').textContent=message;return;}
   const parts=[];
   if((state.modelRain||state.modelWind)&&data.model)parts.push(`${data.model.name} · เก็บข้อมูล ${date(data.model.collected_at)}${lag(data.model.collected_at)>720?' · สำเนาเก่า':''}`);
   if(Object.keys(state).some(k=>state[k]&&!k.startsWith('model'))&&data.clpp)parts.push(`${data.health?.clpp_ok===false?'อัปเดตไม่สำเร็จ · ใช้สำเนา ':''}CLPP · ฐานเรดาร์ ${date(data.clpp.generated)} · ล่าช้า ${lag(data.clpp.generated)} นาที`);
