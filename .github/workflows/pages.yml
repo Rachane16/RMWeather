@@ -31,6 +31,9 @@ jobs:
       - run: node --check assets/display.js
       - run: node --check assets/workspace-ui.js
       - run: node --test tests/*.test.js
+      - name: Check public RadarGIS access from the runner
+        if: github.event_name == 'pull_request'
+        run: python scripts/sync_radargis.py --catalog
   deploy:
     if: github.event_name != 'pull_request'
     needs: check

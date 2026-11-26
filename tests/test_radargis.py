@@ -17,6 +17,13 @@ def frame(stamp='2026-11-26 02:15 UTC', **extra):
 
 
 class RadarGISTests(unittest.TestCase):
+    def test_embedded_public_map_catalog_is_json_only(self):
+        html = '<script>let overlays=' + json.dumps([frame()]) + '; window.untrusted=true;</script>'
+        with patch.object(radar, 'open_url', return_value=io.BytesIO(html.encode())):
+            result = radar.embedded_catalog()
+        self.assertEqual(len(result['overlays']), 1)
+        self.assertEqual(result['overlays'][0]['valid_time'], '2026-11-26 02:15 UTC')
+
     def test_untrusted_urls_bad_bounds_and_unzoned_times_are_excluded(self):
         catalog = {'overlays': {'overlays': [frame(), frame(url='https://evil.example/products/a.png'),
                    frame(bounds=[[22, 110], [4, 91]]), frame(stamp='2026-11-26T02:15')]}}

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -25,12 +26,29 @@ PRODUCTS = {
     '05 Rain Rate Nowcast Overlay': ('rainrate-nowcast', 'พยากรณ์อัตราฝน', 'มม./ชม.'),
     '06 Lightning Warning Nowcast Overlay': ('lightning-nowcast', 'พยากรณ์ความเสี่ยงฟ้าผ่า', 'ระดับความเสี่ยง'),
 }
+HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; RMWeather/2; +https://rachane16.github.io/RMWeather/)',
+           'Accept': 'application/json, image/png, text/html;q=0.8, */*;q=0.5',
+           'Referer': BASE + '/'}
 
 
 def fetch_json(path):
-    request = urllib.request.Request(BASE + path, headers={'User-Agent': 'RMWeather public radar display', 'Accept': 'application/json'})
+    request = urllib.request.Request(BASE + path, headers=HEADERS)
     with open_url(request, timeout=30) as response:
         return json.load(response)
+
+
+def embedded_catalog():
+    """The public map embeds the same catalog for its initial render."""
+    request = urllib.request.Request(BASE + '/', headers=HEADERS)
+    with open_url(request, timeout=30) as response:
+        html = response.read(3000000).decode('utf-8')
+    match = re.search(r'(?:let|const|var)\s+overlays\s*=\s*', html)
+    if not match:
+        raise ValueError('No public embedded catalog')
+    rows, _ = json.JSONDecoder().raw_decode(html[match.end():])
+    if not isinstance(rows, list) or not rows:
+        raise ValueError('Empty public embedded catalog')
+    return {'overlays': rows}
 
 
 def valid_bounds(bounds):
@@ -102,7 +120,17 @@ def prepare():
         try:
             catalog[name] = fetch_json(path)
         except Exception as error:
-            errors.append(type(error).__name__)
+            code = f' HTTP {error.code}' if isinstance(error, urllib.error.HTTPError) else ''
+            print(f'RadarGIS {name}: {type(error).__name__}{code}')
+            if name == 'overlays':
+                try:
+                    catalog[name] = embedded_catalog()
+                    print('RadarGIS: using initial catalog embedded in public map')
+                    continue
+                except Exception as fallback_error:
+                    fallback_code = f' HTTP {fallback_error.code}' if isinstance(fallback_error, urllib.error.HTTPError) else ''
+                    print(f'RadarGIS public map: {type(fallback_error).__name__}{fallback_code}')
+            errors.append(type(error).__name__ + code)
     catalog['errors'] = errors
     CATALOG.write_text(json.dumps(catalog, ensure_ascii=False), encoding='utf-8')
     key = hashlib.sha256(json.dumps(products_from_catalog(catalog), sort_keys=True).encode()).hexdigest()[:24]
@@ -121,7 +149,7 @@ def cache_image(frame):
     path = folder / name
     binary = path.read_bytes() if path.exists() else None
     if not binary or not binary.startswith(b'\x89PNG\r\n\x1a\n'):
-        request = urllib.request.Request(url, headers={'User-Agent': 'RMWeather public radar display'})
+        request = urllib.request.Request(url, headers=HEADERS)
         with open_url(request, timeout=30) as response:
             binary = response.read(8000001)
         if not binary.startswith(b'\x89PNG\r\n\x1a\n') or len(binary) > 8000000:
@@ -147,7 +175,9 @@ def main():
                 product['frames'] = list(pool.map(cache_image, product['frames']))
                 published.append(product)
             except Exception as error:
-                errors.append(type(error).__name__)
+                code = f' HTTP {error.code}' if isinstance(error, urllib.error.HTTPError) else ''
+                errors.append(type(error).__name__ + code)
+                print(f'RadarGIS {product["id"]}: {type(error).__name__}{code}')
                 # A failed refresh must not replace a working product with an empty map.
                 if product['id'] in old_products:
                     published.append(old_products[product['id']])
