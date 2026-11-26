@@ -1,5 +1,6 @@
 import unittest
-from scripts.sync_development import model_frames, clpp_frames, GRID, MODELS, MODEL_CACHE_HOURS
+import datetime as dt
+from scripts.sync_development import model_frames, clpp_frames, GRID, MODELS, MODEL_CACHE_HOURS, forecast_window
 
 
 class DevelopmentDataTests(unittest.TestCase):
@@ -38,6 +39,11 @@ class DevelopmentDataTests(unittest.TestCase):
             row['hourly'][name] += [None]*3
         frames = model_frames([row], {'nx': 1, 'ny': 1})
         self.assertEqual(len(frames), 1)
+
+    def test_all_batches_share_a_fixed_99_hour_utc_window_with_complete_three_hour_rain(self):
+        begin, end = forecast_window(dt.datetime(2026, 11, 26, 23, 59, tzinfo=dt.timezone.utc))
+        self.assertEqual(begin, '2026-11-26T22:00')
+        self.assertEqual(dt.datetime.fromisoformat(end)-dt.datetime.fromisoformat(begin), dt.timedelta(hours=98))
 
     def frame(self, **changes):
         frame = {'time': 0, 'time_utc': '1970-01-01T00:00:00Z', 'kind': 'present',

@@ -53,6 +53,14 @@ def finite(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def forecast_window(now):
+    # Precipitation is for the preceding hour. The samples 01/02/03 UTC form
+    # 00-03 UTC. Freeze one window for all location batches even across an hour.
+    utc = now.astimezone(dt.timezone.utc)
+    start = utc.replace(hour=utc.hour//3*3, minute=0, second=0, microsecond=0)+dt.timedelta(hours=1)
+    return start.strftime('%Y-%m-%dT%H:%M'), (start+dt.timedelta(hours=98)).strftime('%Y-%m-%dT%H:%M')
+
+
 def model_frames(rows, grid=GRID):
     """3h totals and vector-mean wind, north-to-south row order, UTC epoch."""
     if len(rows) != grid['nx'] * grid['ny']:
@@ -87,13 +95,14 @@ def fetch_model(model):
     locations = [(GRID['north']-j*GRID['step'], GRID['west']+i*GRID['step'])
                  for j in range(GRID['ny']) for i in range(GRID['nx'])]
     rows = []
+    start_hour, end_hour = forecast_window(dt.datetime.now(dt.timezone.utc))
     for offset in range(0, len(locations), 27):
         batch = locations[offset:offset+27]
         query = urllib.parse.urlencode({
             'latitude': ','.join(str(p[0]) for p in batch),
             'longitude': ','.join(str(p[1]) for p in batch),
             'hourly': 'precipitation,wind_speed_10m,wind_direction_10m',
-            'models': model, 'forecast_hours': 99, 'timezone': 'UTC',
+            'models': model, 'start_hour': start_hour, 'end_hour': end_hour, 'timezone': 'UTC',
             'timeformat': 'unixtime', 'wind_speed_unit': 'ms', 'cell_selection': 'nearest',
         })
         response = read_url('https://api.open-meteo.com/v1/forecast?' + query)
