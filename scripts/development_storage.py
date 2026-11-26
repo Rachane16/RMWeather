@@ -11,7 +11,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'data' / 'live' / 'development'
-PATTERN = re.compile(r'(?:(?:manifest|health|clpp|stations|provinces|ecmwf_ifs025|ecmwf_aifs025_single|icon_global|gfs_global|ukmo_global_deterministic_10km|meteofrance_arpege_world|jma_gsm|cma_grapes_global)\.json|frames/clpp-[a-f0-9]{20}\.png)')
+PATTERN = re.compile(r'(?:(?:manifest|health|clpp|stations|provinces|ecmwf_ifs|google_weathernext3_ensemble_mean|best_match|ecmwf_ifs025|ecmwf_aifs025_single|icon_global|gfs_global|ukmo_global_deterministic_10km|meteofrance_arpege_world|jma_gsm|cma_grapes_global)\.json|frames/clpp-[a-f0-9]{20}\.png)')
 
 
 def validate(files):

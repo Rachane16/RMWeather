@@ -1,6 +1,6 @@
 import unittest
 import datetime as dt
-from scripts.sync_development import model_frames, clpp_frames, GRID, MODELS, MODEL_CACHE_HOURS, forecast_window
+from scripts.sync_development import model_frames, clpp_frames, GRID, MODELS, MODEL_CACHE_HOURS, forecast_window, model_grid
 
 
 class DevelopmentDataTests(unittest.TestCase):
@@ -8,9 +8,9 @@ class DevelopmentDataTests(unittest.TestCase):
         return {'hourly': {'time': [3600, 7200, 10800], 'precipitation': rain or [0, 1, 2],
                            'wind_speed_10m': [3, 3, 3], 'wind_direction_10m': [direction]*3}}
 
-    def test_accumulation_is_three_hour_total_and_wind_is_vector_ms(self):
+    def test_rate_is_three_hour_mean_not_three_hour_total_and_wind_is_vector_ms(self):
         frames = model_frames([self.row(), self.row(direction=270)], {'nx': 2, 'ny': 1})
-        self.assertEqual(frames[0]['rain'], [3, 3])
+        self.assertEqual(frames[0]['rain'], [1, 1])
         self.assertEqual(frames[0]['u'], [-3, 3])
         self.assertEqual(frames[0]['start'], 0)
         self.assertEqual(frames[0]['time'], 10800)
@@ -23,12 +23,20 @@ class DevelopmentDataTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model_frames([self.row()], {'nx': 2, 'ny': 2})
 
-    def test_asia_covers_west_east_and_south_without_exceeding_free_collection_budget(self):
-        south = GRID['north']-(GRID['ny']-1)*GRID['step']
-        east = GRID['west']+(GRID['nx']-1)*GRID['step']
-        for lat, lon in [(39.9, 32.9), (28.6, 77.2), (35.7, 139.7), (-9, 125), (62, 129)]:
-            self.assertTrue(south <= lat <= GRID['north'] and GRID['west'] <= lon <= east)
-        one_cycle = GRID['nx']*GRID['ny']*len(MODELS)
+    def test_thailand_and_seas_covered_by_every_model_without_exceeding_free_budget(self):
+        for model in MODELS:
+            g = model_grid(model)
+            south, east = g['north']-(g['ny']-1)*g['step'], g['west']+(g['nx']-1)*g['step']
+            for lat, lon in [(20.5, 100), (5.6, 101), (8, 96), (10, 103), (5, 109), (2, 100)]:
+                self.assertTrue(south <= lat <= g['north'] and g['west'] <= lon <= east)
+            self.assertLessEqual(g['step'], 1.5)
+        self.assertNotIn('ecmwf_ifs025', MODELS)
+        self.assertIn('ecmwf_ifs', MODELS)
+        self.assertIn('google_weathernext3_ensemble_mean', MODELS)
+        self.assertIn('best_match', MODELS)
+        self.assertIn('ukmo_global_deterministic_10km', MODELS)
+        self.assertEqual(len(MODELS), 10)
+        one_cycle = sum(model_grid(m)['nx']*model_grid(m)['ny'] for m in MODELS)
         self.assertLessEqual(one_cycle, 5000)
         self.assertLessEqual(one_cycle*24/MODEL_CACHE_HOURS, 9000)
 

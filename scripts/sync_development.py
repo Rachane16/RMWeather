@@ -1,6 +1,6 @@
-"""Public experimental layers for static Pages; bounded, cached upstream requests.
+"""Protected experimental layers; bounded, cached upstream requests.
 
-Forecast samples are a 6 degree Asia overview grid, NOT the models' native grids.
+Forecast samples cover Thailand and surrounding seas, NOT the models' native grids.
 CLPP images remain categorical; point inspection must report colour-bin ranges.
 """
 import argparse
@@ -16,16 +16,25 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+# Practical display order, not an asserted skill/popularity ranking.
 MODELS = {
-    'ecmwf_ifs025': 'ECMWF IFS', 'ecmwf_aifs025_single': 'ECMWF AIFS',
-    'icon_global': 'ICON', 'gfs_global': 'GFS',
-    'ukmo_global_deterministic_10km': 'UK Met Office',
-    'meteofrance_arpege_world': 'ARPEGE', 'jma_gsm': 'JMA GSM',
-    'cma_grapes_global': 'CMA GRAPES',
+    'ecmwf_ifs': 'ECMWF IFS HRES', 'gfs_global': 'GFS',
+    'icon_global': 'ICON', 'ukmo_global_deterministic_10km': 'UK Met Office',
+    'google_weathernext3_ensemble_mean': 'Google WeatherNext 3',
+    'ecmwf_aifs025_single': 'ECMWF AIFS', 'jma_gsm': 'JMA GSM',
+    'meteofrance_arpege_world': 'ARPEGE', 'cma_grapes_global': 'CMA GRAPES',
+    'best_match': 'Open-Meteo Best Match',
 }
 CLPP = 'https://clpp-radar.onwr.go.th'
-GRID = dict(west=24, north=84, step=6, nx=27, ny=17)
+DOMAIN = 'Thailand and surrounding seas'
+GRID = dict(west=95, north=22.5, step=1.5, nx=11, ny=15)
+DETAIL_GRID = dict(west=95, north=22.5, step=.5, nx=31, ny=43)
 MODEL_CACHE_HOURS = 12
+SCHEMA_VERSION = 2
+
+
+def model_grid(model):
+    return DETAIL_GRID if model in ('ecmwf_ifs', 'google_weathernext3_ensemble_mean') else GRID
 
 
 def read_url(url, binary=False):
@@ -62,7 +71,7 @@ def forecast_window(now):
 
 
 def model_frames(rows, grid=GRID):
-    """3h totals and vector-mean wind, north-to-south row order, UTC epoch."""
+    """Mean rainfall rate (mm/h) and vector wind over each preceding 3h window."""
     if len(rows) != grid['nx'] * grid['ny']:
         raise ValueError('Incomplete display grid')
     times = rows[0]['hourly']['time']
@@ -76,7 +85,7 @@ def model_frames(rows, grid=GRID):
             r = h['precipitation'][i:i+3]
             speeds = h['wind_speed_10m'][i:i+3]
             directions = h['wind_direction_10m'][i:i+3]
-            rain.append(round(sum(r), 2) if len(r) == 3 and all(finite(v) and v >= 0 for v in r) else None)
+            rain.append(round(sum(r)/3, 3) if len(r) == 3 and all(finite(v) and v >= 0 for v in r) else None)
             if len(speeds) == len(directions) == 3 and all(finite(v) for v in speeds + directions):
                 # Meteorological direction is where the wind comes FROM; m/s.
                 east.append(round(sum(-s * math.sin(math.radians(d)) for s, d in zip(speeds, directions))/3, 2))
@@ -92,8 +101,9 @@ def model_frames(rows, grid=GRID):
 
 
 def fetch_model(model):
-    locations = [(GRID['north']-j*GRID['step'], GRID['west']+i*GRID['step'])
-                 for j in range(GRID['ny']) for i in range(GRID['nx'])]
+    grid = model_grid(model)
+    locations = [(grid['north']-j*grid['step'], grid['west']+i*grid['step'])
+                 for j in range(grid['ny']) for i in range(grid['nx'])]
     rows = []
     start_hour, end_hour = forecast_window(dt.datetime.now(dt.timezone.utc))
     for offset in range(0, len(locations), 27):
@@ -105,13 +115,16 @@ def fetch_model(model):
             'models': model, 'start_hour': start_hour, 'end_hour': end_hour, 'timezone': 'UTC',
             'timeformat': 'unixtime', 'wind_speed_unit': 'ms', 'cell_selection': 'nearest',
         })
-        response = read_url('https://api.open-meteo.com/v1/forecast?' + query)
+        endpoint = ('https://ensemble-api.open-meteo.com/v1/ensemble' if model.startswith('google_')
+                    else 'https://api.open-meteo.com/v1/forecast')
+        response = read_url(endpoint + '?' + query)
         if not isinstance(response, list) or len(response) != len(batch):
             raise ValueError('Unexpected Open-Meteo grid response')
         rows.extend(response)
-        time.sleep(3)  # Keep weighted multi-location calls below the free minute quota.
-    return dict(id=model, name=MODELS[model], collected_at=int(time.time()), domain='Asia',
-                grid=GRID, interval_hours=3, frames=model_frames(rows),
+        time.sleep(3)  # At most 540 weighted location calls/minute.
+    return dict(id=model, name=MODELS[model], collected_at=int(time.time()), domain=DOMAIN,
+                schema_version=SCHEMA_VERSION, rain_unit='mm/h', rain_statistic='preceding_3h_mean',
+                grid=grid, interval_hours=3, frames=model_frames(rows, grid),
                 source='https://open-meteo.com/',
                 license='CC BY-SA 4.0' if model.startswith('ukmo') else 'CC BY 4.0')
 
@@ -204,7 +217,7 @@ def main():
             report['clpp'] = dict(ok=False, error=str(error)[:180])
         if not args.clpp_only:
             try:
-                response = read_url('https://api.open-meteo.com/v1/forecast?latitude=7&longitude=100&hourly=precipitation,wind_speed_10m,wind_direction_10m&models=ecmwf_ifs025&forecast_days=3&timeformat=unixtime&wind_speed_unit=ms')
+                response = read_url('https://api.open-meteo.com/v1/forecast?latitude=7&longitude=100&hourly=precipitation,wind_speed_10m,wind_direction_10m&models=ecmwf_ifs&forecast_days=3&timeformat=unixtime&wind_speed_unit=ms')
                 report['open_meteo'] = dict(ok=len(response.get('hourly', {}).get('time', [])) >= 72)
             except Exception as error:
                 report['open_meteo'] = dict(ok=False, error=str(error)[:180])
@@ -228,19 +241,23 @@ def main():
             path = out / (model + '.json')
             try:
                 previous = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
-                if previous.get('domain') == 'Asia' and previous.get('grid') == GRID and time.time()-previous.get('collected_at', 0) < MODEL_CACHE_HOURS*3600:
+                if (previous.get('schema_version') == SCHEMA_VERSION and previous.get('domain') == DOMAIN
+                        and previous.get('grid') == model_grid(model)
+                        and time.time()-previous.get('collected_at', 0) < MODEL_CACHE_HOURS*3600):
                     print('Forecast cached:', model, flush=True)
                     continue
                 save(path, fetch_model(model))
                 updated_models += 1
                 print('Forecast updated:', model, flush=True)
                 # A normal five-minute deployment refreshes at most one expired
-                # model; all eight roll forward without holding up the public site.
+                # model; all models roll forward without holding up the public site.
                 if updated_models >= 1 and not args.all_models:
                     break
             except Exception as error:
                 print('Forecast update unavailable; retain dated cache:', model, str(error)[:140], flush=True)
-    manifest = dict(collected_at=int(time.time()), models=[dict(id=m, name=n, file=m+'.json') for m, n in MODELS.items() if (out/(m+'.json')).exists()])
+    manifest = dict(collected_at=int(time.time()), domain=DOMAIN, schema_version=SCHEMA_VERSION,
+                    models=[dict(id=m, name=n, file=m+'.json') for m, n in MODELS.items()
+                            if (out/(m+'.json')).exists() and json.loads((out/(m+'.json')).read_text(encoding='utf-8')).get('schema_version') == SCHEMA_VERSION])
     save(out / 'manifest.json', manifest)
     save(out / 'health.json', dict(attempted_at=int(time.time()), clpp_ok=clpp_ok))
     import os
