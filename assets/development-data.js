@@ -24,14 +24,10 @@ function developmentSample(values,grid,lon,lat){
 function developmentWind(frame,grid){
   return [2,3].map((parameterNumber,i)=>({header:{parameterNumber,nx:grid.nx,ny:grid.ny,lo1:grid.west,la1:grid.north,dx:grid.step,dy:grid.step},data:(i?frame.v:frame.u).map((v,k)=>developmentRegionMask(grid,grid.west+(k%grid.nx)*grid.step,grid.north-Math.floor(k/grid.nx)*grid.step)>0?v:null)}));
 }
-// Elliptical display footprint in map projection, within the actual sampled grid.
-// A soft rim removes the rectangular cutoff without extrapolating outside data.
+// Full rectangular footprint; never extrapolate beyond sampled data.
 function developmentRegionMask(grid,lon,lat){
-  const east=grid.west+(grid.nx-1)*grid.step,south=grid.north-(grid.ny-1)*grid.step;
-  if(lon<grid.west||lon>east||lat<south||lat>grid.north)return 0;
-  const merc=v=>Math.log(Math.tan(Math.PI/4+v*Math.PI/360));
-  const x=2*(lon-grid.west)/(east-grid.west)-1,y=2*(merc(lat)-merc(south))/(merc(grid.north)-merc(south))-1;
-  const radius=Math.hypot(x,y);return Math.max(0,Math.min(1,(1-radius)/.08));
+ const east=grid.west+(grid.nx-1)*grid.step,south=grid.north-(grid.ny-1)*grid.step;
+ return lon>=grid.west&&lon<=east&&lat>=south&&lat<=grid.north?1:0;
 }
 function developmentCurrentFrame(frames,now=Date.now()/1000){
   const current=frames.findIndex(f=>Number.isFinite(f.start)&&f.start<=now&&now<f.time);

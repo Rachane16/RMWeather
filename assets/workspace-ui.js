@@ -27,7 +27,7 @@ function initWorkspaceUI(){
   const media=matchMedia('(max-width:700px)'),state=new WorkspacePanels(media.matches);
   const panels={sidebar:'sidebar',display:'display-panel',maptools:'maptools-panel',basemap:'basemap-panel',weather:'overview-panel',timeline:'radar-player',advance:'advance-forecast-panel',development:'development-timeline'};
   const launchers={sidebar:'layers-toggle',display:'display-toggle',maptools:'maptools-toggle',basemap:'basemap-toggle',timeline:'timeline-toggle',advance:'advance-forecast-toggle',development:'development-timeline-toggle'};
-  const captions={sidebar:'ชั้นข้อมูล',display:'ชั้นข้อมูลและการแสดงผล',maptools:'เครื่องมือแผนที่',basemap:'แผนที่ฐาน',weather:'สภาพอากาศ',windy:'ตัวเลือกแผนที่อากาศ',seven:'พยากรณ์ 7 วัน'};
+  const captions={sidebar:'ชั้นข้อมูล',display:'ชั้นข้อมูลและการแสดงผล',maptools:'เครื่องมือแผนที่',basemap:'แผนที่ฐาน',weather:'สภาพอากาศ',windy:'ตัวเลือกแผนที่อากาศ',seven:'พยากรณ์ 7 วัน',timeline:'ภาพและเวลา',development:'แบบจำลองพยากรณ์'};
   const minimizeButtons={};
   const advanceSelection=new WindyPointSelection();
 
@@ -60,6 +60,10 @@ function initWorkspaceUI(){
     renderAdvanceForecast();
     Object.entries(minimizeButtons).forEach(([key,button])=>{
       const mini=Boolean(state.minimized[key]);button.textContent=mini?'+':'−';
+      if(key==='timeline'||key==='development'){
+        const root=$(panels[key]),target=mini?root.querySelector(key==='timeline'?'.radar-controls':'.development-playback'):root.querySelector('.popup-header-actions');
+        if(button.parentElement!==target)target.append(button);
+      }
       button.setAttribute('aria-expanded',String(!mini));button.setAttribute('aria-label',`${mini?'ขยาย':'ย่อ'}${captions[key]}`);
     });
     const frames=rainCollections[radarKind]||radarFrames;
@@ -98,7 +102,9 @@ function initWorkspaceUI(){
     ['basemap','#basemap-panel>header','basemap-close','basemap-body'],
     ['weather','.weather-panel-header','weather-collapse','weather-panel-body'],
     ['windy','#windy-controls>header',null,'windy-controls-body'],
-    ['seven','#seven-day-panel>header',null,'seven-day-tmd']
+    ['seven','#seven-day-panel>header',null,'seven-day-tmd'],
+    ['timeline','#radar-player>.radar-player-top','radar-close','radar-slider'],
+    ['development','#development-timeline>header','development-timeline-close','development-timeline-body']
   ];
   headers.forEach(([key,selector,closeID,body])=>{
     const header=document.querySelector(selector),close=closeID?$(closeID):header.querySelector('[data-close-tool]');

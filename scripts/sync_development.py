@@ -26,11 +26,13 @@ MODELS = {
     'best_match': 'Open-Meteo Best Match',
 }
 CLPP = 'https://clpp-radar.onwr.go.th'
-DOMAIN = 'Thailand and surrounding seas'
-GRID = dict(west=95, north=22.5, step=1.5, nx=11, ny=15)
-DETAIL_GRID = dict(west=95, north=22.5, step=.5, nx=31, ny=43)
+DOMAIN = 'Southeast Asia and surrounding seas'
+# Both grids cover the requested rectangle: 82–124E, 6S–30N.
+# Sampling is deliberately coarser than native model resolution to stay free.
+GRID = dict(west=82, north=30, step=3, nx=15, ny=13)
+DETAIL_GRID = dict(west=82, north=30, step=1.2, nx=36, ny=31)
 MODEL_CACHE_HOURS = 12
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def model_grid(model):

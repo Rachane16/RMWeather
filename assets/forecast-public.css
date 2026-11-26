@@ -1,0 +1,41 @@
+/* Public forecast controls share the catalogue's proportions. */
+.development-dialog{width:360px;z-index:955;max-height:calc(100% - 156px)}
+.development-header{padding:13px 16px}.development-header h2{font-size:22px}.development-header #development-close{margin-left:auto}
+.development-body{padding:0 15px 8px}.development-group{padding:13px 0}.development-model-card{padding:12px}.development-model-card h4{font-size:19px}
+.development-launcher{left:190px;top:20px;bottom:auto;width:auto;height:44px;display:flex;gap:7px;padding:0 12px;font:500 13px Sarabun,sans-serif}
+.development-launcher svg{width:20px;height:20px}.development-launcher span{white-space:nowrap}
+.workspace .maplibregl-ctrl-bottom-left{left:12px}
+#forecast-quick[aria-expanded=true]{color:var(--accent);background:#e4f0e9}
+.workspace[data-development-mode=true] .bottom-map-actions{width:min(700px,calc(100% - 190px));bottom:57px}
+.development-map-legend{position:absolute;z-index:825;bottom:13px;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 200px));padding:5px 10px;border-radius:9px;background:color-mix(in srgb,var(--surface) 86%,transparent);color:var(--muted);box-shadow:0 3px 12px #193e3418;backdrop-filter:blur(10px);pointer-events:none}
+.development-map-legend[hidden]{display:none}.development-map-legend>span{display:block;font-size:10px;line-height:1.3}.development-map-legend .development-colour-key{margin-top:3px;gap:6px}.development-map-legend .development-scale{height:5px}.development-map-legend .development-scale-labels{font-size:10px;margin-top:2px}.development-map-legend .development-colour-key>span{font-size:10px}
+/* Compact playback cards: selectors above, one persistent control row below. */
+#radar-player,.development-timeline{width:min(480px,calc(100% - 32px));bottom:116px;padding:12px 14px;border-radius:17px;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);background:color-mix(in srgb,var(--surface) 91%,transparent);backdrop-filter:blur(16px);box-shadow:0 12px 38px #123d3529;max-height:calc(100% - 140px);overflow:auto}
+.development-timeline>header{margin-bottom:9px}.development-timeline h2{font-size:17px}.development-timeline .eyebrow{display:none}
+.development-time-toolbar,.development-time-model-row{display:grid;grid-template-columns:65px minmax(0,1fr);align-items:center;gap:7px;padding:0;margin:7px 0;border:0;background:none;font-size:12px}
+.development-time-model-row[hidden]{display:none}.development-time-toolbar label{font-size:12px}
+.development-time-toolbar select,.development-time-model-row select{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--soft);color:var(--ink);font:inherit;font-size:13px;min-width:0}
+.development-time-heading{margin:9px 0 7px}.development-time-heading>strong{font-size:18px}.development-time-heading>span{font-size:11px;padding:3px 6px}
+.development-playback{gap:10px}.development-playback>button:first-child{width:34px;height:34px}.development-timeline p{font-size:11px;line-height:1.45;margin:7px 0 0}#development-credit{font-size:10px}
+.radar-player-top{gap:7px;font-size:12px}.radar-player-top strong{font-size:14px}.radar-player-top .popup-header-actions{margin-left:2px}.radar-player-top #radar-date{font-size:11px;white-space:nowrap}
+#radar-player .timeline-source-label{display:grid;grid-template-columns:65px minmax(0,1fr);gap:7px;align-items:center;margin:7px 0;font-size:12px}#radar-player .timeline-source-label[hidden]{display:none}
+#radar-player .timeline-source-label select{width:100%;max-width:none;min-width:0;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px}
+#radar-player .radar-controls{margin:9px 0 0;gap:10px}#radar-player .play-button{width:34px;height:34px;min-width:34px}#radar-player #radar-time{font-size:12px}
+#radar-status{font-size:11px;line-height:1.45;margin:7px 0 4px;max-height:3em;overflow:auto}#radargis-origin{font-size:10px;line-height:1.4}#radar-player .legend-scale{font-size:10px}#radar-player .radar-gradient{height:5px;margin-top:7px}
+/* A minimized player exposes just playback, range and the restore control. */
+#radar-player.is-minimized,.development-timeline.is-minimized{width:min(420px,calc(100% - 32px));padding:9px 11px;border-radius:14px}
+#radar-player.is-minimized>:not(.radar-controls){display:none!important}
+#radar-player.is-minimized .radar-controls{margin:0}#radar-player.is-minimized #radar-time{display:none}
+.development-timeline.is-minimized>header{display:none}.development-timeline.is-minimized #development-timeline-body>:not(.development-playback){display:none!important}
+.development-playback>.popup-minimize,.radar-controls>.popup-minimize{width:29px;height:29px;min-width:29px;border:0;border-radius:8px;background:var(--soft);color:var(--ink);font:500 21px Sarabun,sans-serif;cursor:pointer}
+@media(max-width:700px){
+ .development-launcher{left:172px;top:12px;height:42px;padding:0 10px}.development-launcher span{display:none}
+ .development-dialog{left:12px;top:64px;width:min(300px,calc(100vw - 76px));max-height:min(64dvh,calc(100% - 170px));border-radius:14px}
+ .development-header{padding:11px 12px}.development-header h2{font-size:18px}.development-body{padding:0 11px 6px}.development-model-card{padding:10px}.development-model-card h4{font-size:17px}.development-model-card>p:last-child{font-size:12px}.development-tile{min-height:100px;padding:9px 6px}.development-tile b{font-size:12px}.development-model-facts strong{font-size:14px}
+ .workspace[data-development-mode=true] .bottom-map-actions{width:calc(100% - 24px);bottom:65px}
+ .development-map-legend{bottom:17px;width:min(430px,calc(100% - 48px));padding:4px 8px}.development-map-legend>span{font-size:9px}.development-map-legend .development-scale-labels{font-size:9px}
+ #radar-player,.development-timeline{left:50%;right:auto;transform:translateX(-50%);bottom:126px;width:calc(100% - 24px);box-sizing:border-box;padding:11px 12px;max-height:calc(100% - 145px)}
+ .development-timeline h2{font-size:16px}.development-time-toolbar,.development-time-model-row{grid-template-columns:57px minmax(0,1fr);margin:6px 0}.development-time-heading>strong{font-size:17px}
+ .radar-player-top strong{font-size:13px}.radar-player-top #radar-date{font-size:10px}.radar-player-top{gap:3px}.popup-header-actions{gap:3px}
+ .workspace[data-development-mode=true] #basemap-toggle{bottom:126px}.workspace[data-development-mode=true] .map-zoom-controls{bottom:180px}
+}
