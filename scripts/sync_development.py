@@ -189,11 +189,12 @@ def main():
                                   observation_utc=dt.datetime.fromtimestamp(current['time'], dt.timezone.utc).isoformat(), image_bytes=len(image))
         except Exception as error:
             report['clpp'] = dict(ok=False, error=str(error)[:180])
-        try:
-            response = read_url('https://api.open-meteo.com/v1/forecast?latitude=7&longitude=100&hourly=precipitation,wind_speed_10m,wind_direction_10m&models=ecmwf_ifs025&forecast_days=3&timeformat=unixtime&wind_speed_unit=ms')
-            report['open_meteo'] = dict(ok=len(response.get('hourly', {}).get('time', [])) >= 72)
-        except Exception as error:
-            report['open_meteo'] = dict(ok=False, error=str(error)[:180])
+        if not args.clpp_only:
+            try:
+                response = read_url('https://api.open-meteo.com/v1/forecast?latitude=7&longitude=100&hourly=precipitation,wind_speed_10m,wind_direction_10m&models=ecmwf_ifs025&forecast_days=3&timeformat=unixtime&wind_speed_unit=ms')
+                report['open_meteo'] = dict(ok=len(response.get('hourly', {}).get('time', [])) >= 72)
+            except Exception as error:
+                report['open_meteo'] = dict(ok=False, error=str(error)[:180])
         save(ROOT / '_development_probe.json', report)
         print(json.dumps(report), flush=True)
         return
