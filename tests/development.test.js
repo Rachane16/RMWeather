@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const {developmentSample:sample,developmentWind:wind,developmentLatest:latest,developmentStations:stations,developmentPixelPosition:position,developmentColourRange:range}=require('../assets/development-data.js');
 const {WeatherMap}=require('../assets/map-engine.js');
 const {developmentRainColour:rainColour}=require('../assets/development-data.js');
+const {developmentRegionMask:mask,developmentCurrentFrame:currentFrame}=require('../assets/development-data.js');
 const grid={west:100,north:8,step:1,nx:2,ny:2};
 test('display grid preserves north/south, boundaries, gaps and zero rain',()=>{
  assert.equal(sample([0,2,2,4],grid,100.5,7.5),2);
@@ -22,6 +23,22 @@ test('clock chooses current interval rather than the furthest forecast',()=>{
  assert.equal(latest([{time:100},{time:200},{time:300}],250),2);
  assert.equal(latest([{time:100},{time:200}],50),0);
  assert.equal(latest([{time:100},{time:200}],350),1);
+});
+test('current-time action selects a containing forecast interval and labels stale/future gaps honestly',()=>{
+ const frames=[{start:100,time:200},{start:200,time:300}];
+ assert.deepEqual(currentFrame(frames,250),{index:1,current:true});
+ assert.deepEqual(currentFrame(frames,200),{index:1,current:true});
+ assert.deepEqual(currentFrame(frames,50),{index:0,current:false});
+ assert.deepEqual(currentFrame(frames,350),{index:1,current:false});
+});
+test('rounded display footprint contains Thailand, fades at the rim and does not invent wind outside it',()=>{
+ const g={west:95,north:22.5,step:.5,nx:31,ny:43};
+ for(const [lon,lat] of [[99.9,20.45],[100.5,7.2],[105.3,15.2],[98.3,7.9]])assert.ok(mask(g,lon,lat)>.5);
+ assert.equal(mask(g,95,22.5),0);assert.equal(mask(g,94,12),0);
+ const rim=mask(g,95.2,12);assert.ok(rim>0&&rim<1);
+ const records=wind({u:Array(1333).fill(2),v:Array(1333).fill(-1)},g);
+ assert.equal(records[0].data[0],null);assert.equal(records[0].data[21*31+15],2);
+ assert.equal(records[1].data[21*31+15],-1);
 });
 test('station compact field order is read dynamically; null is not zero',()=>{
  const result=stations({fields:['lon','name','obs24','lat','mm24','obs','mm'],stations:[[100,'test',null,7,null,null,0],[999,'invalid',null,7,0,null,0]]});
