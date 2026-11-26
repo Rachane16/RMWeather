@@ -43,11 +43,13 @@ function initWorkspaceUI(){
       const mini=Boolean(state.minimized[key]);button.textContent=mini?'+':'−';
       button.setAttribute('aria-expanded',String(!mini));button.setAttribute('aria-label',`${mini?'ขยาย':'ย่อ'}${captions[key]}`);
     });
-    const latest=(rainCollections[radarKind]||radarFrames).at(-1);
-    const source={rainviewer:'RainViewer',radar:'TMD',nowcast:'SWIRLS',rod:'RODDSS'}[radarKind];
-    $('timeline-summary').textContent=enabled.radar?`${source} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
+    const frames=rainCollections[radarKind]||radarFrames;
+    const forecast=radarKind==='radargis'&&currentRadarGISProduct()?.forecast;
+    const latest=state.open.timeline?radarFrames[Number($('radar-slider').value)]:(forecast?frames[0]:frames.at(-1));
+    const source={rainviewer:'RainViewer',radar:'TMD',nowcast:'SWIRLS',rod:'RODDSS',radargis:'RadarGIS'}[radarKind];
+    $('timeline-summary').textContent=enabled.radar?`${source}${forecast?' พยากรณ์':''} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
   }
-  function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(radarFrames.length-1);}
+  function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(radarKind==='radargis'&&currentRadarGISProduct()?.forecast?0:radarFrames.length-1);}
   function setOpen(name,on){
     const previous=state.open.timeline;state.setOpen(name,on);
     if(previous&&!state.open.timeline)restoreLatest();

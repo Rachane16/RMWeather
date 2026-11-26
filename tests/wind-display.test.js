@@ -17,6 +17,7 @@ function field(reduced){
 }
 test('normal wind advances along east and north GFS components',()=>{
   const {wind,strokes,canvas}=field(false);wind.animate(40);wind.animate(80);
+  assert.equal(wind.contrast,3);assert.equal(wind.motion,true);
   const first=strokes.flat().find(Boolean);assert.ok(first[2]>first[0]);assert.ok(first[3]>first[1]);
   assert.equal(strokes.length,6);assert.equal(canvas.dataset.motion,'animated');
   assert.ok(strokes[1][0][0]<strokes[4][0][0]);
