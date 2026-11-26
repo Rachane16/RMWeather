@@ -17,6 +17,33 @@ def frame(stamp='2026-11-26 02:15 UTC', **extra):
 
 
 class RadarGISTests(unittest.TestCase):
+    def test_live_schema_uses_valid_time_not_buggy_epoch_or_latest_update(self):
+        raw = json.loads((Path(__file__).parent/'fixtures'/'radargis-live-schema.json').read_text(encoding='utf-8'))
+        products = radar.products_from_catalog({'overlays': raw})
+        self.assertEqual(len(products), 6)
+        self.assertEqual(sum(len(p['frames']) for p in products), 60)
+        latest = next(p for p in products if p['id']=='dbz')['frames'][-1]
+        self.assertEqual(latest['frame_time'], '2026-11-26T07:45:00+00:00')
+        import datetime as dt
+        self.assertEqual(dt.datetime.fromisoformat(latest['frame_time']).astimezone(dt.timezone(dt.timedelta(hours=7))).hour, 14)
+        self.assertTrue(latest['remote_url'].endswith(raw['overlays'][7]['url'].split('?')[1]))
+        first = raw['overlays'][0]
+        self.assertEqual(dt.datetime.fromisoformat(radar.utc_stamp(first['valid_time'])).timestamp()-first['valid_dt_ts'], 7*3600)
+        raw['latest_update']='2099-01-01';raw['overlays'][0]['valid_dt_iso']='2099-01-01';raw['overlays'][0]['valid_dt_ts']=0
+        self.assertEqual(radar.products_from_catalog({'overlays':raw})[0]['frames'][0]['frame_time'],'2026-11-26T06:00:00+00:00')
+
+    def test_valid_time_without_suffix_is_utc_by_contract(self):
+        self.assertEqual(radar.utc_stamp('2026-11-26T07:45:00'),'2026-11-26T07:45:00+00:00')
+
+    def test_version_query_is_kept_in_request_and_cache_identity(self):
+        binary=b'\x89PNG\r\n\x1a\nfixture'
+        with tempfile.TemporaryDirectory() as folder, patch.object(radar,'OUT',Path(folder)), patch.object(radar,'open_url',side_effect=lambda *a,**k:io.BytesIO(binary)) as request:
+            first=radar.cache_image({'remote_url':radar.BASE+'/products/test.png?v=1'})
+            second=radar.cache_image({'remote_url':radar.BASE+'/products/test.png?v=2'})
+            self.assertNotEqual(first['image_url'],second['image_url'])
+            self.assertTrue(first['source_url'].endswith('?v=1'))
+            self.assertTrue(request.call_args_list[1].args[0].full_url.endswith('?v=2'))
+
     def test_embedded_public_map_catalog_is_json_only(self):
         html = '<script>let overlays=' + json.dumps([frame()]) + '; window.untrusted=true;</script>'
         with patch.object(radar, 'open_url', return_value=io.BytesIO(html.encode())):
@@ -26,7 +53,7 @@ class RadarGISTests(unittest.TestCase):
 
     def test_untrusted_urls_bad_bounds_and_unzoned_times_are_excluded(self):
         catalog = {'overlays': {'overlays': [frame(), frame(url='https://evil.example/products/a.png'),
-                   frame(bounds=[[22, 110], [4, 91]]), frame(stamp='2026-11-26T02:15')]}}
+                   frame(bounds=[[22, 110], [4, 91]]), frame(stamp='not-a-time')]}}
         rows = radar.products_from_catalog(catalog)
         self.assertEqual(len(rows), 1)
         self.assertEqual(len(rows[0]['frames']), 1)

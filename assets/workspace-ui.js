@@ -10,8 +10,7 @@ class WorkspacePanels {
   setOpen(name,on){
     if(!(name in this.open))return;
     if(on){
-      if(this.mobile)Object.keys(this.open).forEach(key=>this.open[key]=false);
-      else if(name!=='sidebar')Object.keys(this.open).filter(key=>key!=='sidebar').forEach(key=>this.open[key]=false);
+      if(name!=='sidebar')Object.keys(this.open).filter(key=>key!=='sidebar').forEach(key=>this.open[key]=false);
       this.minimized[name]=false;
     }
     this.open[name]=Boolean(on);
@@ -64,11 +63,11 @@ function initWorkspaceUI(){
     });
     const frames=rainCollections[radarKind]||radarFrames;
     const forecast=radarKind==='radargis'&&currentRadarGISProduct()?.forecast;
-    const latest=state.open.timeline?radarFrames[Number($('radar-slider').value)]:(forecast?frames[0]:frames.at(-1));
+    const latest=state.open.timeline?radarFrames[Number($('radar-slider').value)]:frames[defaultRadarIndex(radarKind,frames)];
     const source={rainviewer:'RainViewer',radar:'TMD',nowcast:'SWIRLS',rod:'RODDSS',radargis:'RadarGIS'}[radarKind];
     $('timeline-summary').textContent=enabled.radar?`${source}${forecast?' พยากรณ์':''} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
   }
-  function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(radarKind==='radargis'&&currentRadarGISProduct()?.forecast?0:radarFrames.length-1);}
+  function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(defaultRadarIndex(radarKind,radarFrames));}
   function setOpen(name,on){
     if(name==='advance'&&on){
       if(advanceSelection.mode==='device')advanceSelection.select('device',window.currentLocation);
@@ -87,7 +86,7 @@ function initWorkspaceUI(){
     render();
   }
   window.workspaceUI={setOpen,closeForWeatherTool(){
-    const previous=state.open.timeline;state.closeAll();if(previous)restoreLatest();
+    const previous=state.open.timeline,catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;if(previous)restoreLatest();
     render();
   }};
   window.syncTimelineUI=render;
@@ -120,7 +119,9 @@ function initWorkspaceUI(){
   window.addEventListener('rm-current-location',event=>{if(advanceSelection.receiveFix({...event.detail,...window.currentLocation}))renderAdvanceForecast();});
   $('radar-close').addEventListener('click',()=>setOpen('timeline',false));
   $('locate-quick').addEventListener('click',requestCurrentLocation);
-  $('reset-layers').addEventListener('click',()=>{if(state.mobile){state.closeAll();render();}});
+  $('map-zoom-in').addEventListener('click',()=>map.gl.zoomIn());
+  $('map-zoom-out').addEventListener('click',()=>map.gl.zoomOut());
+  $('reset-layers').addEventListener('click',()=>{const catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;render();});
   media.addEventListener('change',event=>{const previous=state.open.timeline;state.setMobile(event.matches);if(previous&&!state.open.timeline)restoreLatest();render();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen('timeline',false);setOpen('weather',false);setOpen('advance',false);}});
   document.addEventListener('pointerdown',event=>{if(state.open.timeline&&!event.target.closest('#radar-player,#timeline-toggle'))setOpen('timeline',false);});

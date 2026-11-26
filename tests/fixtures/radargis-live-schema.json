@@ -1,0 +1,1086 @@
+{
+  "generated_at": "2026-11-26 07:57:30 UTC",
+  "latest_update": "2026-11-26 10:45:00",
+  "overlays": [
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 06:00 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0600_UTC.png?v=1795673395",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:00 UTC",
+      "valid_dt_iso": "2026-11-26T06:00:00",
+      "valid_dt_ts": 1795647600
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 06:15 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0615_UTC.png?v=1795674295",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:15 UTC",
+      "valid_dt_iso": "2026-11-26T06:15:00",
+      "valid_dt_ts": 1795648500
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 06:30 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0630_UTC.png?v=1795675256",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:30 UTC",
+      "valid_dt_iso": "2026-11-26T06:30:00",
+      "valid_dt_ts": 1795649400
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 06:45 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0645_UTC.png?v=1795676096",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:45 UTC",
+      "valid_dt_iso": "2026-11-26T06:45:00",
+      "valid_dt_ts": 1795650300
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 07:00 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0700_UTC.png?v=1795676995",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:00 UTC",
+      "valid_dt_iso": "2026-11-26T07:00:00",
+      "valid_dt_ts": 1795651200
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 07:15 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0715_UTC.png?v=1795677896",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:15 UTC",
+      "valid_dt_iso": "2026-11-26T07:15:00",
+      "valid_dt_ts": 1795652100
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 07:30 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0730_UTC.png?v=1795678855",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:30 UTC",
+      "valid_dt_iso": "2026-11-26T07:30:00",
+      "valid_dt_ts": 1795653000
+    },
+    {
+      "group": "01 dBZ Overlay",
+      "title": "dBZ Overlay 2026-11-26 07:45 UTC",
+      "url": "/products/leaflet_overlay_dbz/TMD20_DBZ_MP_MONSOON_DBZ_OVERLAY_20261126_0745_UTC.png?v=1795679696",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:45 UTC",
+      "valid_dt_iso": "2026-11-26T07:45:00",
+      "valid_dt_ts": 1795653900
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 06:00 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0600_UTC.png?v=1795673395",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:00 UTC",
+      "valid_dt_iso": "2026-11-26T06:00:00",
+      "valid_dt_ts": 1795647600
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 06:15 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0615_UTC.png?v=1795674296",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:15 UTC",
+      "valid_dt_iso": "2026-11-26T06:15:00",
+      "valid_dt_ts": 1795648500
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 06:30 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0630_UTC.png?v=1795675256",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:30 UTC",
+      "valid_dt_iso": "2026-11-26T06:30:00",
+      "valid_dt_ts": 1795649400
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 06:45 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0645_UTC.png?v=1795676097",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:45 UTC",
+      "valid_dt_iso": "2026-11-26T06:45:00",
+      "valid_dt_ts": 1795650300
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 07:00 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0700_UTC.png?v=1795676996",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:00 UTC",
+      "valid_dt_iso": "2026-11-26T07:00:00",
+      "valid_dt_ts": 1795651200
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 07:15 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0715_UTC.png?v=1795677897",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:15 UTC",
+      "valid_dt_iso": "2026-11-26T07:15:00",
+      "valid_dt_ts": 1795652100
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 07:30 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0730_UTC.png?v=1795678856",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:30 UTC",
+      "valid_dt_iso": "2026-11-26T07:30:00",
+      "valid_dt_ts": 1795653000
+    },
+    {
+      "group": "02 Rain Rate Overlay",
+      "title": "Rain Rate Overlay 2026-11-26 07:45 UTC",
+      "url": "/products/leaflet_overlay_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_OVERLAY_20261126_0745_UTC.png?v=1795679697",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:45 UTC",
+      "valid_dt_iso": "2026-11-26T07:45:00",
+      "valid_dt_ts": 1795653900
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 06:00 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0600_UTC.png?v=1795673396",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:00 UTC",
+      "valid_dt_iso": "2026-11-26T06:00:00",
+      "valid_dt_ts": 1795647600
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 06:15 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0615_UTC.png?v=1795674296",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:15 UTC",
+      "valid_dt_iso": "2026-11-26T06:15:00",
+      "valid_dt_ts": 1795648500
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 06:30 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0630_UTC.png?v=1795675257",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:30 UTC",
+      "valid_dt_iso": "2026-11-26T06:30:00",
+      "valid_dt_ts": 1795649400
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 06:45 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0645_UTC.png?v=1795676098",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 06:45 UTC",
+      "valid_dt_iso": "2026-11-26T06:45:00",
+      "valid_dt_ts": 1795650300
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 07:00 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0700_UTC.png?v=1795676996",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:00 UTC",
+      "valid_dt_iso": "2026-11-26T07:00:00",
+      "valid_dt_ts": 1795651200
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 07:15 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0715_UTC.png?v=1795677897",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:15 UTC",
+      "valid_dt_iso": "2026-11-26T07:15:00",
+      "valid_dt_ts": 1795652100
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 07:30 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0730_UTC.png?v=1795678856",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:30 UTC",
+      "valid_dt_iso": "2026-11-26T07:30:00",
+      "valid_dt_ts": 1795653000
+    },
+    {
+      "group": "03 Lightning Warning Overlay",
+      "title": "Lightning Warning Overlay 2026-11-26 07:45 UTC",
+      "url": "/products/leaflet_overlay_lightning_warning/TMD20_DBZ_MP_MONSOON_LIGHTNING_WARNING_OVERLAY_20261126_0745_UTC.png?v=1795679697",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 07:45 UTC",
+      "valid_dt_iso": "2026-11-26T07:45:00",
+      "valid_dt_ts": 1795653900
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+015",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T015_20261126_0800_UTC.png?v=1795679780",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:00 UTC",
+      "valid_dt_iso": "2026-11-26T08:00:00",
+      "valid_dt_ts": 1795654800
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+030",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T030_20261126_0815_UTC.png?v=1795679782",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:15 UTC",
+      "valid_dt_iso": "2026-11-26T08:15:00",
+      "valid_dt_ts": 1795655700
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+045",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T045_20261126_0830_UTC.png?v=1795679784",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:30 UTC",
+      "valid_dt_iso": "2026-11-26T08:30:00",
+      "valid_dt_ts": 1795656600
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+060",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T060_20261126_0845_UTC.png?v=1795679785",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:45 UTC",
+      "valid_dt_iso": "2026-11-26T08:45:00",
+      "valid_dt_ts": 1795657500
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+075",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T075_20261126_0900_UTC.png?v=1795679787",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:00 UTC",
+      "valid_dt_iso": "2026-11-26T09:00:00",
+      "valid_dt_ts": 1795658400
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+090",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T090_20261126_0915_UTC.png?v=1795679789",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:15 UTC",
+      "valid_dt_iso": "2026-11-26T09:15:00",
+      "valid_dt_ts": 1795659300
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+105",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T105_20261126_0930_UTC.png?v=1795679790",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:30 UTC",
+      "valid_dt_iso": "2026-11-26T09:30:00",
+      "valid_dt_ts": 1795660200
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+120",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T120_20261126_0945_UTC.png?v=1795679792",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:45 UTC",
+      "valid_dt_iso": "2026-11-26T09:45:00",
+      "valid_dt_ts": 1795661100
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+135",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T135_20261126_1000_UTC.png?v=1795679794",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:00 UTC",
+      "valid_dt_iso": "2026-11-26T10:00:00",
+      "valid_dt_ts": 1795662000
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+150",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T150_20261126_1015_UTC.png?v=1795679795",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:15 UTC",
+      "valid_dt_iso": "2026-11-26T10:15:00",
+      "valid_dt_ts": 1795662900
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+165",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T165_20261126_1030_UTC.png?v=1795679797",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:30 UTC",
+      "valid_dt_iso": "2026-11-26T10:30:00",
+      "valid_dt_ts": 1795663800
+    },
+    {
+      "group": "04 dBZ Nowcast Overlay",
+      "title": "dBZ Nowcast Overlay T+180",
+      "url": "/products/leaflet_overlay_nowcast_dbz/TMD20_DBZ_MP_MONSOON_DBZ_NOWCAST_OVERLAY_T180_20261126_1045_UTC.png?v=1795679799",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:45 UTC",
+      "valid_dt_iso": "2026-11-26T10:45:00",
+      "valid_dt_ts": 1795664700
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+015",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T015_20261126_0800_UTC.png?v=1795679781",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:00 UTC",
+      "valid_dt_iso": "2026-11-26T08:00:00",
+      "valid_dt_ts": 1795654800
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+030",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T030_20261126_0815_UTC.png?v=1795679783",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:15 UTC",
+      "valid_dt_iso": "2026-11-26T08:15:00",
+      "valid_dt_ts": 1795655700
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+045",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T045_20261126_0830_UTC.png?v=1795679784",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:30 UTC",
+      "valid_dt_iso": "2026-11-26T08:30:00",
+      "valid_dt_ts": 1795656600
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+060",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T060_20261126_0845_UTC.png?v=1795679786",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:45 UTC",
+      "valid_dt_iso": "2026-11-26T08:45:00",
+      "valid_dt_ts": 1795657500
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+075",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T075_20261126_0900_UTC.png?v=1795679788",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:00 UTC",
+      "valid_dt_iso": "2026-11-26T09:00:00",
+      "valid_dt_ts": 1795658400
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+090",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T090_20261126_0915_UTC.png?v=1795679789",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:15 UTC",
+      "valid_dt_iso": "2026-11-26T09:15:00",
+      "valid_dt_ts": 1795659300
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+105",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T105_20261126_0930_UTC.png?v=1795679791",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:30 UTC",
+      "valid_dt_iso": "2026-11-26T09:30:00",
+      "valid_dt_ts": 1795660200
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+120",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T120_20261126_0945_UTC.png?v=1795679793",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:45 UTC",
+      "valid_dt_iso": "2026-11-26T09:45:00",
+      "valid_dt_ts": 1795661100
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+135",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T135_20261126_1000_UTC.png?v=1795679794",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:00 UTC",
+      "valid_dt_iso": "2026-11-26T10:00:00",
+      "valid_dt_ts": 1795662000
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+150",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T150_20261126_1015_UTC.png?v=1795679796",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:15 UTC",
+      "valid_dt_iso": "2026-11-26T10:15:00",
+      "valid_dt_ts": 1795662900
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+165",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T165_20261126_1030_UTC.png?v=1795679798",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:30 UTC",
+      "valid_dt_iso": "2026-11-26T10:30:00",
+      "valid_dt_ts": 1795663800
+    },
+    {
+      "group": "05 Rain Rate Nowcast Overlay",
+      "title": "Rain Rate Nowcast Overlay T+180",
+      "url": "/products/leaflet_overlay_nowcast_rainrate/TMD20_DBZ_MP_MONSOON_RAINRATE_NOWCAST_OVERLAY_T180_20261126_1045_UTC.png?v=1795679799",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:45 UTC",
+      "valid_dt_iso": "2026-11-26T10:45:00",
+      "valid_dt_ts": 1795664700
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+015",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T015_20261126_0800_UTC.png?v=1795679781",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:00 UTC",
+      "valid_dt_iso": "2026-11-26T08:00:00",
+      "valid_dt_ts": 1795654800
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+030",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T030_20261126_0815_UTC.png?v=1795679783",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:15 UTC",
+      "valid_dt_iso": "2026-11-26T08:15:00",
+      "valid_dt_ts": 1795655700
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+045",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T045_20261126_0830_UTC.png?v=1795679785",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:30 UTC",
+      "valid_dt_iso": "2026-11-26T08:30:00",
+      "valid_dt_ts": 1795656600
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+060",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T060_20261126_0845_UTC.png?v=1795679786",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 08:45 UTC",
+      "valid_dt_iso": "2026-11-26T08:45:00",
+      "valid_dt_ts": 1795657500
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+075",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T075_20261126_0900_UTC.png?v=1795679788",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:00 UTC",
+      "valid_dt_iso": "2026-11-26T09:00:00",
+      "valid_dt_ts": 1795658400
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+090",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T090_20261126_0915_UTC.png?v=1795679790",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:15 UTC",
+      "valid_dt_iso": "2026-11-26T09:15:00",
+      "valid_dt_ts": 1795659300
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+105",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T105_20261126_0930_UTC.png?v=1795679791",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:30 UTC",
+      "valid_dt_iso": "2026-11-26T09:30:00",
+      "valid_dt_ts": 1795660200
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+120",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T120_20261126_0945_UTC.png?v=1795679793",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 09:45 UTC",
+      "valid_dt_iso": "2026-11-26T09:45:00",
+      "valid_dt_ts": 1795661100
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+135",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T135_20261126_1000_UTC.png?v=1795679795",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:00 UTC",
+      "valid_dt_iso": "2026-11-26T10:00:00",
+      "valid_dt_ts": 1795662000
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+150",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T150_20261126_1015_UTC.png?v=1795679796",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:15 UTC",
+      "valid_dt_iso": "2026-11-26T10:15:00",
+      "valid_dt_ts": 1795662900
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+165",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T165_20261126_1030_UTC.png?v=1795679798",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:30 UTC",
+      "valid_dt_iso": "2026-11-26T10:30:00",
+      "valid_dt_ts": 1795663800
+    },
+    {
+      "group": "06 Lightning Warning Nowcast Overlay",
+      "title": "Lightning Warning Nowcast Overlay T+180",
+      "url": "/products/leaflet_overlay_lightning_nowcast/TMD20_DBZ_MP_MONSOON_LIGHTNING_NOWCAST_OVERLAY_T180_20261126_1045_UTC.png?v=1795679800",
+      "bounds": [
+        [
+          4.003943714509343,
+          91.08911161121193
+        ],
+        [
+          22.181774566553532,
+          110.48744634183039
+        ]
+      ],
+      "valid_time": "2026-11-26 10:45 UTC",
+      "valid_dt_iso": "2026-11-26T10:45:00",
+      "valid_dt_ts": 1795664700
+    }
+  ]
+}

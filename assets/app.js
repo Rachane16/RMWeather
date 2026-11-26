@@ -61,7 +61,7 @@ function applyCategoryLayers(next){
  Object.keys(rainVisibility).forEach(key=>{if(rainVisibility[key]&&key!==rain)setRainEnabled(key,false);});
  if(rain)setRainEnabled(rain,true);
 }
-function selectView(next){
+function selectView(next,{openDetails=true}={}){
  view=next;$('view-title').textContent=titles[view];setActiveCategory(view);
  $('layer-catalog').hidden=view!=='overview';$('layer-details').hidden=view==='overview';$('category-panel').hidden=view==='overview';$('category-intro').textContent=intros[view]||'';$('search').value='';$('category-tools').innerHTML='';$('search-box').hidden=['wind','radar'].includes(view);
  if(view!=='overview')setEnabled(view==='water'?waterKind:view,true);
@@ -70,9 +70,9 @@ function selectView(next){
  if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radargis">TMD RADARGIS</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option><option value="rod">RODDSS · TMD Composite</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;setRainEnabled(radarKind,true);window.syncLayerMenu?.();renderResults();});}
  if($('camera-filter'))$('camera-filter').addEventListener('change',renderResults);
  if($('multiview'))$('multiview').addEventListener('click',showMultiview);
- renderResults();document.querySelector('.drawer-scroll').scrollTop=0;openPanel();window.syncLayerMenu?.();
+ renderResults();document.querySelector('.drawer-scroll').scrollTop=0;if(openDetails)openPanel();else{$('layer-catalog').hidden=false;$('layer-details').hidden=true;}window.syncLayerMenu?.();
 }
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view==='water')waterKind='water';applyCategoryLayers(b.dataset.view);selectView(b.dataset.view);}));
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{if(b.classList.contains('active')){applyCategoryLayers('none');setActiveCategory(null);return;}if(b.dataset.view==='water')waterKind='water';applyCategoryLayers(b.dataset.view);selectView(b.dataset.view,{openDetails:!matchMedia('(max-width:700px)').matches});}));
 $('search').addEventListener('input',renderResults);
 function cameraType(row){return row.webcam_id!=null?'windycams':'cameras';}
 function songkhlaCamera(row){return row.region_code==='TH.68'||(!row.region_code&&row.region==='สงขลา');}
@@ -157,6 +157,7 @@ async function loadForecast(lat,lon,name){
  }catch{if(request===weatherRequest){$('temperature').textContent='—';$('humidity').textContent='—';$('weather-wind').textContent='—';$('precipitation').textContent='—';$('condition').textContent='โหลดอากาศไม่สำเร็จ';$('forecast').innerHTML='';$('seven-day-rows').innerHTML='<tr><td colspan=4>โหลดพยากรณ์ไม่สำเร็จ กรุณาลองใหม่</td></tr>';$('weather-time').textContent='Open-Meteo · กรุณาลองใหม่';}}
 }
 function stopRadar(){clearInterval(radarTimer);radarTimer=null;$('radar-play').textContent='▶';$('radar-play').setAttribute('aria-label','เล่นภาพเรดาร์');}
+function defaultRadarIndex(kind,frames){return kind==='radargis'?radarGISDefaultIndex(frames):Math.max(0,frames.length-1);}
 function setRainEnabled(kind,on){
  rainVisibility[kind]=on;
  if(on){radarKind=kind;loadRadar(kind);}else{
@@ -171,18 +172,18 @@ async function loadRadar(kind=radarKind){
  if(kind===radarKind){stopRadar();radarFrames=[];$('radar-status').textContent='กำลังโหลดภาพ…';$('radar-play').disabled=true;}
  try{let frames;
   if(kind==='rainviewer'){const j=await getJSON('https://api.rainviewer.com/public/weather-maps.json');frames=(j.radar?.past||[]).map(f=>({frame_time:new Date(f.time*1000).toISOString(),tile:`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`}));}
-  else frames=(kind==='radargis'?(currentRadarGISProduct()?.frames||[]):datasets[kind]||[]).filter(f=>f.bounds&&safeURL(f.image_url)).sort((a,b)=>Date.parse(a.frame_time)-Date.parse(b.frame_time));
+  else frames=(kind==='radargis'?radarGISTimeline(currentRadarGISProduct(),datasets.radargis?.products||[]):datasets[kind]||[]).filter(f=>f.bounds&&safeURL(f.image_url)).sort((a,b)=>Date.parse(a.frame_time)-Date.parse(b.frame_time));
   if(request!==rainRequests[kind]||!rainVisibility[kind])return;
-  rainCollections[kind]=frames;map.setRain(frames.at(-1)||null,kind);
+  rainCollections[kind]=frames;map.setRain(frames[defaultRadarIndex(kind,frames)]||null,kind);
   if(kind!==radarKind)return;
   radarFrames=frames;$('radar-label').textContent=kind==='radar'?'TMD · ตรวจวัดภาคใต้':kind==='nowcast'?'SWIRLS · พยากรณ์ภาคใต้':kind==='rod'?'RODDSS · TMD Composite':kind==='radargis'?'TMD RADARGIS':'RainViewer · เรดาร์';
   syncRadarGISControls();$('radar-timeline-source').value=kind;$('radar-slider').max=Math.max(0,frames.length-1);$('radar-play').disabled=!frames.length;
-  if(!frames.length){$('radar-status').textContent='ยังไม่มีเฟรมภาพจากแหล่งนี้';$('radar-time').textContent='—';$('radar-date').textContent='—';return;}showRadarFrame(kind==='radargis'&&currentRadarGISProduct()?.forecast?0:frames.length-1);
+  if(!frames.length){$('radar-status').textContent='ยังไม่มีเฟรมภาพจากแหล่งนี้';$('radar-time').textContent='—';$('radar-date').textContent='—';return;}showRadarFrame(defaultRadarIndex(kind,frames));
  }catch{if(kind===radarKind&&request===rainRequests[kind])$('radar-status').textContent='โหลดภาพเรดาร์ไม่สำเร็จ กรุณาลองใหม่หรือเปลี่ยนแหล่งภาพ';}
 }
 function showRadarFrame(index){
- const f=radarFrames[index];if(!f)return;const sourceTime=radarKind==='nowcast'||(radarKind==='radargis'&&currentRadarGISProduct()?.forecast)?(f.base_time||radarFrames.at(-1)?.frame_time):radarFrames.at(-1)?.frame_time;map.setRain(rainVisibility[radarKind]?f:null,radarKind);
- $('radar-slider').value=index;const d=new Date(f.frame_time);$('radar-time').textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});$('radar-date').textContent=time(f.frame_time);$('radar-status').textContent=`${stale(sourceTime,radarKind==='radargis'?.75:2)?'ข้อมูลต้นทางยังเป็นเฟรมเก่า · ':''}${radarKind==='nowcast'||(radarKind==='radargis'&&currentRadarGISProduct()?.forecast)?'เวลาที่พยากรณ์':'เวลาของภาพ'} · เฟรม ${index+1}/${radarFrames.length}${radarKind==='rod'?' · TMD Composite / PSU':radarKind==='radargis'?' · '+radarGISDescription(currentRadarGISProduct(),f):radarKind!=='rainviewer'?' · ครอบคลุมภาคใต้':''}`;
+ const f=radarFrames[index];if(!f)return;const forecasting=radarKind==='nowcast'||(radarKind==='radargis'&&f.forecast);const sourceTime=forecasting?(f.base_time||radarFrames.at(-1)?.frame_time):radarKind==='radargis'?currentRadarGISProduct()?.frames.at(-1)?.frame_time:radarFrames.at(-1)?.frame_time;map.setRain(rainVisibility[radarKind]?f:null,radarKind);
+ $('radar-slider').value=index;const d=new Date(f.frame_time);$('radar-time').textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});$('radar-date').textContent=time(f.frame_time);$('radar-status').textContent=`${stale(sourceTime,radarKind==='radargis'?.75:2)?'ข้อมูลต้นทางยังเป็นเฟรมเก่า · ':''}${forecasting?'เวลาที่พยากรณ์':'เวลาตรวจวัด'} · เฟรม ${index+1}/${radarFrames.length}${radarKind==='rod'?' · TMD Composite / PSU':radarKind==='radargis'?' · '+radarGISDescription(currentRadarGISProduct(),f):radarKind!=='rainviewer'?' · ครอบคลุมภาคใต้':''}`;
  $('radar-slider').style.setProperty('--progress',`${radarFrames.length>1?index/(radarFrames.length-1)*100:0}%`);
  if($('radargis-origin'))$('radargis-origin').hidden=radarKind!=='radargis';document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';window.syncTimelineUI?.();
 }
@@ -202,8 +203,8 @@ async function loadNational(kind=waterKind){
  finally{if(request===nationalRequests[kind]){nationalLoading[kind]=false;renderMarkers();renderResults();}}
 }
 
-document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-place]').forEach(x=>x.classList.toggle('selected',x===b));const [lat,lng,name,zoom]=places[b.dataset.place];map.flyTo([lat,lng],zoom);loadForecast(lat,lng,name);if(innerWidth<=680)window.closeLayerDrawer?.();}));
-map.onMapClick=p=>{window.closeLayerDrawer?.();loadForecast(p.lat,p.lng,`พิกัด ${p.lat.toFixed(2)}, ${p.lng.toFixed(2)}`);};
+document.querySelectorAll('[data-place]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-place]').forEach(x=>x.classList.toggle('selected',x===b));const [lat,lng,name,zoom]=places[b.dataset.place];map.flyTo([lat,lng],zoom);loadForecast(lat,lng,name);}));
+map.onMapClick=p=>{loadForecast(p.lat,p.lng,`พิกัด ${p.lat.toFixed(2)}, ${p.lng.toFixed(2)}`);};
 $('refresh').addEventListener('click',()=>{refreshData();const c=map.getCenter();loadForecast(c.lat,c.lng,$('place-name').textContent);});
 $('fit').addEventListener('click',()=>{map.flyTo([7.0084,100.4767],11);});
 let locationRequest=0;
