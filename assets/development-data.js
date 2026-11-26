@@ -1,5 +1,14 @@
 'use strict';
 
+// Palette sampled from the owner's reference; rainfall totals in mm / 3 h.
+const DEVELOPMENT_RAIN_STOPS=[[.3,0,20,220],[2,0,164,255],[7,115,229,95],[15,255,211,0],[50,251,86,0],[500,180,3,0]];
+function developmentRainColour(value){
+  if(value==null||!Number.isFinite(value)||value<.3)return [0,0,0,0];
+  let hi=DEVELOPMENT_RAIN_STOPS.findIndex(p=>p[0]>=value);if(hi<0)hi=DEVELOPMENT_RAIN_STOPS.length-1;
+  const low=DEVELOPMENT_RAIN_STOPS[Math.max(0,hi-1)],high=DEVELOPMENT_RAIN_STOPS[hi],weight=hi===0?0:Math.min(1,(value-low[0])/(high[0]-low[0]));
+  return [1,2,3].map(k=>Math.round(low[k]+(high[k]-low[k])*weight)).concat(205);
+}
+
 // Display sampling does not increase the source grid's spatial resolution.
 function developmentSample(values,grid,lon,lat){
   const x=(lon-grid.west)/grid.step,y=(grid.north-lat)/grid.step;
@@ -37,4 +46,4 @@ function developmentColourRange(rgba,colours,levels){
   const low=levels[index],high=levels[index+1]??null;
   return {min:low,max:high,text:high==null?`≥ ${low}`:`${low}–${high}`};
 }
-if(typeof module!=='undefined')module.exports={developmentSample,developmentWind,developmentLatest,developmentStations,developmentPixelPosition,developmentColourRange};
+if(typeof module!=='undefined')module.exports={developmentSample,developmentWind,developmentLatest,developmentStations,developmentPixelPosition,developmentColourRange,developmentRainColour,DEVELOPMENT_RAIN_STOPS};
