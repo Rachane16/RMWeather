@@ -110,8 +110,8 @@ class WeatherMap {
       // A nearly transparent hit area covers the full camera-cluster badge.
       this.gl.addLayer({id:`${sourceId}-cluster`,type:'circle',source:sourceId,filter:['has','point_count'],paint:{'circle-radius':25,'circle-color':'#354354','circle-opacity':.001}});
       this.gl.addLayer({id:`${sourceId}-count`,type:'symbol',source:sourceId,filter:['has','point_count'],layout:{'icon-image':['concat','rm-camera-cluster-',['to-string',['get','point_count']]],'icon-allow-overlap':true,'icon-ignore-placement':true}});
-      if(['thaiwater','rain','dam'].includes(id)){
-        const colors={thaiwater:'#247cce',rain:'#18a787',dam:'#8b62b0'};
+      if(['thaiwater','rain','dam','devstations'].includes(id)){
+        const colors={thaiwater:'#247cce',rain:'#18a787',dam:'#8b62b0',devstations:'#df861c'};
         this.gl.addLayer({id:`${sourceId}-point`,type:'circle',source:sourceId,paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,id==='thaiwater'?4:2.5,12,id==='dam'?8:id==='thaiwater'?7:3.5],'circle-color':colors[id],'circle-opacity':['case',['get','old'],.45,.9],'circle-stroke-color':'#ffffff','circle-stroke-width':id==='dam'?2.5:1.2}});
       }else this.gl.addLayer({id:`${sourceId}-point`,type:'symbol',source:sourceId,filter:['!', ['has','point_count']],layout:{'icon-image':['case',['get','old'],`rm-${id}-old`,`rm-${id}-new`],'icon-anchor':'bottom','icon-size':['interpolate',['linear'],['zoom'],5,.72,12,.88,16,1],'icon-allow-overlap':true,'icon-ignore-placement':true}});
       // Layer listeners survive style changes; register each pair just once.
@@ -169,7 +169,16 @@ class WeatherMap {
     });
   }
   setWind(records) {
+    this.baseWindRecords=records;
+    this.renderWindRecords();
+  }
+  setExperimentalWind(records){
+    this.experimentalWindRecords=records;
+    this.renderWindRecords();
+  }
+  renderWindRecords(){
     this.wind?.destroy();this.wind=null;
+    const records=this.experimentalWindRecords||this.baseWindRecords;
     if(records)this.wind=new WindParticles(this.gl,records,this.windContrast||3,this.windMotion!==false);
   }
   setWindContrast(value){this.windContrast=value;if(this.wind){this.wind.contrast=value;this.wind.clear();}}
