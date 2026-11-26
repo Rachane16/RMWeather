@@ -11,7 +11,10 @@ adb shell am start -W -n io.github.rachane16.rmweather/.MainActivity
 for attempt in $(seq 1 30); do
   adb shell uiautomator dump /sdcard/rmweather-ui.xml >/dev/null 2>&1 || true
   adb pull /sdcard/rmweather-ui.xml android-smoke/ui.xml >/dev/null 2>&1 || true
-  if python3 -c 'import pathlib,sys; p=pathlib.Path("android-smoke/ui.xml"); s=p.read_text() if p.exists() else ""; sys.exit(0 if "ภาพรวม" in s and "ชั้นข้อมูล" in s else 1)'; then
+  if python3 -c 'import pathlib,sys; p=pathlib.Path("android-smoke/ui.xml"); s=p.read_text() if p.exists() else ""; sys.exit(0 if all(text in s for text in ["ภาพรวม","ชั้นข้อมูล","OpenStreetMap"]) else 1)'; then
+    # The first native accessibility frame can precede the WebGL basemap.
+    # Require the dynamically created map credit and allow tiles to render.
+    sleep 8
     adb exec-out screencap -p > android-smoke/app.png
     adb logcat -d -s AndroidRuntime:E > android-smoke/runtime.log
     if grep -q 'FATAL EXCEPTION' android-smoke/runtime.log; then exit 1; fi
