@@ -14,20 +14,6 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
-  development_network:
-    if: github.event_name == 'pull_request'
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Check alternate runner network for CLPP
-        run: python scripts/sync_development.py --probe --clpp-only
-      - uses: actions/upload-artifact@v4
-        with:
-          name: development-connectivity-windows
-          path: _development_probe.json
   check:
     runs-on: ubuntu-latest
     steps:
@@ -44,6 +30,7 @@ jobs:
       - run: node --check assets/weather-tools.js
       - run: node --check assets/windy-embed.js
       - run: node --check assets/display.js
+      - run: node --check assets/development-access.js
       - run: node --check assets/development.js
       - run: node --check assets/development-data.js
       - run: node --check assets/workspace-ui.js
@@ -56,14 +43,6 @@ jobs:
         with:
           name: radargis-connectivity
           path: _radargis_probe.json
-      - name: Check experimental data access from the runner
-        if: github.event_name == 'pull_request'
-        run: python scripts/sync_development.py --probe
-      - uses: actions/upload-artifact@v4
-        if: github.event_name == 'pull_request'
-        with:
-          name: development-connectivity
-          path: _development_probe.json
   deploy:
     if: github.event_name != 'pull_request'
     needs: check
@@ -104,41 +83,26 @@ jobs:
         run: python scripts/sync_windy.py
         env:
           WINDY_WEBCAMS_API_KEY: ${{ secrets.WINDY_WEBCAMS_API_KEY }}
-      - uses: actions/cache/restore@v4
-        id: development_cache
-        with:
-          path: |
-            data/live/development/ecmwf*.json
-            data/live/development/icon*.json
-            data/live/development/gfs*.json
-            data/live/development/ukmo*.json
-            data/live/development/meteofrance*.json
-            data/live/development/jma*.json
-            data/live/development/cma*.json
-          key: development-models-v1-lookup-${{ github.run_id }}
-          restore-keys: development-models-v1-
-      - name: Update experimental map layers
+      - name: Restore authenticated experimental cache
+        id: development_restore
+        continue-on-error: true
+        run: python scripts/development_storage.py --restore
+        env:
+          DEVELOPMENT_UPLOAD_TOKEN: ${{ secrets.DEVELOPMENT_UPLOAD_TOKEN }}
+      - name: Update experimental datasets privately
         id: development_sync
+        if: steps.development_restore.outcome == 'success'
+        continue-on-error: true
         run: python scripts/sync_development.py
-      - uses: actions/cache/save@v4
-        if: steps.development_cache.outputs.cache-matched-key != format('development-models-v1-{0}', steps.development_sync.outputs.cache_key)
-        with:
-          path: |
-            data/live/development/ecmwf*.json
-            data/live/development/icon*.json
-            data/live/development/gfs*.json
-            data/live/development/ukmo*.json
-            data/live/development/meteofrance*.json
-            data/live/development/jma*.json
-            data/live/development/cma*.json
-          key: development-models-v1-${{ steps.development_sync.outputs.cache_key }}
+      - name: Upload experimental datasets to protected storage
+        if: steps.development_sync.outcome == 'success'
+        continue-on-error: true
+        run: python scripts/development_storage.py
+        env:
+          DEVELOPMENT_UPLOAD_TOKEN: ${{ secrets.DEVELOPMENT_UPLOAD_TOKEN }}
       - uses: actions/configure-pages@v5
       - name: Package public files only
-        run: |
-          mkdir -p _site
-          cp index.html legacy.html _site/
-          cp -r assets data _site/
-          touch _site/.nojekyll
+        run: python scripts/package_public.py
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

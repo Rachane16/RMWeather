@@ -1,5 +1,6 @@
 import unittest
-from scripts.sync_development import model_frames, clpp_frames
+import datetime as dt
+from scripts.sync_development import model_frames, clpp_frames, GRID, MODELS, MODEL_CACHE_HOURS, forecast_window
 
 
 class DevelopmentDataTests(unittest.TestCase):
@@ -21,6 +22,28 @@ class DevelopmentDataTests(unittest.TestCase):
     def test_incomplete_grid_is_rejected(self):
         with self.assertRaises(ValueError):
             model_frames([self.row()], {'nx': 2, 'ny': 2})
+
+    def test_asia_covers_west_east_and_south_without_exceeding_free_collection_budget(self):
+        south = GRID['north']-(GRID['ny']-1)*GRID['step']
+        east = GRID['west']+(GRID['nx']-1)*GRID['step']
+        for lat, lon in [(39.9, 32.9), (28.6, 77.2), (35.7, 139.7), (-9, 125), (62, 129)]:
+            self.assertTrue(south <= lat <= GRID['north'] and GRID['west'] <= lon <= east)
+        one_cycle = GRID['nx']*GRID['ny']*len(MODELS)
+        self.assertLessEqual(one_cycle, 5000)
+        self.assertLessEqual(one_cycle*24/MODEL_CACHE_HOURS, 9000)
+
+    def test_unavailable_forecast_tail_is_omitted_instead_of_a_blank_last_frame(self):
+        row = self.row()
+        row['hourly']['time'] += [14400, 18000, 21600]
+        for name in ('precipitation', 'wind_speed_10m', 'wind_direction_10m'):
+            row['hourly'][name] += [None]*3
+        frames = model_frames([row], {'nx': 1, 'ny': 1})
+        self.assertEqual(len(frames), 1)
+
+    def test_all_batches_share_a_fixed_99_hour_utc_window_with_complete_three_hour_rain(self):
+        begin, end = forecast_window(dt.datetime(2026, 11, 26, 23, 59, tzinfo=dt.timezone.utc))
+        self.assertEqual(begin, '2026-11-26T22:00')
+        self.assertEqual(dt.datetime.fromisoformat(end)-dt.datetime.fromisoformat(begin), dt.timedelta(hours=98))
 
     def frame(self, **changes):
         frame = {'time': 0, 'time_utc': '1970-01-01T00:00:00Z', 'kind': 'present',
