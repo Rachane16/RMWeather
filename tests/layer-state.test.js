@@ -49,11 +49,11 @@ test('an older same-source request cannot overwrite a newer result and a failed 
 });
 test('map detail uses the clicked source units even when a different water category is selected',()=>{
   const content={innerHTML:''},dialog={open:true};
-  const ctx={waterKind:'dam',datasets:{},$:id=>id==='detail-content'?content:dialog,titleOf:()=> 'Station',esc:String,freshness:()=>'',number:v=>v??'—',bindImageErrors(){}};
+  const ctx={hydroDetailHTML:require('../assets/hydro.js').hydroDetailHTML,icon:()=>'',waterKind:'dam',datasets:{},$:id=>id==='detail-content'?content:dialog,titleOf:()=> 'Station',esc:String,freshness:()=>'',number:v=>v??'—',bindImageErrors(){}};
   const start=app.indexOf('function showDetail('),end=app.indexOf('function showMultiview()',start);
   vm.createContext(ctx);vm.runInContext(app.slice(start,end),ctx);
   ctx.showDetail('water',{level:12,province_name:'สงขลา'},'rain');
-  assert.match(content.innerHTML,/12 มม\./);assert.doesNotMatch(content.innerHTML,/12 %/);
+  assert.match(content.innerHTML.replace(/<[^>]*>/g,''),/12 มม\./);assert.doesNotMatch(content.innerHTML.replace(/<[^>]*>/g,''),/12 %/);
   ctx.showDetail('water',{level:78,storage:200,province_name:'สงขลา'},'dam');
-  assert.match(content.innerHTML,/78 %/);assert.match(content.innerHTML,/200 ล้าน ม³/);
+  assert.match(content.innerHTML.replace(/<[^>]*>/g,''),/78 %/);assert.match(content.innerHTML.replace(/<[^>]*>/g,''),/200 ล้าน ม³/);
 });

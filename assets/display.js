@@ -14,9 +14,6 @@ function rightPanel(name,open) {
   $(`${name}-toggle`).addEventListener('click',()=>rightPanel(name,$(`${name}-panel`).hidden));
   $(`${name}-close`).addEventListener('click',()=>rightPanel(name,false));
 });
-$('wind-contrast').addEventListener('input',event=>{
-  const value=Number(event.target.value);map.setWindContrast(value);$('wind-contrast-value').value=value;
-});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')['display','maptools'].forEach(name=>rightPanel(name,false));});
 document.querySelectorAll('[data-tool],[data-tool-toggle]').forEach(control=>control.addEventListener(control.type==='checkbox'?'change':'click',()=>{
   if(control.dataset.tool||control.checked)rightPanel('display',false);
@@ -33,5 +30,4 @@ document.querySelectorAll('[data-quick-layer]').forEach(input=>input.addEventLis
  const key=input.dataset.quickLayer;
  if(input.checked)activateSource(key);else if(rainSources.includes(key))setRainEnabled(key,false);else setEnabled(key,false);
 }));
-$('wind-motion').addEventListener('change',event=>map.setWindMotion(event.target.checked));
 syncLayerMenu();

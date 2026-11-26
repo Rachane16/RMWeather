@@ -25,6 +25,7 @@ jobs:
       - run: node --check assets/app.js
       - run: node --check assets/layers.js
       - run: node --check assets/hydro.js
+      - run: node --check assets/radargis.js
       - run: node --check assets/map-engine.js
       - run: node --check assets/weather-tools.js
       - run: node --check assets/display.js
@@ -45,7 +46,19 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install --disable-pip-version-check certifi
       - run: python scripts/sync_data.py
-      - name: Update Songkhla Windy webcams
+      - name: Read TMD RadarGIS catalog
+        id: radargis_catalog
+        run: python scripts/sync_radargis.py --catalog
+      - uses: actions/cache@v4
+        with:
+          path: |
+            data/live/radargis.json
+            data/live/radargis
+          key: radargis-v1-${{ steps.radargis_catalog.outputs.key }}
+          restore-keys: radargis-v1-
+      - name: Update TMD RadarGIS overlays
+        run: python scripts/sync_radargis.py
+      - name: Update Thailand Windy webcams
         run: python scripts/sync_windy.py
         env:
           WINDY_WEBCAMS_API_KEY: ${{ secrets.WINDY_WEBCAMS_API_KEY }}
@@ -59,9 +72,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+          name: github-pages-${{ github.run_attempt }}
       - uses: actions/deploy-pages@v4
         id: deployment
         continue-on-error: true
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
       # Uploaded artifacts can take a few seconds to appear in the Pages API.
       - name: Wait for artifact metadata after a transient deployment failure
         if: steps.deployment.outcome == 'failure'
@@ -69,3 +85,5 @@ jobs:
       - uses: actions/deploy-pages@v4
         id: deployment_retry
         if: steps.deployment.outcome == 'failure'
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}

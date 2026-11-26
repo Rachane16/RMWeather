@@ -170,7 +170,7 @@ class WeatherMap {
   }
   setWind(records) {
     this.wind?.destroy();this.wind=null;
-    if(records)this.wind=new WindParticles(this.gl,records,this.windContrast||2,this.windMotion!==false);
+    if(records)this.wind=new WindParticles(this.gl,records,this.windContrast||3,this.windMotion!==false);
   }
   setWindContrast(value){this.windContrast=value;if(this.wind){this.wind.contrast=value;this.wind.clear();}}
   setWindMotion(on){this.windMotion=on;if(this.wind){this.wind.motion=on;this.wind.clear();}}
@@ -233,7 +233,7 @@ function sampleWind(records,longitude,latitude) {
   const east=interpolate(u),north=interpolate(v);return east==null||north==null?null:[east,north];
 }
 class WindParticles {
-  constructor(map,records,contrast=2,motion=true) {
+  constructor(map,records,contrast=3,motion=true) {
     this.motion=motion;
     this.map=map;this.records=records;this.contrast=contrast;this.canvas=document.createElement('canvas');this.canvas.className='wind-canvas';
     this.canvas.setAttribute('aria-hidden','true');map.getCanvasContainer().appendChild(this.canvas);this.ctx=this.canvas.getContext('2d');this.particles=[];

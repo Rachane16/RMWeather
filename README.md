@@ -51,7 +51,7 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 
 พื้นแผนที่: ELEMNT Natural Terrain (OSM/Protomaps, เงาภูเขา Mapterhorn และภาพใต้ทะเล GEBCO), OpenStreetMap, Esri World Imagery, Esri World Topo Map, OpenTopoMap และ OpenFreeMap Positron สลับพื้นแผนที่โดยรักษาตำแหน่ง ซูม และมุมมอง ชื่อไทยตามข้อมูล OSM อ่านรายละเอียดและข้อจำกัดที่ [docs/natural-terrain.md](docs/natural-terrain.md)
 
-กล้อง Windy ใช้ API v3 กรองจังหวัดสงขลารหัส TH.68 และประเทศ TH โดยเฉพาะ เก็บ key ใน GitHub Actions secret `WINDY_WEBCAMS_API_KEY` แล้วรัน `scripts/sync_windy.py` หลังอัปเดตข้อมูลหลัก ส่งออกเฉพาะข้อมูลแสดงผลและลิงก์ player ที่ปลอดภัย ไม่ส่งออก key หรือ URL ภาพชั่วคราว การทดสอบวันที่ 25 พ.ย. 2569 พบ 23 กล้องแบบ Timelapse ไม่มีลิงก์ Live ในชุดนี้
+กล้อง Windy ใช้ API v3 กรองประเทศ TH และแบ่งหน้าเพื่อแสดงกล้องทั่วประเทศไทย เก็บ key ใน Actions secret `WINDY_WEBCAMS_API_KEY` กล้องที่มีรหัสจังหวัด TH.68 จะรวมในเลเยอร์กล้อง CCTV สงขลาโดยไม่วาดหมุดซ้ำเมื่อเปิดเลเยอร์ Windy ประเทศไทยด้วย ใช้ลิงก์ player ที่มี attribution และไม่ส่งออก key หรือ URL ภาพชั่วคราว
 
 เครดิตข้อมูล: One Data / PSU, RODDSS / PSU, RID, TMD, HatyaiClimate และหน่วยงานเจ้าของกล้อง, NOAA GFS, Open-Meteo, RainViewer ให้ตรวจเงื่อนไขของแต่ละผู้ให้บริการก่อนนำไปใช้เชิงพาณิชย์
 
@@ -62,3 +62,5 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 รายละเอียดการแก้ภาพฝน ภูมิประเทศ และการแสดงผลรอบล่าสุด: [docs/display-fixes.md](docs/display-fixes.md)
 
 UI ใช้ Sarabun 4 น้ำหนักจากไฟล์ที่เจ้าของให้ พร้อมหมุดกล้อง/ระดับน้ำ/อากาศแบบแยกประเภท เส้นลมสีขาวขอบเข้ม และตัวปรับความชัดในเครื่องมือแผนที่
+
+TMD RadarGIS เพิ่มเป็นแหล่งภาพเสริมในหมวดภาพเรดาร์ โดยคง RainViewer และลมเคลื่อนไหวความชัด 3 เป็นค่าเริ่มต้น ดู [ข้อมูล การเก็บภาพ และป๊อปอัป ThaiWater](docs/radargis-hydro.md)

@@ -1,4 +1,5 @@
 data/live/
 __pycache__/
 _site/
+_radargis_catalog.json
 *.log

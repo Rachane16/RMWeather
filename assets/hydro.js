@@ -1,13 +1,18 @@
 'use strict';
 
+const hydroText = value => value && typeof value === 'object' ? (value.th || value.en || '') : (value ?? '');
+const hydroNumber = value => value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
+function thaiwaterTime(value){
+  if(!value)return null;
+  // ThaiWater's unzoned station timestamps are ICT, regardless of viewer timezone.
+  return /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2})?$/.test(value)?value.replace(' ','T')+'+07:00':value;
+}
 function normalizeNationalData(payload, kind) {
-  const text = value => value && typeof value === 'object' ? (value.th || value.en || '') : value;
   let rows;
   if (kind === 'dam') {
     const root = payload.data || payload.dam_data || payload;
     const buckets = [root.dam_hourly, root.dam_daily].filter(Array.isArray);
     rows = buckets.length ? buckets.flat() : (Array.isArray(root) ? root : []);
-    // Hourly and daily buckets can contain the same dam; retain the newest record.
     const latest = new Map();
     for (const row of rows) {
       const key = row.dam?.id ?? row.dam_id ?? row.id;
@@ -21,18 +26,61 @@ function normalizeNationalData(payload, kind) {
       : [payload.rainfall_data?.data, payload.rain_data?.data, payload.data];
     rows = candidates.find(Array.isArray) || [];
   }
-  return rows.map((row, index) => ({
-    station_code: String(row.station?.id ?? row.dam?.id ?? row.dam_id ?? row.id ?? index),
-    station_name_th: text(row.station?.tele_station_name || row.dam?.dam_name || row.dam_name) || 'สถานี',
-    province_name: text(row.geocode?.province_name),
-    latitude: row.station?.tele_station_lat ?? row.dam?.dam_lat ?? row.dam_lat,
-    longitude: row.station?.tele_station_long ?? row.dam?.dam_long ?? row.dam_long,
-    observed_at: row.waterlevel_datetime || row.rainfall_datetime || row.dam_date,
-    level: kind === 'rain' ? (row.rain_24h ?? null) : kind === 'dam' ? (row.dam_storage_percent ?? null) : (row.waterlevel_msl ?? row.waterlevel_m ?? null),
-    q: row.discharge ?? null,
-    level_percent: null,
-    storage: row.dam_storage ?? null,
-  }));
+  const scales=payload.scale?.data?.scale||[];
+  return rows.map((row, index) => {
+    const station=row.station||{},dam=row.dam||{},geocode=row.geocode||{};
+    const msl=hydroNumber(row.waterlevel_msl),level=kind==='rain'?hydroNumber(row.rain_24h):kind==='dam'?hydroNumber(row.dam_storage_percent):msl??hydroNumber(row.waterlevel_m);
+    const situation=scales.find(s=>Number(String(s.trans).match(/level_(\d+)/)?.[1])===Number(row.situation_level));
+    return {
+      station_code:String(station.id??dam.id??row.dam_id??row.id??index),old_code:station.tele_station_oldcode||dam.dam_oldcode||'',
+      station_name_th:hydroText(station.tele_station_name||dam.dam_name||row.dam_name)||'สถานี',
+      province_name:hydroText(geocode.province_name),amphur_name:hydroText(geocode.amphoe_name),tumbon_name:hydroText(geocode.tumbon_name),
+      latitude:station.tele_station_lat??dam.dam_lat??row.dam_lat,longitude:station.tele_station_long??dam.dam_long??row.dam_long,
+      observed_at:thaiwaterTime(row.waterlevel_datetime||row.rainfall_datetime||row.dam_date),
+      level,level_unit:kind==='rain'?'มม.':kind==='dam'?'%':msl!=null?'ม.รทก.':'ม.',
+      agency_name:hydroText(row.agency?.agency_name),sponsor_name:hydroText(station.sponsor_by),
+      basin_name:hydroText(row.basin?.basin_name),river_name:row.river_name||'',
+      q:hydroNumber(row.discharge??row.flow_rate),level_percent:hydroNumber(row.storage_percent),
+      previous_level:msl!=null?hydroNumber(row.waterlevel_msl_previous):null,
+      bank_level:msl!=null?hydroNumber(station.min_bank):null,ground_level:msl!=null?hydroNumber(station.ground_level):null,
+      bank_diff:msl!=null?hydroNumber(row.diff_wl_bank):null,bank_diff_text:msl!=null?row.diff_wl_bank_text||'':'',
+      situation:situation?.situation||null,situation_tone:({1:'critical',2:'low',3:'normal',4:'high',5:'flood'})[row.situation_level]||'unknown',
+      rain_1h:hydroNumber(row.rain_1h),storage:hydroNumber(row.dam_storage),
+      usable_water:hydroNumber(row.dam_uses_water),usable_percent:hydroNumber(row.dam_uses_water_percent),
+      inflow:hydroNumber(row.dam_inflow),released:hydroNumber(row.dam_released),
+      normal_storage:hydroNumber(dam.normal_storage),max_storage:hydroNumber(dam.max_storage),
+    };
+  });
 }
 
-if (typeof module !== 'undefined') module.exports = {normalizeNationalData};
+function hydroDetailHTML(row,kind,helpers){
+  const {esc,number,freshness,icon}=helpers;
+  const address=[row.tumbon_name&&'ต.'+row.tumbon_name,row.amphur_name&&'อ.'+row.amphur_name,row.province_name&&'จ.'+row.province_name].filter(Boolean).join(' ');
+  const metric=(label,value,unit)=>`<div class="hydro-metric"><span>${label}</span><strong>${number(value,2)} <small>${unit}</small></strong></div>`;
+  const cell=(label,value,unit='',digits=2)=>`<div><dt>${label}</dt><dd>${number(value,digits)} <small>${unit}</small></dd></div>`;
+  let main='',facts='',note='';
+  if(kind==='rain'){
+    main=`<div class="hydro-rain-icon">${icon('rain')}</div>${metric('ปริมาณฝนสะสม 24 ชั่วโมงย้อนหลัง',row.level,'มม.')}`;
+    facts=cell('ฝนสะสม 1 ชั่วโมง',row.rain_1h,'มม.')+`<div><dt>ลุ่มน้ำ</dt><dd>${esc(row.basin_name||'ไม่ระบุ')}</dd></div>`;
+    note='ช่วงสะสมย้อนหลังสิ้นสุดตามเวลารายงานของสถานี';
+  }else if(kind==='dam'){
+    main=`<div class="hydro-rain-icon">${icon('water')}</div>${metric('น้ำกักเก็บเทียบความจุระดับเก็บกัก',row.level,'%')}`;
+    const width=row.level==null?0:Math.max(0,Math.min(100,row.level));
+    facts=`<div class="storage-bar" role="img" aria-label="น้ำกักเก็บ ${esc(number(row.level))} เปอร์เซ็นต์"><i style="width:${width}%"></i></div>`+
+      cell('ปริมาตรน้ำกักเก็บ',row.storage,'ล้าน ม³')+cell('ความจุระดับเก็บกัก',row.normal_storage,'ล้าน ม³')+
+      cell('น้ำใช้การได้',row.usable_water,'ล้าน ม³')+cell('น้ำใช้การได้เทียบความจุ',row.usable_percent,'%')+
+      cell('น้ำไหลเข้า',row.inflow,'ล้าน ม³/วัน')+cell('น้ำระบาย',row.released,'ล้าน ม³/วัน');
+    note='ข้อมูลเขื่อนรายวันตามวันที่ต้นทาง ไม่ใช่ค่าระดับน้ำตรวจวัดทุกนาที';
+  }else{
+    const delta=row.bank_diff??(row.bank_level!=null&&row.level!=null&&row.level_unit==='ม.รทก.'?row.bank_level-row.level:null);
+    main=`<span class="hydro-status tone-${esc(row.situation_tone||'unknown')}">${esc(row.situation||'ไม่ระบุสถานะ')}</span>${metric(row.bank_diff_text||(delta==null?'ระยะเทียบตลิ่ง':delta>=0?'ต่ำกว่าตลิ่ง':'สูงกว่าตลิ่ง'),delta==null?null:Math.abs(delta),'ม.')}`;
+    facts=cell('ระดับน้ำ',row.level,row.level_unit||'ม.')+cell('ระดับตลิ่ง',row.bank_level,'ม.รทก.')+cell('ระดับท้องน้ำ',row.ground_level,'ม.รทก.');
+    if(row.level_percent!=null)facts+=cell('เทียบความจุลำน้ำ',row.level_percent,'%');
+    if(row.q!=null)facts+=cell('อัตราการไหล',row.q,'ม³/วินาที');
+    if(row.previous_level!=null&&row.level!=null){const diff=row.level-row.previous_level;facts+=`<div><dt>เทียบค่าก่อนหน้า</dt><dd>${diff>0?'เพิ่มขึ้น':diff<0?'ลดลง':'ทรงตัว'} ${number(Math.abs(diff),2)} <small>ม.</small></dd></div>`;}
+    note='ม.รทก. = เมตรเทียบระดับทะเลปานกลาง · ช่องที่ไม่มีข้อมูลแสดง —';
+  }
+  const stamp=kind==='dam'&&/^\d{4}-\d{2}-\d{2}$/.test(row.observed_at||'')?row.observed_at:freshness(row.observed_at,kind==='dam'?48:3);
+  return `<article class="hydro-station hydro-${kind}"><p class="eyebrow">THAIWATER / ${kind==='rain'?'RAINFALL':kind==='dam'?'RESERVOIR':'WATER LEVEL'}</p><h2>${esc(row.station_name_th)}</h2><p class="hydro-address">${esc(address||row.province_name||'ไม่ระบุพื้นที่')}</p><div class="hydro-main">${main}</div><dl class="hydro-readings">${facts}</dl><div class="hydro-credit"><span>ข้อมูล: ${esc(row.agency_name||'ThaiWater / สถาบันสารสนเทศทรัพยากรน้ำ')}</span><time>ล่าสุด ${esc(stamp)}</time>${row.old_code?`<small>รหัสสถานี ${esc(row.old_code)}</small>`:''}</div>${row.sponsor_name?`<div class="hydro-sponsor"><span>สนับสนุนโดย</span><strong>${esc(row.sponsor_name)}</strong></div>`:''}<p class="hydro-note">${note}</p><a class="hydro-source" href="https://www.thaiwater.net/" target="_blank" rel="noopener">ดูข้อมูลและกราฟจาก ThaiWater</a></article>`;
+}
+if(typeof module!=='undefined')module.exports={normalizeNationalData,thaiwaterTime,hydroDetailHTML};

@@ -1,9 +1,9 @@
 'use strict';
 
 // The gallery controls the existing map layers and source selectors.
-const rainSources = ['radar', 'nowcast', 'rainviewer', 'rod'];
+const rainSources = ['radar', 'nowcast', 'rainviewer', 'rod', 'radargis'];
 const waterSources = ['water', 'thaiwater', 'rain', 'dam'];
-const layerLabels = {rod:'เรดาร์ RODDSS',windycams:'กล้อง Windy สงขลา',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'RainViewer · เรดาร์',wind:'ลม',cameras:'CCTV',water:'ระดับน้ำสงขลา',weather:'อากาศจากสถานี',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
+const layerLabels = {rod:'เรดาร์ RODDSS',radargis:'TMD RADARGIS',windycams:'กล้อง Windy ทั่วประเทศ',radar:'เรดาร์ฝน',nowcast:'พยากรณ์ฝน',rainviewer:'RainViewer · เรดาร์',wind:'ลม',cameras:'กล้อง CCTV',water:'ระดับน้ำสงขลา',weather:'สถานีตรวจอากาศ',thaiwater:'ระดับน้ำทั่วประเทศ',rain:'สถานีฝน',dam:'เขื่อน'};
 
 function layerIsActive(key) {
   if (rainSources.includes(key)) return rainVisibility[key];
