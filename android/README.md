@@ -40,3 +40,5 @@ Successful signed builds publish `RMWeather.apk`, its SHA-256 checksum and certi
 [RMWeather.apk](https://github.com/Rachane16/RMWeather/releases/latest/download/RMWeather.apk)
 
 On Android, open the APK and allow installation from the browser/file app when Android prompts. Future APK updates must keep the same package, release key and a higher version code. This is direct APK distribution; it does not publish the app to Google Play.
+
+Android may apply additional installation/developer-verification steps depending on the device, installer and region. No Android Developer Console registration is performed by this project. See the [official installation and verification guidance](https://developer.android.com/developer-verification). The automated device test validates APK installation with ADB and live startup; it does not certify Play registration or every manufacturer's installer.

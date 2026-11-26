@@ -173,7 +173,7 @@ public final class MainActivity extends ComponentActivity {
         if (fullScreen != null) { closeFullScreen(); return; }
         if (!NavigationPolicy.isAppPage(web.getUrl())) { finish(); return; }
         // Close one of RMWeather's visible control windows before leaving the map.
-        web.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return true;}const ids=['development-close','development-timeline-close','radar-close','advance-forecast-close','display-close','maptools-close','basemap-close','sidebar-close'];for(const id of ids){const b=document.getElementById(id);if(b&&b.getClientRects().length){b.click();return true;}}return false;})()", closed -> {
+        web.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return true;}const pairs=[['development-dialog','development-close'],['development-timeline','development-timeline-close'],['radar-player','radar-close'],['advance-forecast-panel','advance-forecast-close'],['display-panel','display-close'],['maptools-panel','maptools-close'],['basemap-panel','basemap-close'],['sidebar','sidebar-close']];for(const [panel,id] of pairs){const p=document.getElementById(panel),b=document.getElementById(id);if(p&&p.getClientRects().length&&b){b.click();return true;}}for(const id of ['weather-map-panel','seven-day-panel']){const p=document.getElementById(id),b=p?.querySelector('[data-close-tool]');if(p&&p.getClientRects().length&&b){b.click();return true;}}return false;})()", closed -> {
             if (!"true".equals(closed)) { if (web.canGoBack()) web.goBack(); else finish(); }
         });
     }
