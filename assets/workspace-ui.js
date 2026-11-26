@@ -4,7 +4,7 @@
 class WorkspacePanels {
   constructor(mobile=false){
     this.mobile=mobile;
-    this.open={sidebar:!mobile,display:false,maptools:false,basemap:false,weather:false,timeline:false};
+    this.open={sidebar:!mobile,display:false,maptools:false,basemap:false,weather:false,timeline:false,advance:false};
     this.minimized={};
   }
   setOpen(name,on){
@@ -26,10 +26,22 @@ function setTimelineOpen(on){window.workspaceUI?.setOpen('timeline',on);}
 
 function initWorkspaceUI(){
   const media=matchMedia('(max-width:700px)'),state=new WorkspacePanels(media.matches);
-  const panels={sidebar:'sidebar',display:'display-panel',maptools:'maptools-panel',basemap:'basemap-panel',weather:'overview-panel',timeline:'radar-player'};
-  const launchers={sidebar:'layers-toggle',display:'display-toggle',maptools:'maptools-toggle',basemap:'basemap-toggle',timeline:'timeline-toggle'};
+  const panels={sidebar:'sidebar',display:'display-panel',maptools:'maptools-panel',basemap:'basemap-panel',weather:'overview-panel',timeline:'radar-player',advance:'advance-forecast-panel'};
+  const launchers={sidebar:'layers-toggle',display:'display-toggle',maptools:'maptools-toggle',basemap:'basemap-toggle',timeline:'timeline-toggle',advance:'advance-forecast-toggle'};
   const captions={sidebar:'ชั้นข้อมูล',display:'ชั้นข้อมูลและการแสดงผล',maptools:'เครื่องมือแผนที่',basemap:'แผนที่ฐาน',weather:'สภาพอากาศ',windy:'ตัวเลือกแผนที่อากาศ',seven:'พยากรณ์ 7 วัน'};
   const minimizeButtons={};
+  const advanceSelection=new WindyPointSelection();
+
+  function renderAdvanceForecast(){
+    const frame=$('advance-forecast-frame');
+    if(!state.open.advance){if(frame.hasAttribute('src'))frame.removeAttribute('src');return;}
+    const p=advanceSelection.point;
+    const label=advanceSelection.mode==='device'&&p.source!=='device'?'หาดใหญ่ · จุดสำรอง':p.name;
+    $('advance-forecast-point').textContent=`${label} · ${Math.abs(p.lat).toFixed(4)}°${p.lat<0?'S':'N'}, ${Math.abs(p.lon).toFixed(4)}°${p.lon<0?'W':'E'}`;
+    $('advance-forecast-location').value=advanceSelection.mode;
+    const url=buildWindyEmbedURL({point:p,view:'forecast'});
+    if(frame.getAttribute('src')!==url)frame.src=url;
+  }
 
   function render(){
     Object.entries(panels).forEach(([key,id])=>{
@@ -39,6 +51,8 @@ function initWorkspaceUI(){
     $('sidebar').classList.toggle('is-open',state.open.sidebar);
     $('forecast-visible').checked=state.open.weather;
     document.querySelector('.workspace').dataset.timelineOpen=String(state.open.timeline);
+    document.querySelector('.workspace').dataset.advanceOpen=String(state.open.advance);
+    renderAdvanceForecast();
     Object.entries(minimizeButtons).forEach(([key,button])=>{
       const mini=Boolean(state.minimized[key]);button.textContent=mini?'+':'−';
       button.setAttribute('aria-expanded',String(!mini));button.setAttribute('aria-label',`${mini?'ขยาย':'ย่อ'}${captions[key]}`);
@@ -51,6 +65,10 @@ function initWorkspaceUI(){
   }
   function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(radarKind==='radargis'&&currentRadarGISProduct()?.forecast?0:radarFrames.length-1);}
   function setOpen(name,on){
+    if(name==='advance'&&on){
+      if(advanceSelection.mode==='device')advanceSelection.select('device',window.currentLocation);
+      if(!window.currentLocation&&advanceSelection.mode==='device'&&!window.locationPending)requestCurrentLocation(true);
+    }
     const previous=state.open.timeline;state.setOpen(name,on);
     if(previous&&!state.open.timeline)restoreLatest();
     if(name==='timeline'&&on&&!enabled.radar)setRainEnabled(radarKind,true);
@@ -86,11 +104,20 @@ function initWorkspaceUI(){
     header.insertBefore(actions,close);actions.append(button,close);
   });
   $('timeline-toggle').addEventListener('click',()=>setOpen('timeline',!state.open.timeline));
+  $('advance-forecast-toggle').addEventListener('click',()=>setOpen('advance',!state.open.advance));
+  $('advance-forecast-close').addEventListener('click',()=>setOpen('advance',false));
+  $('advance-forecast-location').addEventListener('change',event=>{
+    const mode=event.target.value,center=mode==='map'?map.getCenter():null;
+    advanceSelection.select(mode,mode==='device'?window.currentLocation:mode==='map'?{lat:center.lat,lon:center.lng}:null);
+    if(mode==='device'&&!window.locationPending)requestCurrentLocation(true);
+    renderAdvanceForecast();
+  });
+  window.addEventListener('rm-current-location',event=>{if(advanceSelection.receiveFix({...event.detail,...window.currentLocation}))renderAdvanceForecast();});
   $('radar-close').addEventListener('click',()=>setOpen('timeline',false));
   $('locate-quick').addEventListener('click',requestCurrentLocation);
   $('reset-layers').addEventListener('click',()=>{if(state.mobile){state.closeAll();render();}});
   media.addEventListener('change',event=>{const previous=state.open.timeline;state.setMobile(event.matches);if(previous&&!state.open.timeline)restoreLatest();render();});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen('timeline',false);setOpen('weather',false);}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen('timeline',false);setOpen('weather',false);setOpen('advance',false);}});
   document.addEventListener('pointerdown',event=>{if(state.open.timeline&&!event.target.closest('#radar-player,#timeline-toggle'))setOpen('timeline',false);});
   document.querySelectorAll('[data-tool="weather-map"],[data-tool-toggle="weather-map"]').forEach(control=>control.addEventListener(control.type==='checkbox'?'change':'click',()=>{
     if(toolVisibility['weather-map'])minimize('windy',state.mobile);
