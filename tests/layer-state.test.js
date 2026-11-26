@@ -9,6 +9,9 @@ test('historical radar frames do not mislabel an up-to-date provider as stale',(
   const start=app.indexOf('function showRadarFrame('),end=app.indexOf("$('radar-timeline-source').addEventListener",start);
   vm.createContext(context);vm.runInContext(app.slice(start,end),context);
   context.showRadarFrame(0);assert.doesNotMatch(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);
+  assert.equal(nodes['radar-mini-time'].textContent,old);
+  assert.equal(nodes['radar-mini-time'].dateTime,old.replace('Z','.000Z'));
+  context.showRadarFrame(1);assert.equal(nodes['radar-mini-time'].textContent,fresh);
   context.radarFrames[1].frame_time=old;context.showRadarFrame(0);assert.match(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);
   context.radarKind='nowcast';context.radarFrames[1].frame_time=fresh;context.radarFrames[0].base_time=old;context.showRadarFrame(0);assert.match(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);
 });

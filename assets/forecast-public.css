@@ -63,3 +63,11 @@
 .workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-bottom-right{bottom:0}
 .workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib{margin:0 4px 0 0;max-width:calc(100vw - 12px);font-size:9px;line-height:14px}
 .workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib-inner{white-space:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
+
+/* Icon-only model launcher, and a selected-frame timestamp in compact players. */
+.workspace .development-launcher{width:44px;padding:0;justify-content:center}
+.workspace .development-launcher svg{width:23px;height:23px}
+.playback-mini-time{display:none}
+.is-minimized .playback-mini-time{display:block;flex:0 0 auto;max-width:88px;font-size:11px;line-height:1.35;text-align:center;font-variant-numeric:tabular-nums;color:var(--ink)}
+.is-minimized .radar-controls input,.is-minimized .development-playback input{min-width:0;flex:1}
+@media(max-width:700px){.workspace .development-launcher{width:42px}.is-minimized .playback-mini-time{max-width:73px;font-size:10px}}

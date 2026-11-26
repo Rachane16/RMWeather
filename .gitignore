@@ -7,3 +7,12 @@ _radargis_catalog.json
 _radargis_probe.json
 _development_probe.json
 data/development-fallback/
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore
+*.p12
+signing-private.json
+android/distribution/

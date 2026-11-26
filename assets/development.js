@@ -172,6 +172,7 @@
   $('development-slider').max=Math.max(0,frames.length-1);$('development-slider').value=index;
   $('development-play').disabled=!frames.length;$('development-slider').disabled=!frames.length;
   $('development-time').textContent=f?date(f.time):'เลือกชุดข้อมูล';
+  $('development-mini-time').textContent=f?date(f.time):'—';if(f)$('development-mini-time').dateTime=new Date(f.time*1000).toISOString();else $('development-mini-time').removeAttribute('datetime');
   $('development-frame-count').textContent=f?`${index+1} / ${frames.length} เฟรม`:'ยังไม่มีเฟรม';
   $('development-time-summary').textContent=f?`${source==='model'?data.model.name:'CLPP'} · ${date(f.time)}`:'เลือกแบบจำลอง';
   $('development-time-info').textContent=!f?'เปิดฝนพยากรณ์ ลม หรือเรดาร์ เพื่อเลือกช่วงเวลา':source==='model'?`${date(f.start)}–${date(f.time)} · อัตราฝนและลมเฉลี่ย 3 ชม.`:`${f.kind==='nowcast'?'คาดการณ์ +'+f.offset_min+' นาที':f.kind==='present'?'ตรวจวัดล่าสุด':'ตรวจวัดย้อนหลัง'} · ข้อมูลล่าช้า ${lag(data.clpp.generated)} นาที`;

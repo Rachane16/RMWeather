@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+apk="$1"
+mkdir -p android-smoke
+adb install -r "$apk"
+adb shell pm grant io.github.rachane16.rmweather android.permission.ACCESS_COARSE_LOCATION
+adb shell pm grant io.github.rachane16.rmweather android.permission.ACCESS_FINE_LOCATION
+adb emu geo fix 100.5017 7.0068
+adb logcat -c
+adb shell am start -W -n io.github.rachane16.rmweather/.MainActivity
+for attempt in $(seq 1 30); do
+  adb shell uiautomator dump /sdcard/rmweather-ui.xml >/dev/null 2>&1 || true
+  adb pull /sdcard/rmweather-ui.xml android-smoke/ui.xml >/dev/null 2>&1 || true
+  if python3 -c 'import pathlib,sys; p=pathlib.Path("android-smoke/ui.xml"); s=p.read_text() if p.exists() else ""; sys.exit(0 if "ภาพรวม" in s and "ชั้นข้อมูล" in s else 1)'; then
+    adb exec-out screencap -p > android-smoke/app.png
+    adb logcat -d -s AndroidRuntime:E > android-smoke/runtime.log
+    if grep -q 'FATAL EXCEPTION' android-smoke/runtime.log; then exit 1; fi
+    echo 'Signed APK installed and the live RMWeather map controls appeared.'
+    exit 0
+  fi
+  sleep 2
+done
+adb exec-out screencap -p > android-smoke/app.png
+adb logcat -d > android-smoke/runtime.log
+echo 'RMWeather did not display its live map controls before the deadline.' >&2
+exit 1
