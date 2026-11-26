@@ -51,18 +51,28 @@ function setEnabled(name,on){ const wasOn=enabled[name];enabled[name]=on;if(on&&
  if(['cameras','windycams'].includes(name))renderMarkers();
 }
 document.querySelectorAll('[data-layer]').forEach(el=>el.addEventListener('change',()=>setEnabled(el.dataset.layer,el.checked)));
+function setActiveCategory(next){
+ document.querySelectorAll('.category-nav .nav-item').forEach(button=>{const active=(button.dataset.view||button.dataset.tool)===(next==='windycams'?'cameras':next);button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+}
+function applyCategoryLayers(next){
+ const points=next==='overview'?['cameras','water','weather']:next==='water'?['water']:['cameras','weather','wind'].includes(next)?[next]:[];
+ ['cameras','water','thaiwater','rain','dam','weather','windycams','wind'].forEach(key=>setEnabled(key,points.includes(key)||(next==='overview'&&key==='wind')));
+ const rain=next==='overview'?'rainviewer':next==='radar'?radarKind:null;
+ Object.keys(rainVisibility).forEach(key=>{if(rainVisibility[key]&&key!==rain)setRainEnabled(key,false);});
+ if(rain)setRainEnabled(rain,true);
+}
 function selectView(next){
- view=next;$('view-title').textContent=titles[view];document.querySelectorAll('.nav-item').forEach(b=>{b.classList.toggle('active',(b.dataset.view===view||(view==='windycams'&&b.dataset.view==='cameras')));b.setAttribute('aria-pressed',String((b.dataset.view===view||(view==='windycams'&&b.dataset.view==='cameras'))));});
+ view=next;$('view-title').textContent=titles[view];setActiveCategory(view);
  $('layer-catalog').hidden=view!=='overview';$('layer-details').hidden=view==='overview';$('category-panel').hidden=view==='overview';$('category-intro').textContent=intros[view]||'';$('search').value='';$('category-tools').innerHTML='';$('search-box').hidden=['wind','radar'].includes(view);
  if(view!=='overview')setEnabled(view==='water'?waterKind:view,true);
  if(view==='cameras')$('category-tools').innerHTML='<div class="tool-row"><select id="camera-filter" class="control-select" aria-label="กรองกล้อง"><option value="all">กล้องทั้งหมด · สงขลา</option><option value="onedata">ภาพสถานการณ์น้ำ</option><option value="windy">Windy · สงขลา</option><option value="online">ออนไลน์และภาพไม่เก่า</option><option value="old">ข้อมูลเก่า / ขัดข้อง</option><option value="favorite">กล้องที่บันทึกไว้</option></select><button id="multiview" class="popup-button">ดูพร้อมกัน 4 กล้อง</button></div>';
  if(view==='water'){$('category-tools').innerHTML='<label class="control-label" for="water-source">ชุดข้อมูลน้ำ</label><select id="water-source" class="control-select"><option value="water">RID · สงขลาและใกล้เคียง</option><option value="thaiwater">ThaiWater · ระดับน้ำทั่วประเทศ</option><option value="rain">ThaiWater · ฝนสะสม 24 ชม.</option><option value="dam">ThaiWater · เขื่อนขนาดใหญ่</option></select>';$('water-source').value=waterKind;$('water-source').addEventListener('change',async e=>{waterKind=e.target.value;setEnabled(waterKind,true);window.syncLayerMenu?.();await loadNational(waterKind);renderMarkers();renderResults();});}
- if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radargis">TMD RADARGIS</option><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option><option value="rod">RODDSS · TMD Composite</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;setRainEnabled(radarKind,true);window.syncLayerMenu?.();renderResults();});}
+ if(view==='radar'){$('category-tools').innerHTML='<label class="control-label" for="radar-source">แหล่งภาพฝน</label><select id="radar-source" class="control-select"><option value="radargis">TMD RADARGIS</option><option value="nowcast">SWIRLS · พยากรณ์ภาคใต้</option><option value="radar">TMD · ตรวจวัดภาคใต้</option><option value="rainviewer">RainViewer · ภาพรวม</option><option value="rod">RODDSS · TMD Composite</option></select><div class="notice">ภาพสีเป็นผลิตภัณฑ์คนละชนิด โปรดอ่านสเกลจากต้นทางและเวลาในแถบเล่นภาพ</div>';$('radar-source').value=radarKind;$('radar-source').addEventListener('change',e=>{radarKind=e.target.value;setRainEnabled(radarKind,true);window.syncLayerMenu?.();renderResults();});}
  if($('camera-filter'))$('camera-filter').addEventListener('change',renderResults);
  if($('multiview'))$('multiview').addEventListener('click',showMultiview);
  renderResults();document.querySelector('.drawer-scroll').scrollTop=0;openPanel();window.syncLayerMenu?.();
 }
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>selectView(b.dataset.view)));
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view==='water')waterKind='water';applyCategoryLayers(b.dataset.view);selectView(b.dataset.view);}));
 $('search').addEventListener('input',renderResults);
 function cameraType(row){return row.webcam_id!=null?'windycams':'cameras';}
 function songkhlaCamera(row){return row.region_code==='TH.68'||(!row.region_code&&row.region==='สงขลา');}

@@ -2,7 +2,7 @@ const {test}=require('node:test');const assert=require('node:assert/strict');
 const vm=require('node:vm'),fs=require('node:fs');
 function context(fix,pending){
   let requests=0;const nodes={};
-  const ctx={...require('../assets/windy-embed.js'),window:{currentLocation:fix,locationPending:pending,workspaceUI:{closeForWeatherTool(){}}},map:{getCenter:()=>({lat:13.75,lng:100.5})},requestCurrentLocation:()=>requests++,closeLayerDrawer(){},updateWeatherEmbeds(){},document:{querySelectorAll:()=>[]},$:id=>nodes[id]??={setAttribute(){},removeAttribute(){}}};
+  const ctx={...require('../assets/windy-embed.js'),window:{currentLocation:fix,locationPending:pending,workspaceUI:{closeForWeatherTool(){}}},map:{getCenter:()=>({lat:13.75,lng:100.5})},requestCurrentLocation:()=>requests++,closeLayerDrawer(){},updateWeatherEmbeds(){},document:{querySelectorAll:()=>[],querySelector:()=>null},$:id=>nodes[id]??={setAttribute(){},removeAttribute(){}}};
   const source=fs.readFileSync(require.resolve('../assets/weather-tools.js'),'utf8');
   vm.createContext(ctx);vm.runInContext(source.slice(source.indexOf('const toolVisibility'),source.indexOf('function assignFrame'))+';function selectedLocation(){return windyLocation;}',ctx);
   return {ctx,requests:()=>requests};

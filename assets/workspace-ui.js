@@ -33,6 +33,11 @@ function initWorkspaceUI(){
   const advanceSelection=new WindyPointSelection();
 
   function renderAdvanceForecast(){
+    const toggle=$('advance-forecast-toggle'),container=state.open.advance?$('advance-forecast-header-actions'):$('bottom-map-actions');
+    if(toggle.parentElement!==container)container.prepend(toggle);
+    if(!state.open.advance&&toggle.previousElementSibling!==$('timeline-toggle'))container.append(toggle);
+    $('advance-forecast-toggle-label').textContent=state.open.advance?'ย่อ':'การพยากรณ์ล่วงหน้า';
+    toggle.setAttribute('aria-label',state.open.advance?'ย่อการพยากรณ์ล่วงหน้า':'เปิดการพยากรณ์ล่วงหน้า');
     const frame=$('advance-forecast-frame');
     if(!state.open.advance){if(frame.hasAttribute('src'))frame.removeAttribute('src');return;}
     const p=advanceSelection.point;
@@ -77,6 +82,7 @@ function initWorkspaceUI(){
   function minimize(key,on){
     state.minimize(key,on);
     if(key==='windy')$('windy-controls').classList.toggle('is-minimized',on);
+    if(key==='windy')$('windy-controls-restore').hidden=!on;
     if(key==='seven')$('seven-day-panel').classList.toggle('is-minimized',on);
     render();
   }
@@ -88,8 +94,6 @@ function initWorkspaceUI(){
   window.isTimelineOpen=()=>state.open.timeline;
 
   const headers=[
-    ['sidebar','.drawer-header','sidebar-close','drawer-body'],
-    ['display','#display-panel>header','display-close','display-body'],
     ['maptools','#maptools-panel>header','maptools-close','maptools-body'],
     ['basemap','#basemap-panel>header','basemap-close','basemap-body'],
     ['weather','.weather-panel-header','weather-collapse','weather-panel-body'],
@@ -104,6 +108,7 @@ function initWorkspaceUI(){
     header.insertBefore(actions,close);actions.append(button,close);
   });
   $('timeline-toggle').addEventListener('click',()=>setOpen('timeline',!state.open.timeline));
+  $('windy-controls-restore').addEventListener('click',()=>minimize('windy',false));
   $('advance-forecast-toggle').addEventListener('click',()=>setOpen('advance',!state.open.advance));
   $('advance-forecast-close').addEventListener('click',()=>setOpen('advance',false));
   $('advance-forecast-location').addEventListener('change',event=>{
