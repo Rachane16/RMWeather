@@ -60,6 +60,6 @@
 .workspace .development-map-legend .development-scale{height:5px;margin-right:29px}
 .workspace .development-map-legend .development-colour-key>span{position:absolute;right:0;top:-2px;width:26px;font-size:9px;line-height:10px}
 .workspace .development-map-legend .development-scale-labels{font-size:9px;line-height:9px;margin-top:2px;width:calc(100% - 35px)}
-.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-bottom-right{bottom:3px}
-.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib{max-width:calc(100vw - 12px);font-size:9px;line-height:14px}
+.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-bottom-right{bottom:0}
+.workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib{margin:0 4px 0 0;max-width:calc(100vw - 12px);font-size:9px;line-height:14px}
 .workspace:has(#development-map-legend:not([hidden])) .maplibregl-ctrl-attrib-inner{white-space:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
