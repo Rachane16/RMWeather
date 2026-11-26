@@ -34,7 +34,7 @@
  }
  function open(on){
   panel.hidden=!on;launcher.setAttribute('aria-expanded',String(on));
-  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('sidebar',false);}
+  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('sidebar',false);collapseClock(true);}
  }
  launcher.addEventListener('click',async()=>{if(!panel.hidden){open(false);return;}if(await window.developmentAccess.ensure())open(true);});$('development-close').addEventListener('click',()=>open(false));
  $('development-logout').addEventListener('click',()=>window.developmentAccess.logout());
@@ -189,7 +189,8 @@
   $('development-play').textContent='Ⅱ';$('development-play').setAttribute('aria-label','หยุดข้อมูลทดลอง');
   timer=setInterval(()=>{const frames=data[source]?.frames||[];if(document.hidden||!frames.length)return;if(source==='clpp'&&state.clppRadar&&(clppLoading||!map.isRainReady('development-clpp')))return;indices[source]=(indices[source]+1)%frames.length;render();},1100);
  });
- $('development-timeline-minimize').addEventListener('click',()=>{minimized=!minimized;$('development-timeline-body').hidden=minimized;$('development-timeline-minimize').textContent=minimized?'+':'−';$('development-timeline-minimize').setAttribute('aria-expanded',String(!minimized));});
+ function collapseClock(on){minimized=on;$('development-timeline-body').hidden=minimized;$('development-timeline-minimize').textContent=minimized?'+':'−';$('development-timeline-minimize').setAttribute('aria-expanded',String(!minimized));$('development-timeline-minimize').setAttribute('aria-label',minimized?'เปิดเวลาข้อมูลทดลอง':'ย่อเวลาข้อมูลทดลอง');}
+ $('development-timeline-minimize').addEventListener('click',()=>{collapseClock(!minimized);if(!minimized)open(false);});
  async function imageData(frame){
   const url=await clppImage(frame);if(images.has(url))return images.get(url);
   const pending=new Promise((resolve,reject)=>{
