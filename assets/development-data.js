@@ -6,7 +6,9 @@ function developmentRainColour(value){
   if(value==null||!Number.isFinite(value)||value<=0)return [0,0,0,0];
   let hi=DEVELOPMENT_RAIN_STOPS.findIndex(p=>p[0]>=value);if(hi<0)hi=DEVELOPMENT_RAIN_STOPS.length-1;
   const low=DEVELOPMENT_RAIN_STOPS[Math.max(0,hi-1)],high=DEVELOPMENT_RAIN_STOPS[hi],weight=hi===0?0:Math.min(1,(value-low[0])/(high[0]-low[0]));
-  return [1,2,3].map(k=>Math.round(low[k]+(high[k]-low[k])*weight)).concat(205);
+  // Light rain remains visible without obscuring the basemap in a solid haze.
+  const alpha=Math.round(45+160*Math.min(1,value/.6));
+  return [1,2,3].map(k=>Math.round(low[k]+(high[k]-low[k])*weight)).concat(alpha);
 }
 
 // Display sampling does not increase the source grid's spatial resolution.

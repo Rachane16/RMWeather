@@ -39,5 +39,5 @@ test('rain intensity follows the Windy reference thresholds in mm/h and preserve
  assert.deepEqual(rainColour(.6),[0,148,143,205]);assert.deepEqual(rainColour(3),[102,208,81,205]);
  assert.deepEqual(rainColour(12),[244,184,18,205]);assert.deepEqual(rainColour(50),[204,74,83,205]);
  assert.deepEqual(rainColour(200),[155,15,109,205]);assert.deepEqual(rainColour(800),[155,15,109,205]);
- assert.equal(rainColour(.2)[3],205);assert.equal(rainColour(0)[3],0);assert.equal(rainColour(null)[3],0);
+ assert.ok(rainColour(.2)[3]>0&&rainColour(.2)[3]<rainColour(.6)[3]);assert.equal(rainColour(0)[3],0);assert.equal(rainColour(null)[3],0);
 });
