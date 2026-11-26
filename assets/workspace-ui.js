@@ -62,7 +62,7 @@ function initWorkspaceUI(){
       const mini=Boolean(state.minimized[key]);button.textContent=mini?'+':'−';
       if(key==='timeline'||key==='development'){
         const root=$(panels[key]),target=mini?root.querySelector(key==='timeline'?'.radar-controls':'.development-playback'):root.querySelector('.popup-header-actions');
-        if(button.parentElement!==target)target.append(button);
+        if(button.parentElement!==target){if(mini)target.append(button);else target.prepend(button);}
       }
       button.setAttribute('aria-expanded',String(!mini));button.setAttribute('aria-label',`${mini?'ขยาย':'ย่อ'}${captions[key]}`);
     });
