@@ -1,28 +1,7 @@
-# โหมดกำลังพัฒนาแบบล็อกอิน
+# Forecast service access
 
-หน้าเว็บหลักยังเป็น GitHub Pages เดิม ปุ่มเข้าโหมดเป็นไอคอนขวดทดลองมุมซ้ายล่าง เปิดหน้าล็อกอินก่อนแสดงตัวเลือกและข้อมูลทดลอง
+The forecast feature became public on 27 November 2026 at the owner's explicit request. The anonymous GET-only `/public/data/` route serves an exact allowlist of the ten model files, manifest, health, CLPP metadata, province geometry and hashed CLPP PNG frames. Station snapshots, legacy unused models, arbitrary paths and sessions are excluded. The read responses cache for five minutes.
 
-## การป้องกัน
+`/admin/snapshot` still requires the independent uploader token. Existing authenticated `/data/` and auth endpoints retain their server-side checks; public visitors do not use them. Neither passwords nor uploader tokens appear in the public client. The R2 snapshot remains atomic and retains its previous generation for in-flight images.
 
-- ตรวจชื่อผู้ใช้และรหัสผ่านที่เซิร์ฟเวอร์ RMWeather Development Access เก็บเฉพาะตัวตรวจรหัสแบบ salted PBKDF2 ใน runtime secrets ไม่มีรหัสผ่านหรือตัวตรวจรหัสใน HTML, JavaScript หรือ Repo สาธารณะ
-- เซสชันอยู่ในหน่วยความจำของแท็บ มีอายุ 30 นาที รีโหลดหน้าหรือปิดแท็บต้องเข้าสู่ระบบใหม่ ไม่ใช้ localStorage เก็บรหัสผ่านหรือ token
-- อ่าน JSON และ PNG จาก `/data/` ได้เมื่อมีเซสชันที่ยังใช้ได้เท่านั้น API ส่ง `Cache-Control: no-store, private` และกำหนด CORS เฉพาะ GitHub Pages ของเจ้าของ
-- ออกจากระบบจะลบเซสชันฝั่งเซิร์ฟเวอร์ ล้างข้อมูล/ภาพที่แสดงอยู่ และคืนลมปกติของเว็บ ข้อมูลที่กำลังโหลดอยู่จะไม่กลับมาแสดงหลังออกจากระบบ
-- จำกัดการลองเข้าสู่ระบบ 5 ครั้งต่อ 15 นาทีต่อแหล่งเชื่อมต่อ ใช้ conditional writes ของ private R2 เพื่อให้ตัวนับร่วมกันระหว่างเซิร์ฟเวอร์
-
-## อัปเดตข้อมูล
-
-GitHub Actions ดึงแคชจากพื้นที่ส่วนตัว อัปเดตตามรอบเดิม แล้วส่งกลับ private R2 ผ่านโทเคน `DEVELOPMENT_UPLOAD_TOKEN` ที่เก็บเป็น GitHub Secret โทเคนอัปเดตไม่ใช่เซสชันของผู้ชม และไม่ถูกส่งไปยังเบราว์เซอร์
-
-`scripts/package_public.py` จะไม่แพ็ก `data/live/development` หรือ `data/development-fallback` เข้า GitHub Pages และหยุดการแพ็กถ้าพบไฟล์ส่วนตัวตกค้างใน output ไม่ใช้ Actions cache สาธารณะเก็บชุดทดลองอีกต่อไป
-
-เซิร์ฟเวอร์เก็บ snapshot ปัจจุบันและก่อนหน้าเพื่อให้โหลดภาพต่อเนื่องขณะอัปเดต ข้อมูล CLPP ที่อัปเดตไม่ได้ยังระบุเวลาและสถานะสำเนาเดิมตามจริง
-
-## ที่อยู่และการดูแล
-
-- เว็บหลัก: https://rachane16.github.io/RMWeather/
-- เซิร์ฟเวอร์ API: https://rmweather-development-access.rachane-16.chatgpt.site
-- โค้ดเซิร์ฟเวอร์เป็นโปรเจกต์ Sites แยก ใช้ private R2; จุดล็อกอินเปิดให้เว็บไซต์เรียกได้ตามคำอนุญาตของเจ้าของ แต่ข้อมูลและการอัปเดตยังตรวจสิทธิ์ทุกครั้ง
-- Runtime secret names: `AUTH_USERNAME`, `AUTH_PASSWORD_SALT`, `AUTH_PASSWORD_HASH`, `AUTH_RATE_PEPPER`, `UPLOAD_TOKEN`
-
-การล็อกนี้ป้องกันการใช้งานและชุดข้อมูลที่เผยแพร่ต่อจากนี้ ไฟล์รุ่นที่เคยเผยแพร่แบบสาธารณะแล้วอาจยังมีสำเนาในประวัติ Git หรือแคชเก่า การนำไฟล์ออกจากรุ่นปัจจุบันไม่ใช่การลบประวัติ Repo
+GitHub Actions restores and updates the protected cache, then uploads using its existing secret. Raw snapshots are still excluded from the Pages artifact; only the explicitly published server reads are anonymous. Tests verify anonymous forecast access, rejection of unrelated files and anonymous uploads, and the original login protections.

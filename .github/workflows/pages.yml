@@ -83,18 +83,18 @@ jobs:
         run: python scripts/sync_windy.py
         env:
           WINDY_WEBCAMS_API_KEY: ${{ secrets.WINDY_WEBCAMS_API_KEY }}
-      - name: Restore authenticated experimental cache
+      - name: Restore forecast cache with updater credentials
         id: development_restore
         continue-on-error: true
         run: python scripts/development_storage.py --restore
         env:
           DEVELOPMENT_UPLOAD_TOKEN: ${{ secrets.DEVELOPMENT_UPLOAD_TOKEN }}
-      - name: Update experimental datasets privately
+      - name: Refresh forecast datasets
         id: development_sync
         if: steps.development_restore.outcome == 'success'
         continue-on-error: true
         run: python scripts/sync_development.py
-      - name: Upload experimental datasets to protected storage
+      - name: Upload forecast datasets using updater credentials
         if: steps.development_sync.outcome == 'success'
         continue-on-error: true
         run: python scripts/development_storage.py

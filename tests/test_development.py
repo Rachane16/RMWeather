@@ -29,7 +29,11 @@ class DevelopmentDataTests(unittest.TestCase):
             south, east = g['north']-(g['ny']-1)*g['step'], g['west']+(g['nx']-1)*g['step']
             for lat, lon in [(20.5, 100), (5.6, 101), (8, 96), (10, 103), (5, 109), (2, 100)]:
                 self.assertTrue(south <= lat <= g['north'] and g['west'] <= lon <= east)
-            self.assertLessEqual(g['step'], 1.5)
+            self.assertAlmostEqual(g['west'], 82)
+            self.assertAlmostEqual(east, 124)
+            self.assertAlmostEqual(g['north'], 30)
+            self.assertAlmostEqual(south, -6)
+            self.assertLessEqual(g['step'], 3)
         self.assertNotIn('ecmwf_ifs025', MODELS)
         self.assertIn('ecmwf_ifs', MODELS)
         self.assertIn('google_weathernext3_ensemble_mean', MODELS)

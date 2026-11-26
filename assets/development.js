@@ -4,27 +4,27 @@
 // remain intact; the ordinary wind resumes when model wind is disabled.
 (()=>{
  const panel=$('development-dialog'),launcher=$('development-open'),nav=$('development-nav');
- document.querySelector('.workspace').append(panel,$('development-timeline'),launcher);
+ document.querySelector('.workspace').append(panel,$('development-timeline'),$('development-map-legend'),launcher);
  const state={modelRain:false,modelWind:false,clppRadar:false,provinces:false};
  const data={model:null,clpp:null,geo:null,health:null},indices={model:0,clpp:0};
  let source='model',timer=null,modelRequest=0,popup=null,windKey='',provinceKey='',imageRequest=0,clppLoading=false;
  const textures=new Map();
  const modelInfo={
-  ecmwf_ifs:['ECMWF IFS HRES','โมเดลหลัก · ECMWF','9 กม.','6 ชั่วโมง',.5,'ecmwf-api','แบบจำลองฟิสิกส์ความละเอียดสูง ใช้เปรียบเทียบฝนและลม'],
-  gfs_global:['GFS','โมเดลหลัก · NOAA','ประมาณ 25 กม.','6 ชั่วโมง',1.5,'gfs-api','แบบจำลองสหรัฐฯ สำหรับเทียบแนวโน้มฝนและลม'],
-  icon_global:['ICON','โมเดลหลัก · DWD','ประมาณ 11 กม.','6 ชั่วโมง',1.5,'dwd-api','แบบจำลองเยอรมนี ครอบคลุมไทยและทะเลรอบข้าง'],
-  ukmo_global_deterministic_10km:['UK Met Office','โมเดลหลัก · UKMO','10 กม.','6 ชั่วโมง',1.5,'ukmo-api','ข้อมูลเปิดมีความหน่วงเพิ่มเติมประมาณ 4 ชั่วโมง'],
-  google_weathernext3_ensemble_mean:['Google WeatherNext 3','แบบจำลอง AI · ค่าเฉลี่ย Ensemble','ประมาณ 11 กม.','6 ชั่วโมง',.5,'google-weathernext3-api','แสดงค่าเฉลี่ยฝนและลมจากชุดพยากรณ์ ไม่ใช่เปอร์เซ็นต์โอกาสฝน'],
-  ecmwf_aifs025_single:['ECMWF AIFS','แบบจำลอง AI · ECMWF','ประมาณ 28 กม.','6 ชั่วโมง',1.5,'ecmwf-api','ต้นทางช่วงละ 6 ชั่วโมง แทรกค่าเป็นรายชั่วโมงโดย Open-Meteo'],
-  jma_gsm:['JMA GSM','โมเดลเปรียบเทียบ · ญี่ปุ่น','ประมาณ 55 กม.','6 ชั่วโมง',1.5,'jma-api','ใช้ดูความแตกต่างของแนวโน้มจากโมเดลอื่น'],
-  meteofrance_arpege_world:['ARPEGE','โมเดลเปรียบเทียบ · Météo-France','ประมาณ 25 กม.','6 ชั่วโมง',1.5,'meteofrance-api','รุ่น Global สำหรับพื้นที่ไทย ไม่ใช่ AROME ความละเอียดสูงของยุโรป'],
-  cma_grapes_global:['CMA GRAPES','โมเดลเปรียบเทียบ · จีน','ประมาณ 15 กม.','6 ชั่วโมง',1.5,'cma-api','เปรียบเทียบฝนและลมกับแบบจำลองระดับโลก'],
-  best_match:['Open-Meteo Best Match','เลือกโมเดลอัตโนมัติ','ตามตำแหน่ง','ตามโมเดล',1.5,'','ผสมโมเดลที่เหมาะกับตำแหน่ง ไม่ใช่แบบจำลองอิสระอีกหนึ่งตัว']
+  ecmwf_ifs:['ECMWF IFS HRES','โมเดลหลัก · ECMWF','9 กม.','6 ชั่วโมง',1.2,'ecmwf-api','แบบจำลองฟิสิกส์ความละเอียดสูง ใช้เปรียบเทียบฝนและลม'],
+  gfs_global:['GFS','โมเดลหลัก · NOAA','ประมาณ 25 กม.','6 ชั่วโมง',3,'gfs-api','แบบจำลองสหรัฐฯ สำหรับเทียบแนวโน้มฝนและลม'],
+  icon_global:['ICON','โมเดลหลัก · DWD','ประมาณ 11 กม.','6 ชั่วโมง',3,'dwd-api','แบบจำลองเยอรมนี ครอบคลุมไทยและทะเลรอบข้าง'],
+  ukmo_global_deterministic_10km:['UK Met Office','โมเดลหลัก · UKMO','10 กม.','6 ชั่วโมง',3,'ukmo-api','ข้อมูลเปิดมีความหน่วงเพิ่มเติมประมาณ 4 ชั่วโมง'],
+  google_weathernext3_ensemble_mean:['Google WeatherNext 3','แบบจำลอง AI · ค่าเฉลี่ย Ensemble','ประมาณ 11 กม.','6 ชั่วโมง',1.2,'google-weathernext3-api','แสดงค่าเฉลี่ยฝนและลมจากชุดพยากรณ์ ไม่ใช่เปอร์เซ็นต์โอกาสฝน'],
+  ecmwf_aifs025_single:['ECMWF AIFS','แบบจำลอง AI · ECMWF','ประมาณ 28 กม.','6 ชั่วโมง',3,'ecmwf-api','ต้นทางช่วงละ 6 ชั่วโมง แทรกค่าเป็นรายชั่วโมงโดย Open-Meteo'],
+  jma_gsm:['JMA GSM','โมเดลเปรียบเทียบ · ญี่ปุ่น','ประมาณ 55 กม.','6 ชั่วโมง',3,'jma-api','ใช้ดูความแตกต่างของแนวโน้มจากโมเดลอื่น'],
+  meteofrance_arpege_world:['ARPEGE','โมเดลเปรียบเทียบ · Météo-France','ประมาณ 25 กม.','6 ชั่วโมง',3,'meteofrance-api','รุ่น Global สำหรับพื้นที่ไทย ไม่ใช่ AROME ความละเอียดสูงของยุโรป'],
+  cma_grapes_global:['CMA GRAPES','โมเดลเปรียบเทียบ · จีน','ประมาณ 15 กม.','6 ชั่วโมง',3,'cma-api','เปรียบเทียบฝนและลมกับแบบจำลองระดับโลก'],
+  best_match:['Open-Meteo Best Match','เลือกโมเดลอัตโนมัติ','ตามตำแหน่ง','ตามโมเดล',3,'','ผสมโมเดลที่เหมาะกับตำแหน่ง ไม่ใช่แบบจำลองอิสระอีกหนึ่งตัว']
  };
  const date=stamp=>time(new Date(stamp*1000).toISOString());
  const lag=stamp=>Math.max(0,Math.floor((Date.now()/1000-stamp)/60));
  function modelProfile(){
-  const info=modelInfo[$('development-model').value];if(!info)return;
+  const info=modelInfo[$('development-model').value];if(!info)return;$('development-time-model').value=$('development-model').value;
   $('development-model-name').textContent=info[0];$('development-model-kind').textContent=info[1];
   $('development-native-resolution').textContent=info[2];$('development-model-cycle').textContent=info[3];
   const step=data.model?.grid.step??info[4];
@@ -33,11 +33,10 @@
   $('development-model-link').href='https://open-meteo.com/en/docs'+(info[5]?'/'+info[5]:'');
  }
  function open(on){
-  panel.hidden=!on;launcher.setAttribute('aria-expanded',String(on));nav.classList.toggle('active',on);nav.setAttribute('aria-pressed',String(on));
-  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('sidebar',false);window.workspaceUI?.setOpen('development',false);}
+  panel.hidden=!on;$('forecast-quick').setAttribute('aria-expanded',String(on));launcher.setAttribute('aria-expanded',String(on));nav.classList.toggle('active',on);nav.setAttribute('aria-pressed',String(on));
+  if(on){setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('development',false);}
  }
- [launcher,nav].forEach(button=>button.addEventListener('click',async()=>{if(!panel.hidden){open(false);return;}if(await window.developmentAccess.ensure())open(true);}));$('development-close').addEventListener('click',()=>open(false));
- $('development-logout').addEventListener('click',()=>window.developmentAccess.logout());
+ [launcher,nav,$('forecast-quick')].forEach(button=>button.addEventListener('click',()=>open(panel.hidden)));$('development-close').addEventListener('click',()=>open(false));
  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();open(false);launcher.focus();}});
  async function resource(file){
   return {payload:await window.developmentAccess.json(file)};
@@ -57,7 +56,7 @@
   const result=await resource(id+'.json');
   if(request!==modelRequest)return;
   const model=result.payload;
-  if(!model.grid||!model.frames?.length||model.id!==id||model.schema_version!==2||model.rain_unit!=='mm/h'||model.domain!=='Thailand and surrounding seas')throw Error('ชุดข้อมูลไทยรุ่นใหม่ยังไม่พร้อม กรุณาลองอีกครั้ง');
+  if(!model.grid||!model.frames?.length||model.id!==id||model.schema_version!==3||model.rain_unit!=='mm/h'||model.domain!=='Southeast Asia and surrounding seas')throw Error('ชุดข้อมูลขอบเขตใหม่ยังไม่พร้อม กรุณาลองอีกครั้ง');
   data.model=model;indices.model=developmentLatest(model.frames);render();
  }
  async function loadCLPP(){
@@ -84,7 +83,13 @@
   }catch(error){state[key]=false;render();status(error.message);}
  }
  document.querySelectorAll('[data-development]').forEach(input=>input.addEventListener('change',()=>activate(input.dataset.development,input.checked)));
- $('development-model').addEventListener('change',async()=>{++modelRequest;stop();data.model=null;render();if(state.modelRain||state.modelWind){try{await loadModel();}catch(e){status(e.message);}}});
+ async function changeModel(id){
+  $('development-model').value=id;$('development-time-model').value=id;
+  ++modelRequest;stop();data.model=null;render();
+  if(state.modelRain||state.modelWind){try{await loadModel();}catch(e){status(e.message);}}
+ }
+ $('development-model').addEventListener('change',e=>changeModel(e.target.value));
+ $('development-time-model').addEventListener('change',async e=>{source='model';if(!state.modelRain&&!state.modelWind)state.modelRain=true;await changeModel(e.target.value);});
  async function goCurrent(){
   stop();source='model';
   if(!state.modelRain&&!state.modelWind)state.modelRain=true;
@@ -136,7 +141,7 @@
   const pendingImage=++imageRequest;
   if(state.clppRadar&&radar){
    clppLoading=true;
-   clppImage(radar).then(url=>{if(pendingImage===imageRequest&&state.clppRadar)map.setRain({image_url:url,bounds:radar.bounds},'development-clpp');}).catch(()=>{if(pendingImage===imageRequest)status('ภาพทดลองไม่พร้อม กรุณาลองใหม่');}).finally(()=>{if(pendingImage===imageRequest)clppLoading=false;});
+   clppImage(radar).then(url=>{if(pendingImage===imageRequest&&state.clppRadar)map.setRain({image_url:url,bounds:radar.bounds},'development-clpp');}).catch(()=>{if(pendingImage===imageRequest)status('ภาพเรดาร์ไม่พร้อม กรุณาลองใหม่');}).finally(()=>{if(pendingImage===imageRequest)clppLoading=false;});
   }else{clppLoading=false;map.setRain(null,'development-clpp');}
   renderProvinces();renderClock();updateNow();status();
  }
@@ -162,33 +167,33 @@
  }
  function renderClock(){
   const modelOn=state.modelRain||state.modelWind,clppOn=state.clppRadar;
-  const options=$('development-time-source').options;options[0].disabled=!modelOn;options[1].disabled=!clppOn;
-  if(source==='model'&&!modelOn&&clppOn)source='clpp';if(source==='clpp'&&!clppOn&&modelOn)source='model';
-  $('development-time-source').value=source;
+  $('development-time-source').value=source;$('development-time-model').closest('label').hidden=source!=='model';
   const active=source==='model'?modelOn:clppOn,frames=active?data[source]?.frames||[]:[],index=indices[source],f=frames[index];
   $('development-slider').max=Math.max(0,frames.length-1);$('development-slider').value=index;
   $('development-play').disabled=!frames.length;$('development-slider').disabled=!frames.length;
   $('development-time').textContent=f?date(f.time):'เลือกชุดข้อมูล';
   $('development-frame-count').textContent=f?`${index+1} / ${frames.length} เฟรม`:'ยังไม่มีเฟรม';
-  $('development-time-summary').textContent=f?`${source==='model'?data.model.name:'CLPP'} · ${date(f.time)}`:'เลือกชุดข้อมูลทดลอง';
+  $('development-time-summary').textContent=f?`${source==='model'?data.model.name:'CLPP'} · ${date(f.time)}`:'เลือกแบบจำลอง';
   $('development-time-info').textContent=!f?'เปิดฝนพยากรณ์ ลม หรือเรดาร์ เพื่อเลือกช่วงเวลา':source==='model'?`${date(f.start)}–${date(f.time)} · อัตราฝนและลมเฉลี่ย 3 ชม.`:`${f.kind==='nowcast'?'คาดการณ์ +'+f.offset_min+' นาที':f.kind==='present'?'ตรวจวัดล่าสุด':'ตรวจวัดย้อนหลัง'} · ข้อมูลล่าช้า ${lag(data.clpp.generated)} นาที`;
   $('development-credit').textContent=source==='model'&&data.model?`${data.model.name} / Open-Meteo · ${data.model.license} · กริด ${data.model.grid.step}° · แคช 12 ชม.`:data.clpp?`CLPP / ONWR · สีต้นทาง RadarGIS · ${data.health?.clpp_ok===false?'ใช้สำเนาตามเวลาที่กำกับ':'อัปเดตเมื่อแหล่งข้อมูลพร้อม'}`:'';
-  const stops=source==='model'?DEVELOPMENT_RAIN_STOPS:(data.clpp?.levels_mm_hr||[]).map((v,i)=>[v,...data.clpp.levels_rgb[i]]);
+  const stops=DEVELOPMENT_RAIN_STOPS;
   if(stops.length){
    $('development-scale').style.background=`linear-gradient(90deg,${stops.map((s,i)=>`rgb(${s.slice(1).join(',')}) ${i/(stops.length-1)*100}%`).join(',')})`;
-   $('development-scale-labels').innerHTML=(source==='model'?stops.map(s=>s[0]):[.21,1.47,8.76,36.5,152.5,636]).map(v=>`<span>${v}</span>`).join('');
+   $('development-scale-labels').innerHTML=stops.map(s=>s[0]).map(v=>`<span>${v}</span>`).join('');
   }
   $('development-scale-unit').textContent='mm/h';
+  $('development-map-legend').hidden=!(state.modelRain&&data.model)||(source==='clpp'&&!state.modelRain);
+  $('development-legend-label').textContent=`${data.model?.name||'แบบจำลอง'} · อัตราฝนเฉลี่ย 3 ชม.`;
  }
- function stop(){if(timer)clearInterval(timer);timer=null;$('development-play').textContent='▶';$('development-play').setAttribute('aria-label','เล่นข้อมูลทดลอง');}
+ function stop(){if(timer)clearInterval(timer);timer=null;$('development-play').textContent='▶';$('development-play').setAttribute('aria-label','เล่นข้อมูลพยากรณ์');}
  $('development-slider').addEventListener('input',e=>{indices[source]=Number(e.target.value);render();});
- $('development-time-source').addEventListener('change',e=>{stop();source=e.target.value;renderClock();});
+ $('development-time-source').addEventListener('change',async e=>{stop();source=e.target.value;await activate(source==='model'?'modelRain':'clppRadar',true);});
  $('development-play').addEventListener('click',()=>{
   if(timer){stop();return;}
-  $('development-play').textContent='Ⅱ';$('development-play').setAttribute('aria-label','หยุดข้อมูลทดลอง');
+  $('development-play').textContent='Ⅱ';$('development-play').setAttribute('aria-label','หยุดข้อมูลพยากรณ์');
   timer=setInterval(()=>{const frames=data[source]?.frames||[];if(document.hidden||!frames.length)return;if(source==='clpp'&&state.clppRadar&&(clppLoading||!map.isRainReady('development-clpp')))return;indices[source]=(indices[source]+1)%frames.length;render();},1100);
  });
- window.addEventListener('development-clock-open',()=>{if(window.workspaceUI?.isOpen('development'))open(false);});
+ window.addEventListener('development-clock-open',()=>{if(window.workspaceUI?.isOpen('development')){open(false);if(!state.modelRain&&!state.modelWind&&!state.clppRadar)goCurrent();}});
  const originalClick=map.onMapClick;
  map.onMapClick=point=>{
   if(state.provinces&&map.gl.getLayer('rm-development-provinces')){
@@ -197,21 +202,13 @@
   }
   if((state.modelRain||state.modelWind)&&data.model&&developmentRegionMask(data.model.grid,point.lng,point.lat)>0){
    const f=data.model.frames[indices.model],g=data.model.grid,r=developmentSample(f.rain,g,point.lng,point.lat),u=developmentSample(f.u,g,point.lng,point.lat),v=developmentSample(f.v,g,point.lng,point.lat);
-   showPopup(point,`<h3>${esc(data.model.name)}</h3><p>${esc(date(f.start))}–${esc(date(f.time))}</p><dl><dt>อัตราฝนเฉลี่ย 3 ชม.</dt><dd>${number(r)} mm/h</dd><dt>ฝนสะสมในช่วง 3 ชม.</dt><dd>${number(r==null?null:r*3)} มม.</dd><dt>ลมเฉลี่ยที่ 10 เมตร</dt><dd>${number(u==null||v==null?null:Math.hypot(u,v))} ม./วินาที</dd></dl><small>ค่าประมาณจากกริดแสดงผลไทยและทะเล ${data.model.grid.step}° ไม่ใช่ค่าตรวจวัดที่ตำแหน่งนี้<br>${esc(data.model.name)} / Open-Meteo · ${esc(data.model.license)}</small>`);return;
+   showPopup(point,`<h3>${esc(data.model.name)}</h3><p>${esc(date(f.start))}–${esc(date(f.time))}</p><dl><dt>อัตราฝนเฉลี่ย 3 ชม.</dt><dd>${number(r)} mm/h</dd><dt>ฝนสะสมในช่วง 3 ชม.</dt><dd>${number(r==null?null:r*3)} มม.</dd><dt>ลมเฉลี่ยที่ 10 เมตร</dt><dd>${number(u==null||v==null?null:Math.hypot(u,v))} ม./วินาที</dd></dl><small>ค่าประมาณจากกริดแสดงผลภูมิภาคและทะเล ${data.model.grid.step}° ไม่ใช่ค่าตรวจวัดที่ตำแหน่งนี้<br>${esc(data.model.name)} / Open-Meteo · ${esc(data.model.license)}</small>`);return;
   }
   originalClick?.(point);
  };
  map.gl.on('style.load',()=>renderProvinces());
- window.addEventListener('development-unlocked',()=>{launcher.title='กำลังพัฒนา';launcher.setAttribute('aria-label','กำลังพัฒนา · เข้าสู่ระบบแล้ว');document.querySelector('.workspace').dataset.developmentMode='true';$('development-timeline-toggle').hidden=false;renderClock();});
- window.addEventListener('development-locked',()=>{
-  launcher.title='กำลังพัฒนา · เข้าสู่ระบบ';launcher.setAttribute('aria-label',launcher.title);
-  Object.keys(state).forEach(k=>state[k]=false);++modelRequest;++imageRequest;stop();popup?.remove();open(false);
-  Object.keys(data).forEach(k=>data[k]=null);textures.clear();windKey='';provinceKey='';
-  map.setRain(null,'development-model');map.setRain(null,'development-clpp');map.setExperimentalWind(null);window.workspaceUI?.setOpen('development',false);$('development-timeline-toggle').hidden=true;document.querySelector('.workspace').dataset.developmentMode='false';
-  if(map.gl.getLayer('rm-development-provinces'))map.gl.removeLayer('rm-development-provinces');
-  if(map.gl.getSource('rm-development-provinces'))map.gl.removeSource('rm-development-provinces');
-  render();
- });
+ document.querySelector('.workspace').dataset.developmentMode='true';
+ $('development-timeline-toggle').hidden=false;
  document.querySelectorAll('#layers-toggle,#display-toggle,#maptools-toggle,#basemap-toggle,.category-nav [data-view],.category-nav [data-tool]').forEach(button=>button.addEventListener('click',()=>open(false)));
  document.querySelectorAll('.category-nav [data-view]').forEach(button=>button.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);++modelRequest;stop();popup?.remove();render();}));
  setInterval(async()=>{

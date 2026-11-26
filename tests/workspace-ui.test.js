@@ -32,6 +32,13 @@ test('minimized panels can reopen and resizing to mobile dismisses control windo
   ui.setOpen('sidebar',false);ui.setOpen('sidebar',true);assert.equal(ui.minimized.sidebar,false);
   ui.setMobile(true);assert.equal(Object.values(ui.open).some(Boolean),false);
 });
+test('minimizing either playback preserves its visibility and the desktop catalogue',()=>{
+ for(const name of ['timeline','development']){
+  const ui=new WorkspacePanels();ui.setOpen(name,true);ui.minimize(name,true);
+  assert.equal(ui.open[name],true);assert.equal(ui.open.sidebar,true);assert.equal(ui.minimized[name],true);
+  ui.minimize(name,false);assert.equal(ui.minimized[name],false);assert.equal(ui.open[name],true);
+ }
+});
 test('advance forecast is opt-in and replaces playback without changing desktop catalogue state',()=>{
  const ui=new WorkspacePanels();assert.equal(ui.open.advance,false);
  ui.setOpen('timeline',true);ui.setOpen('advance',true);

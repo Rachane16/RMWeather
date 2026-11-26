@@ -31,14 +31,14 @@ test('current-time action selects a containing forecast interval and labels stal
  assert.deepEqual(currentFrame(frames,50),{index:0,current:false});
  assert.deepEqual(currentFrame(frames,350),{index:1,current:false});
 });
-test('rounded display footprint contains Thailand, fades at the rim and does not invent wind outside it',()=>{
- const g={west:95,north:22.5,step:.5,nx:31,ny:43};
+test('rectangular display includes every sampled corner and excludes unsampled territory',()=>{
+ const g={west:82,north:30,step:1.2,nx:36,ny:31};
  for(const [lon,lat] of [[99.9,20.45],[100.5,7.2],[105.3,15.2],[98.3,7.9]])assert.ok(mask(g,lon,lat)>.5);
- assert.equal(mask(g,95,22.5),0);assert.equal(mask(g,94,12),0);
- const rim=mask(g,95.2,12);assert.ok(rim>0&&rim<1);
- const records=wind({u:Array(1333).fill(2),v:Array(1333).fill(-1)},g);
- assert.equal(records[0].data[0],null);assert.equal(records[0].data[21*31+15],2);
- assert.equal(records[1].data[21*31+15],-1);
+ for(const [lon,lat] of [[82,30],[124,30],[82,-6],[124,-6]])assert.equal(mask(g,lon,lat),1);
+ assert.equal(mask(g,81.99,12),0);assert.equal(mask(g,125,12),0);assert.equal(mask(g,100,-6.01),0);
+ const records=wind({u:Array(1116).fill(2),v:Array(1116).fill(-1)},g);
+ assert.equal(records[0].data[0],2);assert.equal(records[0].data.at(-1),2);
+ assert.equal(records[1].data.at(-1),-1);
 });
 test('station compact field order is read dynamically; null is not zero',()=>{
  const result=stations({fields:['lon','name','obs24','lat','mm24','obs','mm'],stations:[[100,'test',null,7,null,null,0],[999,'invalid',null,7,0,null,0]]});
