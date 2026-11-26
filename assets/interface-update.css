@@ -22,7 +22,8 @@
  .workspace[data-advance-open=true] .bottom-map-actions,.workspace[data-advance-open=true] #basemap-toggle{bottom:327px}
  .windy-controls-restore{left:12px;top:56px;width:40px;height:40px;padding:8px}
 }
-#display-panel{--surface:#173d32;--soft:#244a3e;--ink:#ecf6ef;--muted:#afcbbd;--line:#436557;color:var(--ink);background:var(--surface)}
+#display-panel{color:var(--ink);background:var(--surface)}
+@media(max-width:700px){#display-panel{--surface:#173d32;--soft:#244a3e;--ink:#ecf6ef;--muted:#afcbbd;--line:#436557}}
 #display-panel h2,#display-panel h3,#display-panel h4{color:var(--ink)}
 #display-panel .quick-layers{margin-top:0;padding-top:0;border-top:0}
 #display-panel .display-extras{margin-top:20px;padding-top:15px;border-top:1px solid var(--line)}
