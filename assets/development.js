@@ -189,7 +189,7 @@
   $('development-play').textContent='Ⅱ';$('development-play').setAttribute('aria-label','หยุดข้อมูลทดลอง');
   timer=setInterval(()=>{const frames=data[source]?.frames||[];if(document.hidden||!frames.length)return;if(source==='clpp'&&state.clppRadar&&(clppLoading||!map.isRainReady('development-clpp')))return;indices[source]=(indices[source]+1)%frames.length;render();},1100);
  });
- function collapseClock(on){minimized=on;$('development-timeline-body').hidden=minimized;$('development-timeline-minimize').textContent=minimized?'+':'−';$('development-timeline-minimize').setAttribute('aria-expanded',String(!minimized));$('development-timeline-minimize').setAttribute('aria-label',minimized?'เปิดเวลาข้อมูลทดลอง':'ย่อเวลาข้อมูลทดลอง');}
+ function collapseClock(on){minimized=on;$('development-timeline').classList.toggle('is-collapsed',on);$('development-timeline-body').hidden=minimized;$('development-timeline-minimize').textContent=minimized?'+':'−';$('development-timeline-minimize').setAttribute('aria-expanded',String(!minimized));$('development-timeline-minimize').setAttribute('aria-label',minimized?'เปิดเวลาข้อมูลทดลอง':'ย่อเวลาข้อมูลทดลอง');}
  $('development-timeline-minimize').addEventListener('click',()=>{collapseClock(!minimized);if(!minimized)open(false);});
  async function imageData(frame){
   const url=await clppImage(frame);if(images.has(url))return images.get(url);
