@@ -1,5 +1,9 @@
 /* Public forecast controls share the catalogue's proportions. */
 .development-dialog{width:360px;z-index:1005;max-height:calc(100% - 156px)}
+@media(min-width:701px){
+ .sidebar.layer-drawer{bottom:124px}
+ .development-dialog{max-height:calc(100% - 200px)}
+}
 .development-header{padding:13px 16px}.development-header h2{font-size:22px}.development-header #development-close{margin-left:auto}
 .development-body{padding:0 15px 8px}.development-group{padding:13px 0}.development-model-card{padding:12px}.development-model-card h4{font-size:19px}
 .development-launcher{left:190px;top:20px;bottom:auto;width:auto;height:44px;display:flex;gap:7px;padding:0 12px;font:500 13px Sarabun,sans-serif}
