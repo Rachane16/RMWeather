@@ -5,7 +5,7 @@ const vm=require('node:vm');
 const app=fs.readFileSync(require.resolve('../assets/app.js'),'utf8');
 test('historical radar frames do not mislabel an up-to-date provider as stale',()=>{
   const old='2020-01-01T00:00:00Z',fresh='2026-11-25T09:00:00Z',nodes={};
-  const context={window:{},radarKind:'rod',radarFrames:[{frame_time:old},{frame_time:fresh}],rainVisibility:{rod:true,nowcast:true},map:{setRain(){}},time:value=>value,stale:value=>value===old,$:id=>nodes[id]??=( {style:{setProperty(){}}} ),document:{querySelector:()=>({})}};
+  const context={bangkokDate:require('../assets/timezone.js').bangkokDate,window:{},radarKind:'rod',radarFrames:[{frame_time:old},{frame_time:fresh}],rainVisibility:{rod:true,nowcast:true},map:{setRain(){}},time:value=>value,stale:value=>value===old,$:id=>nodes[id]??=( {style:{setProperty(){}}} ),document:{querySelector:()=>({})}};
   const start=app.indexOf('function showRadarFrame('),end=app.indexOf("$('radar-timeline-source').addEventListener",start);
   vm.createContext(context);vm.runInContext(app.slice(start,end),context);
   context.showRadarFrame(0);assert.doesNotMatch(nodes['radar-status'].textContent,/ข้อมูลต้นทางยังเป็นเฟรมเก่า/);

@@ -689,7 +689,7 @@
         const dailyContainer = document.getElementById('daily-forecast-container');
         dailyContainer.innerHTML = ''; 
         data.daily.time.forEach((dateStr, index) => {
-          const dayName = index === 0 ? 'วันนี้' : new Date(dateStr).toLocaleDateString('th-TH', { weekday: 'long' });
+          const dayName = index === 0 ? 'วันนี้' : new Date(dateStr).toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' });
           const maxTemp = Math.round(data.daily.temperature_2m_max[index]);
           const minTemp = Math.round(data.daily.temperature_2m_min[index]);
           const pop = data.daily.precipitation_probability_max[index]; 
@@ -1226,7 +1226,7 @@
       radarLayers.forEach((layer, i) => layer.setOpacity(i === currentIndex ? 0.8 : 0));
       if (radarTimestamps[currentIndex]) {
         const date = new Date(radarTimestamps[currentIndex] * 1000);
-        document.getElementById('radar-time').innerText = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('radar-time').innerText = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
       }
       document.getElementById('radar-slider').value = currentIndex;
     }
