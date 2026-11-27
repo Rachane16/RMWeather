@@ -43,7 +43,7 @@
   if(state.modelRain){selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);}
   else{selectModel('ecmwf_ifs');open(true);window.workspaceUI?.setOpen('sidebar',false);}
  });
- nav.addEventListener('click',async()=>{if(state.modelRain){await selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);nav.classList.remove('active');nav.setAttribute('aria-pressed','false');return;}applyCategoryLayers('none');setActiveCategory(null);await selectModel('ecmwf_ifs');if(!state.modelRain)return;if(!matchMedia('(max-width:700px)').matches)open(true);else{open(false);window.workspaceUI?.setOpen('sidebar',false);}nav.classList.add('active');nav.setAttribute('aria-pressed','true');});
+ nav.addEventListener('click',async()=>{if(state.modelRain){await selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);nav.classList.remove('active');nav.setAttribute('aria-pressed','false');if(window.workspaceUI?.desktopWebsite())window.workspaceUI.pinCatalogue();return;}applyCategoryLayers('none');setActiveCategory(null);await selectModel('ecmwf_ifs');if(!state.modelRain)return;if(!matchMedia('(max-width:700px)').matches)open(true);else{open(false);window.workspaceUI?.setOpen('sidebar',false);}nav.classList.add('active');nav.setAttribute('aria-pressed','true');});
  const quick=$('forecast-layer-panel');
  function quickOpen(on){quick.hidden=!on;$('forecast-quick').setAttribute('aria-expanded',String(on));if(on){open(false);window.workspaceUI?.closeForWeatherTool();$('forecast-quick').setAttribute('aria-expanded','true');}}
  $('forecast-quick').addEventListener('click',()=>quickOpen(quick.hidden));$('forecast-layer-close').addEventListener('click',()=>quickOpen(false));
@@ -64,7 +64,7 @@
  };
  document.querySelectorAll('#layers-toggle,#display-toggle,#maptools-toggle,#basemap-toggle,#advance-forecast-toggle,#development-nav,#development-open').forEach(b=>b.addEventListener('click',()=>quickOpen(false)));
  $('reset-layers').addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);render();});$('development-close').addEventListener('click',()=>open(false));
- panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();open(false);launcher.focus();}});
+ panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();open(false);if(window.workspaceUI?.desktopWebsite())window.workspaceUI.pinCatalogue();launcher.focus();}});
  async function resource(file){
   return {payload:await window.developmentAccess.json(file)};
  }

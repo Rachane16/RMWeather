@@ -13,6 +13,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   build:
+    # A desktop-only UI fix must not publish a new Android release.
+    if: >-
+      (github.event_name != 'push' || !contains(github.event.head_commit.message, '[desktop-only]')) &&
+      (github.event_name != 'pull_request' || !contains(github.event.pull_request.title, '[desktop-only]'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

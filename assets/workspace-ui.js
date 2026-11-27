@@ -118,10 +118,24 @@ function initWorkspaceUI(){
     if(key==='seven')$('seven-day-panel').classList.toggle('is-minimized',on);
     render();
   }
-  function pinCatalogue(){if(state.mobile)return;showLayerCatalog();state.setOpen('sidebar',true);render();}
+  function pinCatalogue(){if(state.mobile)return;if(!desktopWebsite()||$('layer-catalog').hidden||$('sidebar').hidden)showLayerCatalog();state.setOpen('sidebar',true);render();}
+  function desktopWebsite(){return !state.mobile&&!/RMWeatherAndroid\//.test(navigator.userAgent);}
   document.querySelectorAll('.right-launchers>button').forEach(button=>button.addEventListener('click',pinCatalogue));
-  document.querySelectorAll('.category-nav>button').forEach(button=>button.addEventListener('click',()=>setOpen('sidebar',false)));
-  window.workspaceUI={setOpen,minimize,pinCatalogue,selectRadarPlayback(){radarSelected=true;renderDock();},isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
+  document.querySelectorAll('.category-nav>button').forEach(button=>button.addEventListener('click',()=>{
+    if(!desktopWebsite()){setOpen('sidebar',false);return;}
+    if(button.dataset.view){
+      if(button.getAttribute('aria-pressed')==='true')setOpen('sidebar',true);
+      else pinCatalogue();
+    }else setOpen('sidebar',false);
+  }));
+  // These explicit desktop actions return to the pinned gallery, even after
+  // a category or forecast drawer has replaced it.
+  document.querySelectorAll('#layers-toggle,#sidebar-close').forEach(button=>button.addEventListener('click',()=>{if(desktopWebsite())pinCatalogue();}));
+  document.addEventListener('click',event=>{
+    if(!desktopWebsite())return;
+    if(event.target.closest('#development-close')||event.target.closest('#development-open')&&$('development-open').getAttribute('aria-expanded')==='false')pinCatalogue();
+  });
+  window.workspaceUI={setOpen,minimize,pinCatalogue,desktopWebsite,selectRadarPlayback(){radarSelected=true;renderDock();},isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
     const previous=state.open.timeline,catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;if(previous)restoreLatest();
     render();
   }};
@@ -164,9 +178,10 @@ function initWorkspaceUI(){
   $('map-zoom-out').addEventListener('click',()=>map.gl.zoomOut());
   $('reset-layers').addEventListener('click',()=>{radarSelected=true;const catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;render();});
   media.addEventListener('change',event=>{const previous=state.open.timeline;state.setMobile(event.matches);if(previous&&!state.open.timeline)restoreLatest();render();});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen('timeline',false);setOpen('weather',false);setOpen('advance',false);setOpen('development',false);}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen('timeline',false);setOpen('weather',false);setOpen('advance',false);setOpen('development',false);if(desktopWebsite())pinCatalogue();}});
   document.addEventListener('pointerdown',event=>{
     if(event.target.closest('dialog'))return;
+    if(desktopWebsite()&&!event.target.closest('#sidebar,#development-dialog,.category-nav,#development-open,#weather-map-panel'))pinCatalogue();
     for(const [name,id] of Object.entries(panels)){
       if(!state.open[name]||!state.canDismissOutside(name))continue;
       const launcher=launchers[name];
