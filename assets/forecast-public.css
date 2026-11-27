@@ -123,3 +123,5 @@
  .workspace .is-minimized .playback-mini-time{font-size:9px;max-width:65px}
  .workspace .is-minimized .radar-controls,.workspace .is-minimized .development-playback{gap:6px}
 }
+
+@media(max-width:700px){.workspace #radar-player.is-minimized,.workspace .development-timeline.is-minimized{bottom:150px}}
