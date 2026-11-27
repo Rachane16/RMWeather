@@ -37,7 +37,7 @@
   if(on){$('forecast-layer-panel').hidden=true;setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('development',false);}
  }
  launcher.addEventListener('click',()=>open(panel.hidden));
- nav.addEventListener('click',async()=>{if(state.modelRain){await selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);nav.classList.remove('active');nav.setAttribute('aria-pressed','false');return;}applyCategoryLayers('none');setActiveCategory(null);await selectModel('ecmwf_ifs');if(!matchMedia('(max-width:700px)').matches)open(true);else{open(false);window.workspaceUI?.setOpen('sidebar',false);}nav.classList.add('active');nav.setAttribute('aria-pressed','true');});
+ nav.addEventListener('click',async()=>{if(state.modelRain){await selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);nav.classList.remove('active');nav.setAttribute('aria-pressed','false');return;}applyCategoryLayers('none');setActiveCategory(null);await selectModel('ecmwf_ifs');if(!state.modelRain)return;if(!matchMedia('(max-width:700px)').matches)open(true);else{open(false);window.workspaceUI?.setOpen('sidebar',false);}nav.classList.add('active');nav.setAttribute('aria-pressed','true');});
  const quick=$('forecast-layer-panel');
  function quickOpen(on){quick.hidden=!on;$('forecast-quick').setAttribute('aria-expanded',String(on));if(on){open(false);window.workspaceUI?.closeForWeatherTool();$('forecast-quick').setAttribute('aria-expanded','true');}}
  $('forecast-quick').addEventListener('click',()=>quickOpen(quick.hidden));$('forecast-layer-close').addEventListener('click',()=>quickOpen(false));
