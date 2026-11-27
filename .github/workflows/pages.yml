@@ -22,6 +22,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests
+      - run: node --check assets/timezone.js
       - run: node --check assets/app.js
       - run: node --check assets/layers.js
       - run: node --check assets/hydro.js

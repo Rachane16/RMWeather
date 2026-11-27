@@ -29,6 +29,8 @@ jobs:
       - name: Install the pinned Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - name: Test and lint the Android application
+        env:
+          RMWEATHER_BUILD_NUMBER: ${{ github.run_number }}
         run: bash android/gradlew -p android --no-daemon testDebugUnitTest lintRelease assembleDebug
       - name: Prepare release signing from encrypted repository secrets
         if: github.event_name != 'pull_request'
@@ -122,9 +124,9 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          tag="android-v1.1.$BUILD_NUMBER"
+          tag="android-v1.2.$BUILD_NUMBER"
           printf 'RMWeather for Android 7.0 and later.\n\nSigned APK using the persistent RMWeather release key. Requires internet access; opens the live RMWeather website. Location access is optional.\n\nSource: %s\n' "$COMMIT_SHA" > release-notes.txt
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$COMMIT_SHA" --title "RMWeather Android 1.1.$BUILD_NUMBER" --notes-file release-notes.txt --latest
+            gh release create "$tag" --target "$COMMIT_SHA" --title "RMWeather Android 1.2.$BUILD_NUMBER" --notes-file release-notes.txt --latest
           fi
           gh release upload "$tag" distribution/RMWeather.apk distribution/SHA256SUMS.txt distribution/signature.txt --clobber
