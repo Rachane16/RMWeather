@@ -194,7 +194,7 @@
   $('development-play').textContent='Ⅱ';$('development-play').setAttribute('aria-label','หยุดข้อมูลพยากรณ์');
   timer=setInterval(()=>{const frames=data[source]?.frames||[];if(document.hidden||!frames.length)return;if(source==='clpp'&&state.clppRadar&&(clppLoading||!map.isRainReady('development-clpp')))return;indices[source]=(indices[source]+1)%frames.length;render();},1100);
  });
- window.addEventListener('development-clock-open',()=>{if(window.workspaceUI?.isOpen('development')){open(false);selectModel('ecmwf_ifs');}});
+ window.addEventListener('development-clock-open',()=>{if(window.workspaceUI?.isOpen('development')){open(false);quickOpen(false);selectModel('ecmwf_ifs');}});
  const originalClick=map.onMapClick;
  map.onMapClick=point=>{
   if(state.provinces&&map.gl.getLayer('rm-development-provinces')){

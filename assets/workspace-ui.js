@@ -34,7 +34,7 @@ function initWorkspaceUI(){
 
   function renderAdvanceForecast(){
     const toggle=$('advance-forecast-toggle'),container=state.open.advance?$('advance-forecast-header-actions'):document.querySelector('.right-launchers');
-    if(toggle.parentElement!==container)container.prepend(toggle);
+    if(toggle.parentElement!==container){if(state.open.advance)container.prepend(toggle);else container.append(toggle);}
     $('advance-forecast-toggle-label').textContent=state.open.advance?'ย่อ':'การพยากรณ์ล่วงหน้า';
     toggle.setAttribute('aria-label',state.open.advance?'ย่อการพยากรณ์ล่วงหน้า':'เปิดการพยากรณ์ล่วงหน้า');
     const frame=$('advance-forecast-frame');
