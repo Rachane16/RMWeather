@@ -13,5 +13,5 @@ test('radar reflection, model rain, and accumulation cannot share misleading uni
 });
 test('CLPP legend uses the actual upstream palette and rain levels from its manifest',()=>{
  const c=key(null,null,{source:'clpp',clppOn:true,clpp:{levels_rgb:[[0,255,0],[255,0,0]],levels_mm_hr:[.21,636]}});
- assert.deepEqual(c.stops,['rgb(0,255,0)','rgb(255,0,0)']);assert.equal(c.unit,'mm/h');
+ assert.deepEqual(c.stops,['rgb(0,255,0)','rgb(255,0,0)']);assert.equal(c.unit,'dBZ');assert.equal(c.ticks[0],10.4);assert.equal(c.secondary.at(-1),'636');
 });
