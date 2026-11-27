@@ -15,6 +15,13 @@ test('mobile begins with no popups; desktop retains only the layer catalogue',()
   assert.equal(Object.values(mobile.open).some(Boolean),false);
   assert.deepEqual(Object.keys(desktop.open).filter(key=>desktop.open[key]),['sidebar']);
 });
+
+test('desktop catalogue is pinned on outside taps; phone drawers and other popups dismiss',()=>{
+ const desktop=new WorkspacePanels(),phone=new WorkspacePanels(true);
+ assert.equal(desktop.canDismissOutside('sidebar'),false);
+ assert.equal(phone.canDismissOutside('sidebar'),true);
+ for(const name of ['display','maptools','timeline','development'])assert.equal(desktop.canDismissOutside(name),true);
+});
 test('phone popups replace each other without coupling window state to map layer state',()=>{
   const ui=new WorkspacePanels(true);
   ui.setOpen('sidebar',true);ui.setOpen('display',true);

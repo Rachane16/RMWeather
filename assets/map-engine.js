@@ -270,7 +270,7 @@ class WindParticles {
     if(reduced&&this.staticDrawn)return;
     const dt=Math.min((now-this.frame)/1000||.04,.08);this.frame=now;
     const c=this.ctx,w=this.width,h=this.height;
-    c.globalCompositeOperation='destination-in';c.fillStyle='rgba(0,0,0,.90)';c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';
+    c.globalCompositeOperation='destination-in';c.fillStyle=`rgba(0,0,0,${Math.min(.94,.78+this.contrast*.04)})`;c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';
     const count=Math.min(innerWidth<700?650:2200,Math.floor(w*h/650));
     while(this.particles.length<count)this.particles.push(this.seed());
     const paths=[new Path2D(),new Path2D(),new Path2D()];

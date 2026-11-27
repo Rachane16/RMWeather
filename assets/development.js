@@ -34,7 +34,7 @@
  }
  function open(on){
   panel.hidden=!on;$('forecast-quick').setAttribute('aria-expanded',String(on));launcher.setAttribute('aria-expanded',String(on));nav.classList.toggle('active',state.modelRain);nav.setAttribute('aria-pressed',String(state.modelRain));
-  if(on){$('forecast-layer-panel').hidden=true;setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('development',false);}
+  if(on){if(!matchMedia('(max-width:700px)').matches)window.workspaceUI?.setOpen('sidebar',false);$('forecast-layer-panel').hidden=true;setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('development',false);}
  }
  const mobile=()=>matchMedia('(max-width:700px)').matches;
  function dismissModelMenus(){if(!mobile())return;open(false);quickOpen(false);window.workspaceUI?.setOpen('display',false);window.workspaceUI?.setOpen('sidebar',false);}

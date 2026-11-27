@@ -26,7 +26,7 @@ function syncLayerMenu() {
   $('layers-count').textContent = active.length;
   $('active-layer-names').textContent = active.length ? active.join(' · ') : 'ยังไม่ได้เปิดชั้นข้อมูล';
   const points=['cameras','water','thaiwater','rain','dam','weather','windycams'];
-  $('map-legend').hidden=!points.some(key=>enabled[key]);
+  $('map-legend').hidden=true;
   $('map-legend').innerHTML=points.filter(key=>enabled[key]).map(key=>`<span><i class="legend-marker ${key}-color"></i>${layerLabels[key]}</span>`).join('')+'<span class="muted">คลิกจุดเพื่อดูรายละเอียด</span>';
 
   if(view==='water'){ $('view-title').textContent=layerLabels[waterKind];$('category-intro').textContent=waterKind==='dam'?'ข้อมูลน้ำกักเก็บเขื่อนขนาดใหญ่จาก ThaiWater พร้อมวันที่ข้อมูล':waterKind==='rain'?'ฝนสะสม 24 ชั่วโมงจากสถานีทั่วประเทศ ตรวจสอบเวลาสิ้นสุดช่วงสะสมรายสถานี':intros.water; }

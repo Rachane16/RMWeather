@@ -17,6 +17,9 @@ const enabled = {windycams:false,cameras:false,water:false,thaiwater:false,rain:
 const rainVisibility={radar:false,nowcast:false,rod:false,radargis:false,rainviewer:true};
 const rainCollections={},rainRequests={};
 const map = new WeatherMap('map');
+const windDisplayMedia=matchMedia('(max-width:700px)');
+map.setWindContrast(windDisplayMedia.matches?2:3);
+windDisplayMedia.addEventListener('change',e=>map.setWindContrast(e.matches?2:3));
 const esri = name => `https://server.arcgisonline.com/ArcGIS/rest/services/${name}/MapServer/tile/{z}/{y}/{x}`;
 const basemaps = [
  {id:'natural',name:'ELEMNT Natural Terrain',style:'assets/styles/natural.json?v=20261125-display2',art:'natural'},

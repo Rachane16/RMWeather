@@ -1,4 +1,4 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:width="108dp" android:height="108dp"><shape><solid android:color="@android:color/transparent" /></shape></item>
-    <item android:drawable="@drawable/rmweather_icon_2026" android:width="96dp" android:height="96dp" android:gravity="center" />
+    <item android:drawable="@drawable/rmweather_icon" android:width="48dp" android:height="64dp" android:gravity="center" />
 </layer-list>

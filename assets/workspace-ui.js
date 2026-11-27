@@ -15,6 +15,7 @@ class WorkspacePanels {
     }
     this.open[name]=Boolean(on);
   }
+  canDismissOutside(name){return this.mobile||name!=='sidebar';}
   minimize(name,on){this.minimized[name]=Boolean(on);}
   setMobile(mobile){if(this.mobile!==mobile){this.mobile=mobile;this.closeAll();}}
   closeAll(){Object.keys(this.open).forEach(key=>this.open[key]=false);}
@@ -117,7 +118,10 @@ function initWorkspaceUI(){
     if(key==='seven')$('seven-day-panel').classList.toggle('is-minimized',on);
     render();
   }
-  window.workspaceUI={setOpen,minimize,selectRadarPlayback(){radarSelected=true;renderDock();},isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
+  function pinCatalogue(){if(state.mobile)return;showLayerCatalog();state.setOpen('sidebar',true);render();}
+  document.querySelectorAll('.right-launchers>button').forEach(button=>button.addEventListener('click',pinCatalogue));
+  document.querySelectorAll('.category-nav>button').forEach(button=>button.addEventListener('click',()=>setOpen('sidebar',false)));
+  window.workspaceUI={setOpen,minimize,pinCatalogue,selectRadarPlayback(){radarSelected=true;renderDock();},isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
     const previous=state.open.timeline,catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;if(previous)restoreLatest();
     render();
   }};
@@ -164,7 +168,7 @@ function initWorkspaceUI(){
   document.addEventListener('pointerdown',event=>{
     if(event.target.closest('dialog'))return;
     for(const [name,id] of Object.entries(panels)){
-      if(!state.open[name])continue;
+      if(!state.open[name]||!state.canDismissOutside(name))continue;
       const launcher=launchers[name];
       if(!event.target.closest('#'+id+(launcher?',#'+launcher:'')))setOpen(name,false);
     }
