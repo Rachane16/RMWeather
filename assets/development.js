@@ -1,24 +1,23 @@
 'use strict';
 
-// Experimental sources have their own visibility and clock. Existing map layers
-// remain intact; the ordinary wind resumes when model wind is disabled.
+// Forecast rain and CLPP have their own visibility and clocks. Base wind stays independent.
 (()=>{
  const panel=$('development-dialog'),launcher=$('development-open'),nav=$('development-nav');
  document.querySelector('.workspace').append(panel,$('development-timeline'),$('development-map-legend'),launcher);
  const state={modelRain:false,clppRadar:false,provinces:false};
  const data={model:null,clpp:null,geo:null,health:null},indices={model:0,clpp:0};
- let source='model',timer=null,modelRequest=0,popup=null,windKey='',provinceKey='',imageRequest=0,clppLoading=false;
+ let source='model',timer=null,modelRequest=0,popup=null,provinceKey='',imageRequest=0,clppLoading=false;
  const textures=new Map();
  const modelInfo={
-  ecmwf_ifs:['ECMWF IFS HRES','โมเดลหลัก · ECMWF','9 กม.','6 ชั่วโมง',1.2,'ecmwf-api','แบบจำลองฟิสิกส์ความละเอียดสูง ใช้เปรียบเทียบฝนและลม'],
-  gfs_global:['GFS','โมเดลหลัก · NOAA','ประมาณ 25 กม.','6 ชั่วโมง',3,'gfs-api','แบบจำลองสหรัฐฯ สำหรับเทียบแนวโน้มฝนและลม'],
+  ecmwf_ifs:['ECMWF IFS HRES','โมเดลหลัก · ECMWF','9 กม.','6 ชั่วโมง',1.2,'ecmwf-api','แบบจำลองฟิสิกส์ความละเอียดสูง ใช้เปรียบเทียบฝน'],
+  gfs_global:['GFS','โมเดลหลัก · NOAA','ประมาณ 25 กม.','6 ชั่วโมง',3,'gfs-api','แบบจำลองสหรัฐฯ สำหรับเทียบแนวโน้มฝน'],
   icon_global:['ICON','โมเดลหลัก · DWD','ประมาณ 11 กม.','6 ชั่วโมง',3,'dwd-api','แบบจำลองเยอรมนี ครอบคลุมไทยและทะเลรอบข้าง'],
   ukmo_global_deterministic_10km:['UK Met Office','โมเดลหลัก · UKMO','10 กม.','6 ชั่วโมง',3,'ukmo-api','ข้อมูลเปิดมีความหน่วงเพิ่มเติมประมาณ 4 ชั่วโมง'],
-  google_weathernext3_ensemble_mean:['Google WeatherNext 3','แบบจำลอง AI · ค่าเฉลี่ย Ensemble','ประมาณ 11 กม.','6 ชั่วโมง',1.2,'google-weathernext3-api','แสดงค่าเฉลี่ยฝนและลมจากชุดพยากรณ์ ไม่ใช่เปอร์เซ็นต์โอกาสฝน'],
+  google_weathernext3_ensemble_mean:['Google WeatherNext 3','แบบจำลอง AI · ค่าเฉลี่ย Ensemble','ประมาณ 11 กม.','6 ชั่วโมง',1.2,'google-weathernext3-api','แสดงค่าเฉลี่ยฝนจากชุดพยากรณ์ ไม่ใช่เปอร์เซ็นต์โอกาสฝน'],
   ecmwf_aifs025_single:['ECMWF AIFS','แบบจำลอง AI · ECMWF','ประมาณ 28 กม.','6 ชั่วโมง',3,'ecmwf-api','ต้นทางช่วงละ 6 ชั่วโมง แทรกค่าเป็นรายชั่วโมงโดย Open-Meteo'],
   jma_gsm:['JMA GSM','โมเดลเปรียบเทียบ · ญี่ปุ่น','ประมาณ 55 กม.','6 ชั่วโมง',3,'jma-api','ใช้ดูความแตกต่างของแนวโน้มจากโมเดลอื่น'],
   meteofrance_arpege_world:['ARPEGE','โมเดลเปรียบเทียบ · Météo-France','ประมาณ 25 กม.','6 ชั่วโมง',3,'meteofrance-api','รุ่น Global สำหรับพื้นที่ไทย ไม่ใช่ AROME ความละเอียดสูงของยุโรป'],
-  cma_grapes_global:['CMA GRAPES','โมเดลเปรียบเทียบ · จีน','ประมาณ 15 กม.','6 ชั่วโมง',3,'cma-api','เปรียบเทียบฝนและลมกับแบบจำลองระดับโลก'],
+  cma_grapes_global:['CMA GRAPES','โมเดลเปรียบเทียบ · จีน','ประมาณ 15 กม.','6 ชั่วโมง',3,'cma-api','เปรียบเทียบฝนกับแบบจำลองระดับโลก'],
   best_match:['Open-Meteo Best Match','เลือกโมเดลอัตโนมัติ','ตามตำแหน่ง','ตามโมเดล',3,'','ผสมโมเดลที่เหมาะกับตำแหน่ง ไม่ใช่แบบจำลองอิสระอีกหนึ่งตัว']
  };
  const date=stamp=>time(new Date(stamp*1000).toISOString());
@@ -27,7 +26,7 @@
   const info=modelInfo[$('development-model').value];if(!info)return;$('development-time-model').value=$('development-model').value;
   $('development-model-name').textContent=info[0];$('development-model-kind').textContent=info[1];
   $('development-native-resolution').textContent=info[2];$('development-model-cycle').textContent=info[3];
-  $('development-cycle-times').textContent=$('development-model').value==='best_match'?'รอบเวลาขึ้นอยู่กับโมเดลที่ต้นทางเลือก':'รอบต้นทางทุก '+info[3]+' · 00 / 06 / 12 / 18 UTC (07 / 13 / 19 / 01 น. ไทย)';
+  $('development-cycle-times').textContent=$('development-model').value==='best_match'?'รอบเวลาขึ้นอยู่กับโมเดลที่ต้นทางเลือก':['ecmwf_ifs','gfs_global'].includes($('development-model').value)?'รอบออกแบบจำลอง 00 / 06 / 12 / 18 UTC · ไทย 07 / 13 / 19 / 01 น.':'รอบต้นทางทุก '+info[3]+' · โปรดดูเวลาพร้อมใช้งานจากต้นทาง';
   const step=data.model?.grid.step??info[4];
   $('development-grid-hint').textContent=`กริดแสดงผล ${step}° ≈ ${Math.round(step*111)} กม. · การไล่สีไม่เพิ่มความละเอียด · แตะแผนที่ดูค่าประมาณ`;
   $('development-model-description').textContent=info[6];
