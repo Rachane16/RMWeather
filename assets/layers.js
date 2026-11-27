@@ -22,6 +22,7 @@ function syncLayerMenu() {
   });
   document.querySelectorAll('[data-quick-layer]').forEach(input=>input.checked=layerIsActive(input.dataset.quickLayer));
   document.querySelectorAll('[data-weather-layer]').forEach(button=>{const on=Boolean(window.weatherToolVisibility?.['weather-map']);button.setAttribute('aria-pressed',String(on));button.closest('.layer-card').classList.toggle('is-active',on);if(on)active.push('แผนที่อากาศ · Windy');});
+  document.querySelectorAll('#layer-catalog [data-model-preset],#layer-catalog [data-forecast-layer]').forEach(b=>{if(b.getAttribute('aria-pressed')==='true')active.push(b.querySelector('strong').textContent);});
   $('layers-count').textContent = active.length;
   $('active-layer-names').textContent = active.length ? active.join(' · ') : 'ยังไม่ได้เปิดชั้นข้อมูล';
   const points=['cameras','water','thaiwater','rain','dam','weather','windycams'];
@@ -44,6 +45,7 @@ function showLayerCatalog() {
   $('layer-details').hidden = true;
   document.querySelector('.drawer-scroll').scrollTop = 0;
   syncLayerMenu();
+  window.renderPrecipitationLegend?.();
 }
 
 async function activateSource(key, showDetails = false) {

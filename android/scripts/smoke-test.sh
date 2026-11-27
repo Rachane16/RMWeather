@@ -2,6 +2,9 @@
 set -euo pipefail
 apk="$1"
 mkdir -p android-smoke
+# Disable the emulator's opportunistic DNS-over-TLS, which runner networks can block.
+adb shell settings put global private_dns_mode off
+adb shell settings delete global private_dns_specifier
 adb install -r "$apk"
 adb shell pm grant io.github.rachane16.rmweather android.permission.ACCESS_COARSE_LOCATION
 adb shell pm grant io.github.rachane16.rmweather android.permission.ACCESS_FINE_LOCATION
@@ -16,7 +19,7 @@ for attempt in $(seq 1 30); do
     # Require the dynamically created map credit and allow tiles to render.
     sleep 8
     adb exec-out screencap -p > android-smoke/app.png
-    adb logcat -d -s AndroidRuntime:E > android-smoke/runtime.log
+    adb logcat -d -s AndroidRuntime:E RMWeatherNetwork:W chromium:E > android-smoke/runtime.log
     if grep -q 'FATAL EXCEPTION' android-smoke/runtime.log; then exit 1; fi
     echo 'Signed APK installed and the live RMWeather map controls appeared.'
     exit 0

@@ -24,6 +24,7 @@ function setWeatherCardVisible(on){window.workspaceUI?.setOpen('weather',on);}
 function setTimelineOpen(on){window.workspaceUI?.setOpen('timeline',on);}
 
 function initWorkspaceUI(){
+  document.querySelector('.right-launchers').append($('advance-forecast-toggle'));document.querySelector('.map-zoom-controls').prepend($('locate-quick'));
   const media=matchMedia('(max-width:700px)'),state=new WorkspacePanels(media.matches);
   const panels={sidebar:'sidebar',display:'display-panel',maptools:'maptools-panel',basemap:'basemap-panel',weather:'overview-panel',timeline:'radar-player',advance:'advance-forecast-panel',development:'development-timeline'};
   const launchers={sidebar:'layers-toggle',display:'display-toggle',maptools:'maptools-toggle',basemap:'basemap-toggle',timeline:'timeline-toggle',advance:'advance-forecast-toggle',development:'development-timeline-toggle'};
@@ -32,9 +33,8 @@ function initWorkspaceUI(){
   const advanceSelection=new WindyPointSelection();
 
   function renderAdvanceForecast(){
-    const toggle=$('advance-forecast-toggle'),container=state.open.advance?$('advance-forecast-header-actions'):$('bottom-map-actions');
+    const toggle=$('advance-forecast-toggle'),container=state.open.advance?$('advance-forecast-header-actions'):document.querySelector('.right-launchers');
     if(toggle.parentElement!==container)container.prepend(toggle);
-    if(!state.open.advance&&toggle.previousElementSibling!==$('timeline-toggle'))container.insertBefore(toggle,$('timeline-toggle').nextSibling);
     $('advance-forecast-toggle-label').textContent=state.open.advance?'ย่อ':'การพยากรณ์ล่วงหน้า';
     toggle.setAttribute('aria-label',state.open.advance?'ย่อการพยากรณ์ล่วงหน้า':'เปิดการพยากรณ์ล่วงหน้า');
     const frame=$('advance-forecast-frame');
@@ -90,7 +90,7 @@ function initWorkspaceUI(){
     if(key==='seven')$('seven-day-panel').classList.toggle('is-minimized',on);
     render();
   }
-  window.workspaceUI={setOpen,isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
+  window.workspaceUI={setOpen,minimize,isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
     const previous=state.open.timeline,catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;if(previous)restoreLatest();
     render();
   }};

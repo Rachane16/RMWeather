@@ -71,3 +71,38 @@
 .is-minimized .playback-mini-time{display:block;flex:0 0 auto;max-width:88px;font-size:11px;line-height:1.35;text-align:center;font-variant-numeric:tabular-nums;color:var(--ink)}
 .is-minimized .radar-controls input,.is-minimized .development-playback input{min-width:0;flex:1}
 @media(max-width:700px){.workspace .development-launcher{width:42px}.is-minimized .playback-mini-time{max-width:73px;font-size:10px}}
+
+/* RMWeather 1.1: model shortcuts, separate forecast table launcher and shared key. */
+.workspace .development-launcher{width:auto;padding:0 10px;gap:6px}
+.workspace .development-launcher span{display:inline;font-size:12px}
+#forecast-layer-panel{z-index:1013;max-height:calc(100% - 150px)}
+#forecast-layer-panel .popup-body{overflow:auto;max-height:55dvh}
+#forecast-layer-panel .forecast-option{font-size:13px;min-height:44px}
+#development-cycle-times{font-size:12px;line-height:1.6;color:var(--muted)}
+.right-launchers #advance-forecast-toggle{width:44px;min-width:44px;height:44px;padding:0;justify-content:center;border:0;border-radius:9px;box-shadow:none;background:transparent}
+.right-launchers #advance-forecast-toggle>span{display:none}
+.right-launchers #advance-forecast-toggle svg{width:22px;height:22px;flex:none}
+.map-zoom-controls #locate-quick{width:100%;height:40px;min-width:0;border-radius:0;box-shadow:none;border-bottom:1px solid var(--line)}
+.map-zoom-controls #locate-quick svg{width:19px;height:19px}
+.workspace[data-development-mode=true] .bottom-map-actions{width:min(480px,calc(100% - 190px));bottom:88px;gap:9px}
+.workspace .development-map-legend{bottom:23px;min-height:30px;padding:5px 10px}
+.workspace .development-map-legend .development-scale-labels small{display:block;font-size:8px;line-height:11px;margin-top:3px}
+#radar-player,.development-timeline{bottom:151px}
+#radar-player .radar-gradient,#radar-player .legend-scale{display:none!important}
+.app-update-dialog{max-width:360px;width:calc(100vw - 48px);border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);padding:22px;box-sizing:border-box}
+.app-update-dialog h2{font-size:20px}.app-update-dialog p{font-size:15px;line-height:1.6}.app-update-dialog .popup-button{display:inline-block;margin:4px 5px 0 0}.app-update-dialog::backdrop{background:#112d3266;backdrop-filter:blur(4px)}
+@media(max-width:700px){
+ .workspace[data-development-mode=true] .bottom-map-actions{width:min(340px,calc(100% - 86px));bottom:83px;gap:6px}
+ .bottom-map-actions .timeline-launcher{min-width:0;min-height:43px;padding:6px 8px;gap:6px;background:color-mix(in srgb,var(--surface) 76%,transparent);border-radius:12px}
+ .bottom-map-actions .timeline-launcher>span{font-size:11px}.bottom-map-actions .timeline-launcher small{font-size:9px}.bottom-map-actions .timeline-launcher svg{width:18px;height:18px}
+ #radar-player,.development-timeline{width:min(420px,calc(100% - 32px));padding:9px 11px;bottom:135px;background:color-mix(in srgb,var(--surface) 79%,transparent);max-height:calc(100% - 165px)}
+ .workspace .development-launcher{left:172px;padding:0 8px}.workspace .development-launcher span{font-size:11px}
+ .workspace .development-map-legend{width:calc(100% - 90px);bottom:22px}
+ .workspace[data-development-mode=true] #basemap-toggle{bottom:28px}
+ .workspace[data-development-mode=true] .map-zoom-controls{bottom:83px}
+ .workspace[data-advance-open=true] .bottom-map-actions{bottom:83px}
+ .workspace[data-advance-open=true] #basemap-toggle{bottom:327px}.workspace[data-advance-open=true] .map-zoom-controls{bottom:380px}
+ #forecast-layer-panel{width:min(290px,calc(100vw - 80px));right:64px;max-height:62dvh;background:color-mix(in srgb,#173e33 92%,transparent);color:#ecf6ef}
+ #forecast-layer-panel .forecast-option{color:inherit;border-color:#ffffff26}
+ #forecast-layer-panel h2{font-size:18px}
+}

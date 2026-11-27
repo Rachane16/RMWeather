@@ -41,6 +41,7 @@ public final class MainActivity extends ComponentActivity {
     private GeolocationPermissions.Callback locationCallback;
     private String locationOrigin;
     private boolean loadFailed;
+    private int connectionRetries;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override public void onCreate(Bundle state) {
@@ -70,7 +71,10 @@ public final class MainActivity extends ComponentActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(true);
         settings.setSupportMultipleWindows(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " RMWeatherAndroid/1.0");
+        String appVersion = "1.1";
+        try { appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName; }
+        catch (PackageManager.NameNotFoundException ignored) { /* Own package is always installed. */ }
+        settings.setUserAgentString(settings.getUserAgentString() + " RMWeatherAndroid/" + appVersion);
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (!request.isForMainFrame()) return false;
@@ -84,13 +88,20 @@ public final class MainActivity extends ComponentActivity {
             }
             @Override public void onPageFinished(WebView view, String url) {
                 progress.setVisibility(View.GONE);
-                if (!loadFailed) offline.setVisibility(View.GONE);
+                if (!loadFailed) { offline.setVisibility(View.GONE); connectionRetries = 0; }
             }
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (request.isForMainFrame()) showOffline();
+                if (request.isForMainFrame()) {
+                    android.util.Log.w("RMWeatherNetwork", "Main page failed: " + error.getErrorCode());
+                    retryConnection(error.getErrorCode());
+                }
             }
             @Override public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
-                if (request.isForMainFrame() && response.getStatusCode() >= 400) showOffline();
+                if (request.isForMainFrame() && response.getStatusCode() >= 400) {
+                    android.util.Log.w("RMWeatherNetwork", "Main page HTTP status: " + response.getStatusCode());
+                    if (response.getStatusCode() >= 500 || response.getStatusCode() == 429) retryConnection(WebViewClient.ERROR_CONNECT);
+                    else showOffline();
+                }
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -139,11 +150,18 @@ public final class MainActivity extends ComponentActivity {
         offline.addView(title, new LinearLayout.LayoutParams(-1, -2));
         TextView description = new TextView(this); description.setText(R.string.offline_message); description.setTextSize(16); description.setGravity(Gravity.CENTER); description.setPadding(0,dp(12),0,dp(18));
         offline.addView(description, new LinearLayout.LayoutParams(-1,-2));
-        Button retry = new Button(this); retry.setText(R.string.retry); retry.setOnClickListener(view -> loadHome()); offline.addView(retry);
+        Button retry = new Button(this); retry.setText(R.string.retry); retry.setOnClickListener(view -> { connectionRetries = 0; loadHome(); }); offline.addView(retry);
         Button browser = new Button(this); browser.setText(R.string.open_browser); browser.setOnClickListener(view -> openBrowser(NavigationPolicy.HOME)); offline.addView(browser);
         root.addView(offline, new FrameLayout.LayoutParams(-1,-1)); offline.setVisibility(View.GONE);
     }
     private void showOffline() { loadFailed = true; progress.setVisibility(View.GONE); offline.setVisibility(View.VISIBLE); }
+    private void retryConnection(int code) {
+        showOffline();
+        if ((code == WebViewClient.ERROR_HOST_LOOKUP || code == WebViewClient.ERROR_CONNECT || code == WebViewClient.ERROR_TIMEOUT) && connectionRetries < 2) {
+            int delay = 2000 * ++connectionRetries;
+            web.postDelayed(() -> { if (!isFinishing() && !isDestroyed() && loadFailed) loadHome(); }, delay);
+        }
+    }
     private void loadHome() { loadFailed = false; offline.setVisibility(View.GONE); web.loadUrl(NavigationPolicy.HOME, Collections.singletonMap("Cache-Control","max-age=0")); }
     private boolean hasLocationPermission() {
         return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -173,7 +191,7 @@ public final class MainActivity extends ComponentActivity {
         if (fullScreen != null) { closeFullScreen(); return; }
         if (!NavigationPolicy.isAppPage(web.getUrl())) { finish(); return; }
         // Close one of RMWeather's visible control windows before leaving the map.
-        web.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return true;}const pairs=[['development-dialog','development-close'],['development-timeline','development-timeline-close'],['radar-player','radar-close'],['advance-forecast-panel','advance-forecast-close'],['display-panel','display-close'],['maptools-panel','maptools-close'],['basemap-panel','basemap-close'],['sidebar','sidebar-close']];for(const [panel,id] of pairs){const p=document.getElementById(panel),b=document.getElementById(id);if(p&&p.getClientRects().length&&b){b.click();return true;}}for(const id of ['weather-map-panel','seven-day-panel']){const p=document.getElementById(id),b=p?.querySelector('[data-close-tool]');if(p&&p.getClientRects().length&&b){b.click();return true;}}return false;})()", closed -> {
+        web.evaluateJavascript("(()=>{const d=document.querySelector('dialog[open]');if(d){d.close();return true;}const pairs=[['forecast-layer-panel','forecast-layer-close'],['development-dialog','development-close'],['development-timeline','development-timeline-close'],['radar-player','radar-close'],['advance-forecast-panel','advance-forecast-close'],['display-panel','display-close'],['maptools-panel','maptools-close'],['basemap-panel','basemap-close'],['sidebar','sidebar-close']];for(const [panel,id] of pairs){const p=document.getElementById(panel),b=document.getElementById(id);if(p&&p.getClientRects().length&&b){b.click();return true;}}for(const id of ['weather-map-panel','seven-day-panel']){const p=document.getElementById(id),b=p?.querySelector('[data-close-tool]');if(p&&p.getClientRects().length&&b){b.click();return true;}}return false;})()", closed -> {
             if (!"true".equals(closed)) { if (web.canGoBack()) web.goBack(); else finish(); }
         });
     }
