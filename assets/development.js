@@ -36,14 +36,25 @@
   panel.hidden=!on;$('forecast-quick').setAttribute('aria-expanded',String(on));launcher.setAttribute('aria-expanded',String(on));nav.classList.toggle('active',state.modelRain);nav.setAttribute('aria-pressed',String(state.modelRain));
   if(on){$('forecast-layer-panel').hidden=true;setWeatherTool('weather-map',false);window.workspaceUI?.closeForWeatherTool();window.workspaceUI?.setOpen('development',false);}
  }
- launcher.addEventListener('click',()=>open(panel.hidden));
+ const mobile=()=>matchMedia('(max-width:700px)').matches;
+ function dismissModelMenus(){if(!mobile())return;open(false);quickOpen(false);window.workspaceUI?.setOpen('display',false);window.workspaceUI?.setOpen('sidebar',false);}
+ launcher.addEventListener('click',()=>{
+  if(!mobile()){open(panel.hidden);return;}
+  if(state.modelRain){selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);}
+  else{selectModel('ecmwf_ifs');open(true);window.workspaceUI?.setOpen('sidebar',false);}
+ });
  nav.addEventListener('click',async()=>{if(state.modelRain){await selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);nav.classList.remove('active');nav.setAttribute('aria-pressed','false');return;}applyCategoryLayers('none');setActiveCategory(null);await selectModel('ecmwf_ifs');if(!state.modelRain)return;if(!matchMedia('(max-width:700px)').matches)open(true);else{open(false);window.workspaceUI?.setOpen('sidebar',false);}nav.classList.add('active');nav.setAttribute('aria-pressed','true');});
  const quick=$('forecast-layer-panel');
  function quickOpen(on){quick.hidden=!on;$('forecast-quick').setAttribute('aria-expanded',String(on));if(on){open(false);window.workspaceUI?.closeForWeatherTool();$('forecast-quick').setAttribute('aria-expanded','true');}}
  $('forecast-quick').addEventListener('click',()=>quickOpen(quick.hidden));$('forecast-layer-close').addEventListener('click',()=>quickOpen(false));
  document.addEventListener('keydown',e=>{if(e.key==='Escape')quickOpen(false);});
+ document.addEventListener('pointerdown',e=>{
+  if(e.target.closest('dialog'))return;
+  if(!panel.hidden&&!e.target.closest('#development-dialog,#development-open,#development-nav'))open(false);
+  if(!quick.hidden&&!e.target.closest('#forecast-layer-panel,#forecast-quick'))quickOpen(false);
+ });
  $('forecast-layer-list').innerHTML=[...$('development-model').options].map(o=>`<label class="forecast-option"><span>${esc(o.textContent)}</span><input type="checkbox" data-model-switch="${o.value}" aria-label="${esc(o.textContent)}"></label>`).join('');
- async function selectModel(id,on=true){source='model';state.modelRain=on;if(on)await changeModel(id);else{stop();++modelRequest;render();}}
+ async function selectModel(id,on=true){source='model';state.modelRain=on;if(on){dismissModelMenus();await changeModel(id);}else{stop();++modelRequest;popup?.remove();render();dismissModelMenus();}}
  document.querySelectorAll('[data-model-preset],[data-model-switch]').forEach(button=>button.addEventListener(button.type==='checkbox'?'change':'click',()=>{const id=button.dataset.modelPreset||button.dataset.modelSwitch;selectModel(id,!(state.modelRain&&$('development-model').value===id));}));
  document.querySelectorAll('[data-forecast-layer]').forEach(button=>button.addEventListener(button.type==='checkbox'?'change':'click',()=>activate(button.dataset.forecastLayer,!state[button.dataset.forecastLayer])));
  window.forecastLayers={activate,active:key=>key==='model'?state.modelRain:state[key],model:()=>$('development-model').value,
@@ -105,7 +116,7 @@
   if(state.modelRain){try{await loadModel();}catch(e){status(e.message);}}
  }
  $('development-model').addEventListener('change',e=>selectModel(e.target.value));
- $('development-time-model').addEventListener('change',async e=>{source='model';if(!state.modelRain)state.modelRain=true;await changeModel(e.target.value);});
+ $('development-time-model').addEventListener('change',async e=>{source='model';if(!state.modelRain)state.modelRain=true;dismissModelMenus();await changeModel(e.target.value);});
  async function goCurrent(){
   stop();source='model';
   if(!state.modelRain)state.modelRain=true;
@@ -170,7 +181,7 @@
   provinceKey=data.clpp.generated;
   map.gl.setLayoutProperty(id,'visibility','visible');
  }
- function showPopup(point,html){popup?.remove();popup=new maplibregl.Popup({className:'development-popup',maxWidth:'330px',closeOnClick:false}).setLngLat(point).setHTML(html).addTo(map.gl);return popup;}
+ function showPopup(point,html){popup?.remove();popup=new maplibregl.Popup({className:'development-popup',maxWidth:'285px',closeOnClick:true}).setLngLat(point).setHTML(html).addTo(map.gl);return popup;}
  function showProvince(feature,point){
   const p=feature.properties,stats=data.clpp.zones.accum;
   showPopup(point,`<h3>${esc(p.name_th)}</h3><p>ฝนสะสมคาดการณ์ล่วงหน้า ${number(stats.window_min,0)} นาที</p><dl><dt>ค่าเฉลี่ยทั้งจังหวัด</dt><dd>${number(p.mean_mm)} มม.</dd><dt>ค่าสูงสุดในจังหวัด</dt><dd>${number(p.max_mm)} มม.</dd></dl><p>ฐานเวลา ${esc(date(data.clpp.generated))}<br>ล่าช้า ${lag(data.clpp.generated)} นาที</p><small>CLPP / RadarGIS · ${number(stats.frames_used,0)} เฟรม<br>ค่าสูงสุดเป็นตำแหน่งหนึ่งในจังหวัด ไม่ใช่ฝนทั่วทั้งจังหวัด</small>`);
@@ -209,7 +220,7 @@
   }
   if((state.modelRain)&&data.model&&developmentRegionMask(data.model.grid,point.lng,point.lat)>0){
    const f=data.model.frames[indices.model],g=data.model.grid,r=developmentSample(f.rain,g,point.lng,point.lat);
-   showPopup(point,`<h3>${esc(data.model.name)}</h3><p>${esc(date(f.start))}–${esc(date(f.time))}</p><dl><dt>อัตราฝนเฉลี่ย 3 ชม.</dt><dd>${number(r)} mm/h</dd><dt>ฝนสะสมในช่วง 3 ชม.</dt><dd>${number(r==null?null:r*3)} มม.</dd></dl><small>ค่าประมาณจากกริดแสดงผลภูมิภาคและทะเล ${data.model.grid.step}° ไม่ใช่ค่าตรวจวัดที่ตำแหน่งนี้<br>${esc(data.model.name)} / Open-Meteo · ${esc(data.model.license)}</small>`);return;
+   showPopup(point,`<h3>${esc(data.model.name)}</h3><p>${esc(date(f.start))}–${esc(date(f.time))}</p><dl><dt>อัตราฝนเฉลี่ย 3 ชม.</dt><dd>${number(r)} mm/h</dd><dt>ฝนสะสมในช่วง 3 ชม.</dt><dd>${number(r==null?null:r*3)} มม.</dd></dl>`);return;
   }
   originalClick?.(point);
  };

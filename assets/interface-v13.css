@@ -1,0 +1,71 @@
+/* One aligned map toolbar, compact phone controls and source-specific artwork. */
+.workspace #basemap-toggle{display:none!important}
+.workspace .right-launchers,.workspace .map-zoom-controls{box-sizing:border-box;width:46px;right:18px;padding:0;border-radius:13px;overflow:hidden}
+.workspace .right-launchers .map-button,.workspace .right-launchers #advance-forecast-toggle,.workspace .map-zoom-controls button,.workspace .map-zoom-controls #locate-quick{box-sizing:border-box;width:44px;min-width:0;height:42px;min-height:42px;padding:9px;border-radius:0;background:transparent}
+.workspace .map-zoom-controls{bottom:30px}
+.workspace .right-launchers svg,.workspace .map-zoom-controls #locate-quick svg{width:22px;height:22px}
+.workspace .right-panel{right:76px}
+.workspace #maptools-panel{max-height:calc(100% - 60px)}
+.integrated-basemap{margin-top:17px;padding-top:13px;border-top:1px solid var(--line)}
+.integrated-basemap h3{font-size:16px;margin:0 0 10px}
+.integrated-basemap .basemap-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.integrated-basemap .basemap-option{min-height:92px;font-size:12px}
+.integrated-basemap .basemap-preview{height:44px}
+.integrated-basemap .elevation-legend{margin-bottom:6px}
+.workspace #radar-player,.workspace #development-timeline,.workspace #radar-player.is-minimized,.workspace #development-timeline.is-minimized{bottom:calc(var(--playback-bottom,66px) + 4px)}
+.workspace #bottom-map-actions{bottom:var(--playback-bottom,66px)}
+.development-popup .maplibregl-popup-content{padding:13px 15px;max-height:38dvh}
+.development-popup h3{font-size:15px;margin-bottom:5px}
+.development-popup p{font-size:12px;line-height:1.5;margin:5px 0}
+.development-popup dl{font-size:12px;gap:7px;margin:9px 0 0}
+.topbar .brand-logo{object-fit:contain;object-position:left center;margin-left:0;width:210px;height:62px}
+.topbar .brand-tagline{display:none}
+#sources-open svg{width:21px;height:21px}
+
+/* Each thumbnail is a distinct schematic, not a claim of live imagery. */
+[data-layer-card=weather-map] .layer-art{background:radial-gradient(ellipse at 26% 70%,#e9da7e 0 9%,transparent 10%),repeating-radial-gradient(ellipse at 68% 24%,#7fc7b3 0 2px,#397e8a 3px 7px)}
+[data-layer-card=ecmwf_ifs] .layer-art{background:radial-gradient(ellipse at 30% 65%,#f2e07b 0 10%,#70ce8a 12% 28%,transparent 29%),repeating-linear-gradient(0deg,#1d507b 0 7px,#2c6984 8px 9px)}
+[data-layer-card=google_weathernext3_ensemble_mean] .layer-art{background:radial-gradient(circle at 75% 20%,#eddf76 0 7%,transparent 8%),repeating-conic-gradient(from 45deg at 35% 60%,#29a6a1 0deg 25deg,#4065a4 26deg 50deg)}
+[data-layer-card=gfs_global] .layer-art{background:repeating-linear-gradient(90deg,transparent 0 14px,#b9dbdf55 15px 16px),repeating-linear-gradient(0deg,#34769d 0 8px,#68ad9280 9px 10px)}
+[data-layer-card=nowcast] .layer-art{background:radial-gradient(ellipse at 70% 50%,#ffe784 0 9%,#73cd8b 10% 24%,transparent 25%),repeating-linear-gradient(135deg,#315e94 0 11px,#4f93ab 12px 24px)}
+[data-layer-card=radargis] .layer-art{background:conic-gradient(from 250deg at 50% 70%,transparent,#81c98988,transparent 120deg),repeating-radial-gradient(circle at 50% 70%,#386a86 0 8px,#73b9b1 9px 10px)}
+[data-layer-card=rod] .layer-art{background:radial-gradient(ellipse at 18% 60%,#f4dd6c 0 8%,#70b656 10% 22%,transparent 23%),radial-gradient(ellipse at 83% 30%,#e6a45b 0 7%,#75c584 8% 20%,transparent 21%),#30577a}
+[data-layer-card=clppRadar] .layer-art{background:repeating-linear-gradient(90deg,transparent 0 20px,#d7efec4d 21px 22px),radial-gradient(ellipse at 56% 35%,#f5c35d 0 12%,#72d85b 14% 27%,transparent 29%),#326d74}
+[data-layer-card=radar] .layer-art{background:radial-gradient(ellipse at 65% 32%,#f5db64 0 9%,#5bcb6f 11% 20%,transparent 21%),linear-gradient(105deg,#377896 0 46%,#93b18d 47% 52%,#4c8d98 53%)}
+[data-layer-card=cameras] .layer-art{background:linear-gradient(145deg,transparent 0 42%,#c6d8b3 43% 47%,transparent 48%),linear-gradient(25deg,#2d606a 0 45%,#9ab190 46% 65%,#689ca9 66%)}
+[data-layer-card=water] .layer-art{background:linear-gradient(115deg,#4e9277 0 32%,#b9dbd1 33% 37%,#398fb5 38% 56%,#d4e3b4 57% 62%,#67906c 63%)}
+[data-layer-card=weather] .layer-art{background:radial-gradient(circle at 76% 28%,#ffe7a3 0 15%,transparent 16%),linear-gradient(0deg,#76a388 0 22%,#78b1c2 23% 100%)}
+[data-layer-card=provinces] .layer-art{background:conic-gradient(from 10deg,#74bda0 0deg 80deg,#d1bd70 81deg 145deg,#6ca58e 146deg 220deg,#5b8da5 221deg 290deg,#9db273 291deg)}
+[data-layer-card=thaiwater] .layer-art{background:repeating-linear-gradient(140deg,#629e9d 0 14px,#9bcdd2 15px 18px,#4880a2 19px 26px)}
+[data-layer-card=rain] .layer-art{background:radial-gradient(ellipse at 50% 15%,#cedce5 0 25%,transparent 26%),repeating-linear-gradient(115deg,#3b709f 0 11px,#7bb8d5 12px 13px,#3b709f 14px 20px)}
+[data-layer-card=dam] .layer-art{background:linear-gradient(22deg,#438fa9 0 40%,#ded1a3 41% 50%,#919d73 51% 67%,#5f967b 68%)}
+[data-layer-card=windycams] .layer-art{background:linear-gradient(90deg,#bda5c240 0 32%,#d9cdb750 33% 66%,#71c4c750 67%),linear-gradient(20deg,#4d577d,#947293)}
+
+@media(max-width:700px){
+ .topbar .brand-logo{width:165px;height:49px;margin:0}
+ .workspace .right-launchers,.workspace .map-zoom-controls{width:42px;right:12px;background:color-mix(in srgb,var(--surface) 62%,transparent);backdrop-filter:blur(10px)}
+ .workspace .right-launchers .map-button,.workspace .right-launchers #advance-forecast-toggle,.workspace .map-zoom-controls button,.workspace .map-zoom-controls #locate-quick{width:40px;height:38px;min-height:38px;padding:9px;background:transparent}
+ .workspace .right-launchers svg,.workspace .map-zoom-controls #locate-quick svg{width:20px;height:20px}
+ .workspace .map-zoom-controls,.workspace[data-development-mode=true] .map-zoom-controls{bottom:30px}
+ .workspace .right-panel{right:64px}
+ .workspace #maptools-panel{width:calc(100vw - 76px);max-height:calc(100% - 40px)}
+ .sidebar .layer-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .sidebar .layer-card{border-radius:8px;min-width:0}
+ .sidebar .layer-card-toggle{padding:3px;min-width:0}
+ .sidebar .layer-art{height:30px;border-radius:5px}
+ .sidebar .layer-art>svg{width:19px;height:19px}
+ .sidebar .layer-check{width:14px;height:14px;right:2px;top:2px;font-size:11px}
+ .sidebar .layer-card-toggle strong{font-size:11px;line-height:1.4;min-height:32px;margin:5px 2px 2px;overflow-wrap:anywhere}
+ .sidebar .layer-card-toggle small{font-size:10px;line-height:1.4;min-height:28px;margin:0 2px 4px;overflow-wrap:anywhere}
+ .sidebar .layer-detail{font-size:10px;padding:5px;min-height:29px}
+ .workspace #bottom-map-actions{max-width:calc(100% - 104px);gap:5px}
+ .workspace .playback-chip{width:120px;padding:3px 5px;border-radius:11px;background:color-mix(in srgb,var(--surface) 61%,transparent);backdrop-filter:blur(10px)}
+ .playback-chip-buttons{margin-top:1px;gap:6px}.playback-chip-buttons button{width:23px;height:22px;font-size:17px}.playback-chip-buttons [data-clock-play]{font-size:11px}
+ .workspace #radar-player,.workspace #development-timeline{background:color-mix(in srgb,var(--surface) 73%,transparent)}
+ .workspace #radar-player.is-minimized,.workspace #development-timeline.is-minimized{padding:6px 8px;width:calc(100% - 105px)}
+ .workspace .is-minimized .play-button,.workspace .is-minimized .development-playback>button{width:29px;height:29px}
+ .workspace .is-minimized .popup-minimize{width:27px;min-width:27px;height:27px}
+ .integrated-basemap .basemap-option{font-size:11px;padding:5px;min-height:80px}
+ .development-popup .maplibregl-popup-content{max-width:250px;padding:11px 13px}
+}
+@media(max-width:360px){.topbar .brand-logo{width:130px;height:44px}}

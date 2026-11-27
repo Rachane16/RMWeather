@@ -55,3 +55,17 @@ test('rain images use MapLibre image properties and clockwise longitude/latitude
   assert.deepEqual(Object.keys(source).sort(),['coordinates','type','url']);
   assert.equal(source.type,'image');
 });
+
+test('station taps search a touch-sized area and open only the closest enabled station',()=>{
+ const opened=[],fallback=[];let area,requested;
+ const feature=(id,index,x,y)=>({layer:{id:'rm-'+id+'-point'},properties:{index},geometry:{coordinates:[x,y]}});
+ const gl={getLayer:()=>true,project:a=>({x:a[0],y:a[1]}),queryRenderedFeatures:(box,options)=>{area=box;requested=options.layers;return [feature('rain',4,108,100),feature('water',7,102,101)];}};
+ const map=Object.assign(Object.create(WeatherMap.prototype),{gl,groups:new Map([
+  ['rain',{on:true,onClick:i=>opened.push(['rain',i])}],['water',{on:true,onClick:i=>opened.push(['water',i])}],['weather',{on:false,onClick:()=>assert.fail('disabled station')}]
+ ]),onMapClick:p=>fallback.push(p)});
+ map.handleMapClick({point:{x:100,y:100},lngLat:{lng:100,lat:7}});
+ assert.deepEqual(area,[[88,88],[112,112]]);assert.equal(requested.includes('rm-weather-point'),false);
+ assert.deepEqual(opened,[['water',7]]);assert.equal(fallback.length,0);
+ gl.queryRenderedFeatures=()=>[];map.handleMapClick({point:{x:100,y:100},lngLat:{lng:100,lat:7}});
+ assert.equal(fallback.length,1);
+});

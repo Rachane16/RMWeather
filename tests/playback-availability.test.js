@@ -1,7 +1,8 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {playbackAvailability:visible}=require('../assets/workspace-ui.js');
-test('default radar stays on the map without a clock until explicitly selected',()=>{
- assert.deepEqual(visible({radarEnabled:true}),{radar:false,model:false});
+test('default RainViewer includes a clock; categories can explicitly hide it',()=>{
+ assert.deepEqual(visible({radarEnabled:true}),{radar:true,model:false});
+ assert.equal(visible({radarSelected:false,radarEnabled:true}).radar,false);
  assert.equal(visible({radarSelected:true,radarEnabled:true}).radar,true);
  assert.equal(visible({radarSelected:true,radarEnabled:false}).radar,false);
  assert.equal(visible({model:true}).model,true);assert.equal(visible({clpp:true}).radar,true);

@@ -144,7 +144,7 @@ public final class MainActivity extends ComponentActivity {
         offline = new LinearLayout(this);
         offline.setOrientation(LinearLayout.VERTICAL); offline.setGravity(Gravity.CENTER);
         offline.setPadding(dp(28), dp(24), dp(28), dp(24)); offline.setBackgroundColor(Color.WHITE);
-        ImageView logo = new ImageView(this); logo.setImageResource(R.drawable.rmweather_logo); logo.setContentDescription("RMWeather");
+        ImageView logo = new ImageView(this); logo.setImageResource(R.drawable.rmweather_logo_2026); logo.setContentDescription("RMWeather");
         offline.addView(logo, new LinearLayout.LayoutParams(dp(240), dp(90)));
         TextView title = new TextView(this); title.setText(R.string.offline_title); title.setTextSize(21); title.setTextColor(Color.rgb(23,59,49)); title.setGravity(Gravity.CENTER);
         offline.addView(title, new LinearLayout.LayoutParams(-1, -2));

@@ -31,13 +31,25 @@ class WeatherMap {
       if(source==='terrain-dem')document.getElementById('terrain-status').textContent='DEM ยังโหลดไม่ได้ · ลองมุมมอง 2D';
       if(source==='osm'&&this.base==='natural')document.getElementById('terrain-status').textContent='ข้อมูลพื้นแผนที่บางส่วนยังไม่พร้อม · สลับพื้นแผนที่ได้';
     });
-    this.gl.on('click',event=>{
-      const ids=[...this.groups.keys()].flatMap(id=>[`rm-${id}-cluster`,`rm-${id}-point`]).filter(id=>this.gl.getLayer(id));
-      if(ids.length&&this.gl.queryRenderedFeatures(event.point,{layers:ids}).length)return;
-      this.onMapClick?.(event.lngLat);
-    });
+    this.gl.on('click',event=>this.handleMapClick(event));
     this.gl.on('move',()=>this.wind?.clear());
     this.gl.on('movestart',()=>this.tooltip?.remove());
+  }
+  handleMapClick(event){
+    const layers=[...this.groups.keys()].filter(id=>this.groups.get(id).on).flatMap(id=>[`rm-${id}-point`,`rm-${id}-cluster`]).filter(id=>this.gl.getLayer(id));
+    const p=event.point,r=12;
+    const hits=layers.length?this.gl.queryRenderedFeatures([[p.x-r,p.y-r],[p.x+r,p.y+r]],{layers}):[];
+    const points=hits.filter(f=>f.layer.id.endsWith('-point')).sort((a,b)=>{
+      const distance=f=>{const q=this.gl.project(f.geometry.coordinates);return Math.hypot(q.x-p.x,q.y-p.y);};return distance(a)-distance(b);
+    });
+    const feature=points[0]||hits[0];
+    if(feature){
+      const source=feature.layer.id.replace(/-(point|cluster)$/,'');
+      if(feature.layer.id.endsWith('-point'))this.groups.get(source.slice(3))?.onClick(Number(feature.properties.index));
+      else this.gl.getSource(source).getClusterExpansionZoom(feature.properties.cluster_id).then(zoom=>this.gl.easeTo({center:feature.geometry.coordinates,zoom})).catch(()=>{});
+      return;
+    }
+    this.onMapClick?.(event.lngLat);
   }
   flyTo(point,zoom,options={}) { this.gl.flyTo({center:[point[1],point[0]],zoom,duration:options.duration?options.duration*1000:900}); }
   getCenter() { return this.gl.getCenter(); }
@@ -112,19 +124,12 @@ class WeatherMap {
       this.gl.addLayer({id:`${sourceId}-count`,type:'symbol',source:sourceId,filter:['has','point_count'],layout:{'icon-image':['concat','rm-camera-cluster-',['to-string',['get','point_count']]],'icon-allow-overlap':true,'icon-ignore-placement':true}});
       if(['thaiwater','rain','dam','devstations'].includes(id)){
         const colors={thaiwater:'#247cce',rain:'#18a787',dam:'#8b62b0',devstations:'#df861c'};
-        this.gl.addLayer({id:`${sourceId}-point`,type:'circle',source:sourceId,paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,id==='thaiwater'?4:2.5,12,id==='dam'?8:id==='thaiwater'?7:3.5],'circle-color':colors[id],'circle-opacity':['case',['get','old'],.45,.9],'circle-stroke-color':'#ffffff','circle-stroke-width':id==='dam'?2.5:1.2}});
-      }else this.gl.addLayer({id:`${sourceId}-point`,type:'symbol',source:sourceId,filter:['!', ['has','point_count']],layout:{'icon-image':['case',['get','old'],`rm-${id}-old`,`rm-${id}-new`],'icon-anchor':'bottom','icon-size':['interpolate',['linear'],['zoom'],5,.72,12,.88,16,1],'icon-allow-overlap':true,'icon-ignore-placement':true}});
+        this.gl.addLayer({id:`${sourceId}-point`,type:'circle',source:sourceId,paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,id==='dam'?6:5,12,id==='dam'?9:7],'circle-color':colors[id],'circle-opacity':['case',['get','old'],.45,.9],'circle-stroke-color':'#ffffff','circle-stroke-width':id==='dam'?2.5:1.2}});
+      }else this.gl.addLayer({id:`${sourceId}-point`,type:'symbol',source:sourceId,filter:['!', ['has','point_count']],layout:{'icon-image':['case',['get','old'],`rm-${id}-old`,`rm-${id}-new`],'icon-anchor':'bottom','icon-size':['interpolate',['linear'],['zoom'],5,.83,12,1,16,1.1],'icon-allow-overlap':true,'icon-ignore-placement':true}});
       // Layer listeners survive style changes; register each pair just once.
       if(!this.boundGroups)this.boundGroups=new Set();
       if(!this.boundGroups.has(id)) {
         this.boundGroups.add(id);
-        this.gl.on('click',`${sourceId}-point`,event=>{
-          const feature=event.features?.[0];if(feature)this.groups.get(id).onClick(feature.properties.index);
-        });
-        this.gl.on('click',`${sourceId}-cluster`,async event=>{
-          const feature=event.features?.[0];if(!feature)return;
-          try {const zoom=await this.gl.getSource(sourceId).getClusterExpansionZoom(feature.properties.cluster_id);this.gl.easeTo({center:feature.geometry.coordinates,zoom});}catch{}
-        });
         [`${sourceId}-point`,`${sourceId}-cluster`].forEach(layer=>{
           this.gl.on('mouseenter',layer,event=>{
             this.gl.getCanvas().style.cursor='pointer';
