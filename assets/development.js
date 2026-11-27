@@ -46,8 +46,8 @@
  async function selectModel(id,on=true){source='model';state.modelRain=on;if(on)await changeModel(id);else render();}
  document.querySelectorAll('[data-model-preset],[data-model-switch]').forEach(button=>button.addEventListener(button.type==='checkbox'?'change':'click',()=>{const id=button.dataset.modelPreset||button.dataset.modelSwitch;selectModel(id,!(state.modelRain&&$('development-model').value===id));}));
  document.querySelectorAll('[data-forecast-layer]').forEach(button=>button.addEventListener(button.type==='checkbox'?'change':'click',()=>activate(button.dataset.forecastLayer,!state[button.dataset.forecastLayer])));
- window.forecastLayers={active:key=>key==='model'?state.modelRain:state[key],model:()=>$('development-model').value};
- document.querySelectorAll('#layers-toggle,#display-toggle,#maptools-toggle').forEach(b=>b.addEventListener('click',()=>quickOpen(false)));
+ window.forecastLayers={activate,active:key=>key==='model'?state.modelRain:state[key],model:()=>$('development-model').value};
+ document.querySelectorAll('#layers-toggle,#display-toggle,#maptools-toggle,#basemap-toggle,#advance-forecast-toggle,#development-nav,#development-open').forEach(b=>b.addEventListener('click',()=>quickOpen(false)));
  $('reset-layers').addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]=false);render();});$('development-close').addEventListener('click',()=>open(false));
  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();open(false);launcher.focus();}});
  async function resource(file){
@@ -146,7 +146,7 @@
    clppLoading=true;
    clppImage(radar).then(url=>{if(pendingImage===imageRequest&&state.clppRadar)map.setRain({image_url:url,bounds:radar.bounds},'development-clpp');}).catch(()=>{if(pendingImage===imageRequest)status('ภาพเรดาร์ไม่พร้อม กรุณาลองใหม่');}).finally(()=>{if(pendingImage===imageRequest)clppLoading=false;});
   }else{clppLoading=false;map.setRain(null,'development-clpp');}
-  renderProvinces();renderClock();status();syncForecastCards();window.syncLayerMenu?.();
+  renderProvinces();renderClock();status();syncForecastCards();window.syncLayerMenu?.();window.syncTimelineUI?.();
  }
  function syncForecastCards(){
   document.querySelectorAll('[data-model-preset],[data-model-switch],[data-forecast-layer]').forEach(b=>{const id=b.dataset.modelPreset||b.dataset.modelSwitch,key=b.dataset.forecastLayer,on=id?state.modelRain&&$('development-model').value===id:Boolean(state[key]);if(b.type==='checkbox')b.checked=on;else b.setAttribute('aria-pressed',String(on));b.closest('.layer-card')?.classList.toggle('is-active',on);});
@@ -173,6 +173,7 @@
  }
  function renderClock(){
   const modelOn=state.modelRain,clppOn=state.clppRadar;
+  $('development-clock-title').textContent=source==='clpp'?'ภาพและเวลา · CLPP':'แบบจำลองพยากรณ์';
   $('development-time-source').value=source;$('development-time-model').closest('label').hidden=source!=='model';
   const active=source==='model'?modelOn:clppOn,frames=active?data[source]?.frames||[]:[],index=indices[source],f=frames[index];
   $('development-slider').max=Math.max(0,frames.length-1);$('development-slider').value=index;
@@ -195,6 +196,7 @@
   timer=setInterval(()=>{const frames=data[source]?.frames||[];if(document.hidden||!frames.length)return;if(source==='clpp'&&state.clppRadar&&(clppLoading||!map.isRainReady('development-clpp')))return;indices[source]=(indices[source]+1)%frames.length;render();},1100);
  });
  window.addEventListener('development-clock-open',()=>{if(window.workspaceUI?.isOpen('development')){open(false);quickOpen(false);selectModel('ecmwf_ifs');}});
+ window.addEventListener('clpp-clock-open',()=>{open(false);quickOpen(false);source='clpp';activate('clppRadar',true);});
  const originalClick=map.onMapClick;
  map.onMapClick=point=>{
   if(state.provinces&&map.gl.getLayer('rm-development-provinces')){

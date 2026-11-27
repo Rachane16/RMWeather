@@ -5,7 +5,14 @@ mkdir -p android-smoke
 # Disable the emulator's opportunistic DNS-over-TLS, which runner networks can block.
 adb shell settings put global private_dns_mode off
 adb shell settings delete global private_dns_specifier
+if [ "${TEST_RELEASE_UPGRADE:-false}" = true ]; then
+  previous="$(mktemp --suffix=.apk)"
+  curl --fail --location --retry 2 --max-time 90 'https://github.com/Rachane16/RMWeather/releases/latest/download/RMWeather.apk' -o "$previous"
+  adb install "$previous"
+  rm -f "$previous"
+fi
 adb install -r "$apk"
+adb shell dumpsys package io.github.rachane16.rmweather | grep -E 'versionCode=|versionName=' > android-smoke/installed-version.txt
 adb shell pm grant io.github.rachane16.rmweather android.permission.ACCESS_COARSE_LOCATION
 adb shell pm grant io.github.rachane16.rmweather android.permission.ACCESS_FINE_LOCATION
 adb emu geo fix 100.5017 7.0068

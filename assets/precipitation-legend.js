@@ -15,7 +15,7 @@ function precipitationKey(kind,product,forecast){
 if(typeof window!=='undefined'){
  let forecast={};
  window.renderPrecipitationLegend=next=>{
-  if(next)forecast=next;
+  if(next)forecast={...forecast,...next};
   const active=typeof rainVisibility!=='undefined'&&rainVisibility[radarKind],kind=active?radarKind:null;
   const key=precipitationKey(kind,kind==='radargis'?currentRadarGISProduct():null,forecast),root=$('development-map-legend');
   root.hidden=!key;if(!key)return;

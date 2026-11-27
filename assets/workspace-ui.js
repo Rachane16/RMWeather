@@ -70,7 +70,7 @@ function initWorkspaceUI(){
     const forecast=radarKind==='radargis'&&currentRadarGISProduct()?.forecast;
     const latest=state.open.timeline?radarFrames[Number($('radar-slider').value)]:frames[defaultRadarIndex(radarKind,frames)];
     const source={rainviewer:'RainViewer',radar:'TMD',nowcast:'SWIRLS',rod:'RODDSS',radargis:'RadarGIS'}[radarKind];
-    $('timeline-summary').textContent=enabled.radar?`${source}${forecast?' พยากรณ์':''} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
+    $('timeline-summary').textContent=window.forecastLayers?.active('clppRadar')?'CLPP · เรดาร์ / Nowcast':enabled.radar?`${source}${forecast?' พยากรณ์':''} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
   }
   function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(defaultRadarIndex(radarKind,radarFrames));}
   function setOpen(name,on){
@@ -113,7 +113,7 @@ function initWorkspaceUI(){
     button.addEventListener('click',()=>minimize(key,!state.minimized[key]));minimizeButtons[key]=button;
     header.insertBefore(actions,close);actions.append(button,close);
   });
-  $('timeline-toggle').addEventListener('click',()=>setOpen('timeline',!state.open.timeline));
+  $('timeline-toggle').addEventListener('click',()=>{if(window.forecastLayers?.active('clppRadar')){setOpen('development',!state.open.development);if(state.open.development)window.dispatchEvent(new Event('clpp-clock-open'));return;}setOpen('timeline',!state.open.timeline);});
   $('windy-controls-restore').addEventListener('click',()=>minimize('windy',false));
   $('advance-forecast-toggle').addEventListener('click',()=>setOpen('advance',!state.open.advance));
   $('advance-forecast-close').addEventListener('click',()=>setOpen('advance',false));

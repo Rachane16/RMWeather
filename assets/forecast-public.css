@@ -115,3 +115,11 @@
  .workspace .development-map-legend{width:calc(100% - 118px)}
  .workspace .development-launcher{left:150px}
 }
+
+.development-dialog #development-cycle-times{color:#c4dcd2;font-size:12px}
+@media(max-width:700px){
+ .workspace .bottom-map-actions .timeline-launcher>span:not(.timeline-chevron){min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+ .workspace #radar-player.is-minimized,.workspace .development-timeline.is-minimized{width:calc(100% - 116px)}
+ .workspace .is-minimized .playback-mini-time{font-size:9px;max-width:65px}
+ .workspace .is-minimized .radar-controls,.workspace .is-minimized .development-playback{gap:6px}
+}

@@ -160,7 +160,7 @@ function stopRadar(){clearInterval(radarTimer);radarTimer=null;$('radar-play').t
 function defaultRadarIndex(kind,frames){return kind==='radargis'?radarGISDefaultIndex(frames):Math.max(0,frames.length-1);}
 function setRainEnabled(kind,on){
  rainVisibility[kind]=on;
- if(on){radarKind=kind;loadRadar(kind);}else{
+ if(on){radarKind=kind;window.renderPrecipitationLegend?.({source:'radar'});loadRadar(kind);}else{
   rainRequests[kind]=(rainRequests[kind]||0)+1;map.setRain(null,kind);
   if(radarKind===kind){stopRadar();radarKind=Object.keys(rainVisibility).find(k=>rainVisibility[k])||kind;if(rainVisibility[radarKind])loadRadar(radarKind);}
  }
@@ -187,7 +187,7 @@ function showRadarFrame(index){
  $('radar-slider').style.setProperty('--progress',`${radarFrames.length>1?index/(radarFrames.length-1)*100:0}%`);
  if($('radargis-origin'))$('radargis-origin').hidden=radarKind!=='radargis';document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';window.syncTimelineUI?.();window.renderPrecipitationLegend?.();
 }
-$('radar-timeline-source').addEventListener('change',event=>{radarKind=event.target.value;setRainEnabled(radarKind,true);});
+$('radar-timeline-source').addEventListener('change',event=>{if(event.target.value==='clpp'){window.workspaceUI?.setOpen('development',true);window.dispatchEvent(new Event('clpp-clock-open'));return;}radarKind=event.target.value;setRainEnabled(radarKind,true);});
 $('radar-slider').addEventListener('input',e=>{stopRadar();showRadarFrame(Number(e.target.value));});
 $('radar-play').addEventListener('click',()=>{if(radarTimer){stopRadar();return;}if(!radarFrames.length)return;$('radar-play').textContent='Ⅱ';$('radar-play').setAttribute('aria-label','หยุดภาพเรดาร์');radarTimer=setInterval(()=>{if(map.isRainReady(radarKind))showRadarFrame((Number($('radar-slider').value)+1)%radarFrames.length);},850);});
 const nationalRequests={},nationalLoading={};

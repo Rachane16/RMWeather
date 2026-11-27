@@ -98,7 +98,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -dns-server 8.8.8.8,1.1.1.1
-          script: bash android/scripts/smoke-test.sh android/distribution/RMWeather.apk
+          script: TEST_RELEASE_UPGRADE=${{ github.event_name != 'pull_request' }} bash android/scripts/smoke-test.sh android/distribution/RMWeather.apk
       - uses: actions/upload-artifact@v4
         if: always()
         with:

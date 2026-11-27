@@ -36,3 +36,5 @@ syncLayerMenu();
 
 // Public forecast sources share the same display switch list as their map cards.
 document.querySelectorAll('[data-forecast-layer]').forEach(b=>{const label=document.createElement('label');label.className='forecast-option';label.innerHTML=`<span>${esc(b.querySelector('strong').textContent)}</span><input type="checkbox" data-forecast-layer="${b.dataset.forecastLayer}">`;const heading=[...$('quick-layer-list').querySelectorAll('h4')].find(h=>h.textContent===b.closest('.layer-group').querySelector('h2').textContent);heading?.after(label);});
+
+document.querySelectorAll('#layer-catalog [data-model-preset]').forEach(b=>{const label=document.createElement('label');label.className='forecast-option';label.innerHTML=`<span>${esc(b.querySelector('strong').textContent)}</span><input type="checkbox" data-model-switch="${b.dataset.modelPreset}">`;const heading=[...$('quick-layer-list').querySelectorAll('h4')].find(h=>h.textContent==='แบบจำลอง');heading?.after(label);});
