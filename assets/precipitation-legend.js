@@ -12,6 +12,7 @@ function precipitationKey(kind,product,forecast){
    return {label:'CLPP / TMD · Radar Composite · dBZ / อัตราฝนเทียบ mm/h',unit:dual?'dBZ':'mm/h',stops:c.levels_rgb.map(v=>`rgb(${v.join(',')})`),ticks:dual?matched:mm,secondary:dual?mm:undefined};
   }
  }
+ if(kind==='nowcast')return {label:'SWIRLS · พยากรณ์ฝนจากเรดาร์ · ระดับสีต้นทาง',unit:'',stops:['#00b900','#00ed00','#a5ff00','#ffff00','#ffc000','#ff6000','#ff0000','#c00060','#ff00ff'],ticks:['ฝนอ่อน','ปานกลาง','ฝนหนัก','หนักมาก']};
  if(kind==='rainviewer')return {label:'RainViewer · Universal Blue · การสะท้อนเรดาร์',unit:'dBZ',stops:['#a8e6f2','#77bdd9','#7696b0','#f8f8a0','#ffbd8b','#ff9fdf'],ticks:['15','25','35','45','55+']};
  if(kind==='radargis'&&!['dbz','dbz-nowcast'].includes(product?.id))return {label:(product?.label||'TMD RADARGIS')+' · โปรดอ่านเกณฑ์สีจากต้นทาง',unit:product?.unit||'',stops:[],ticks:[]};
  if(['radargis','rod','radar'].includes(kind)||forecast?.clppOn)return {label:'Radar Composite · dBZ / อัตราฝนเทียบ mm/h',unit:'dBZ',stops:['#00b900','#00ed00','#a5ff00','#ffff00','#ffc000','#ff6000','#ff0000','#c00060','#ff00ff','#ffb0ff','#f1e4f1'],ticks:['10.4','19','29','39','49','59','66.5'],secondary:['0.21','0.72','3','12.5','52.2','217.9','636 mm/h']};

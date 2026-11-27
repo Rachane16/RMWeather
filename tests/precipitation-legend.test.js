@@ -15,3 +15,10 @@ test('CLPP legend uses the actual upstream palette and rain levels from its mani
  const c=key(null,null,{source:'clpp',clppOn:true,clpp:{levels_rgb:[[0,255,0],[255,0,0]],levels_mm_hr:[.21,636]}});
  assert.deepEqual(c.stops,['rgb(0,255,0)','rgb(255,0,0)']);assert.equal(c.unit,'dBZ');assert.equal(c.ticks[0],10.4);assert.equal(c.secondary.at(-1),'636');
 });
+
+test('SWIRLS has its own visible source-colour legend without an invented numeric conversion',()=>{
+ const swirls=key('nowcast');
+ assert.ok(swirls.label.includes('SWIRLS'));assert.ok(swirls.stops.length>1);
+ assert.ok(swirls.ticks.length>1);assert.equal(swirls.unit,'');
+ assert.notDeepEqual(swirls.stops,key('rainviewer').stops);
+});

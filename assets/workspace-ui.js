@@ -20,15 +20,16 @@ class WorkspacePanels {
   closeAll(){Object.keys(this.open).forEach(key=>this.open[key]=false);}
 }
 
-function playbackAvailability({radarSelected=false,radarEnabled=false,clpp=false,model=false,advance=false}={}){return {radar:!advance&&(clpp||(radarSelected&&radarEnabled)),model:!advance&&model};}
+function playbackAvailability({radarSelected=true,radarEnabled=false,clpp=false,model=false,advance=false}={}){return {radar:!advance&&(clpp||(radarSelected&&radarEnabled)),model:!advance&&model};}
 
 function setWeatherCardVisible(on){window.workspaceUI?.setOpen('weather',on);}
 function setTimelineOpen(on){window.workspaceUI?.setOpen('timeline',on);}
 
 function initWorkspaceUI(){
   document.querySelector('.right-launchers').append($('advance-forecast-toggle'));document.querySelector('.map-zoom-controls').prepend($('locate-quick'));
+  const baseSection=document.createElement('section');baseSection.className='integrated-basemap';baseSection.innerHTML='<h3>แผนที่ฐาน</h3>';baseSection.append($('basemap-body'));$('maptools-body').append(baseSection);$('basemap-toggle').hidden=true;
   const media=matchMedia('(max-width:700px)'),state=new WorkspacePanels(media.matches);
-  let radarSelected=false;
+  let radarSelected=true;
   const dock=$('bottom-map-actions');
   for(const [kind,id] of [['radar','timeline-toggle'],['model','development-timeline-toggle']]){
    const chip=document.createElement('section');chip.id=kind+'-clock-chip';chip.className='playback-chip';chip.hidden=true;const toggle=$(id);toggle.className='playback-chip-heading';dock.append(chip);chip.append(toggle);
@@ -134,6 +135,7 @@ function initWorkspaceUI(){
   ];
   headers.forEach(([key,selector,closeID,body])=>{
     const header=document.querySelector(selector),close=closeID?$(closeID):header.querySelector('[data-close-tool]');
+    if(key==='maptools'||key==='basemap')return;
     const actions=document.createElement('div');actions.className='popup-header-actions';
     const button=document.createElement('button');button.type='button';button.className='icon-button popup-minimize';button.setAttribute('aria-controls',body);
     button.addEventListener('click',()=>minimize(key,!state.minimized[key]));minimizeButtons[key]=button;
@@ -156,14 +158,23 @@ function initWorkspaceUI(){
   $('locate-quick').addEventListener('click',requestCurrentLocation);
   $('map-zoom-in').addEventListener('click',()=>map.gl.zoomIn());
   $('map-zoom-out').addEventListener('click',()=>map.gl.zoomOut());
-  $('reset-layers').addEventListener('click',()=>{const catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;render();});
+  $('reset-layers').addEventListener('click',()=>{radarSelected=true;const catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;render();});
   media.addEventListener('change',event=>{const previous=state.open.timeline;state.setMobile(event.matches);if(previous&&!state.open.timeline)restoreLatest();render();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen('timeline',false);setOpen('weather',false);setOpen('advance',false);setOpen('development',false);}});
-  document.addEventListener('pointerdown',event=>{if(state.open.timeline&&!event.target.closest('#radar-player,#timeline-toggle'))setOpen('timeline',false);});
+  document.addEventListener('pointerdown',event=>{
+    if(event.target.closest('dialog'))return;
+    for(const [name,id] of Object.entries(panels)){
+      if(!state.open[name])continue;
+      const launcher=launchers[name];
+      if(!event.target.closest('#'+id+(launcher?',#'+launcher:'')))setOpen(name,false);
+    }
+    if(toolVisibility['weather-map']&&!event.target.closest('#weather-map-panel,[data-tool="weather-map"],[data-tool-toggle="weather-map"]'))setWeatherTool('weather-map',false);
+    if(toolVisibility['seven-day']&&!event.target.closest('#seven-day-panel,[data-tool="seven-day"],[data-tool-toggle="seven-day"]'))setWeatherTool('seven-day',false);
+  });
   document.querySelectorAll('[data-tool="weather-map"],[data-tool-toggle="weather-map"]').forEach(control=>control.addEventListener(control.type==='checkbox'?'change':'click',()=>{
     if(toolVisibility['weather-map'])minimize('windy',state.mobile);
   }));
-  document.querySelectorAll('[data-toggle-layer],[data-quick-layer],[data-layer-detail],.category-nav [data-view]').forEach(b=>b.addEventListener(b.type==='checkbox'?'change':'click',()=>{const key=b.dataset.toggleLayer||b.dataset.quickLayer||b.dataset.layerDetail;if(b.dataset.view)radarSelected=b.dataset.view==='radar';else if(rainSources.includes(key))radarSelected=true;renderDock();}));
+  document.querySelectorAll('[data-toggle-layer],[data-quick-layer],[data-layer-detail],.category-nav [data-view]').forEach(b=>b.addEventListener(b.type==='checkbox'?'change':'click',()=>{const key=b.dataset.toggleLayer||b.dataset.quickLayer||b.dataset.layerDetail;if(b.dataset.view)radarSelected=['radar','overview'].includes(b.dataset.view);else if(rainSources.includes(key))radarSelected=true;renderDock();}));
   document.addEventListener('change',e=>{if(['radar-source','radar-timeline-source'].includes(e.target.id)){radarSelected=true;renderDock();}});
   const observer=new ResizeObserver(()=>{const legend=$('development-map-legend'),h=legend.getClientRects().length?legend.getBoundingClientRect().height:0;document.querySelector('.workspace').style.setProperty('--playback-bottom',`${h+26}px`);});observer.observe($('development-map-legend'));
   render();

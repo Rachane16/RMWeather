@@ -39,8 +39,9 @@ async function setBase(id){
  }catch{if(request===baseRequest&&id!=='osm'){toast('พื้นแผนที่นี้ยังโหลดไม่ได้ กำลังใช้ OpenStreetMap');setBase('osm');}}
 }
 $('basemap-grid').innerHTML=basemaps.map(b=>`<button class="basemap-option" data-base="${b.id}" aria-pressed="false"><span class="basemap-preview base-${b.art}" aria-hidden="true"></span><span>${b.name}</span></button>`).join('');
-let storedBase;try{storedBase=localStorage.getItem(basemapPreferenceKey);document.documentElement.dataset.theme=localStorage.getItem('rm-theme')||'light';}catch{}
-setBase(storedBase||'onedata');
+try{document.documentElement.dataset.theme=localStorage.getItem('rm-theme')||'light';}catch{}
+// Always start with Positron; a session may still choose another basemap.
+setBase('onedata');
 document.querySelectorAll('[data-base]').forEach(b=>b.addEventListener('click',()=>setBase(b.dataset.base)));
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,5500);}
 function openPanel(){ if(window.workspaceUI){window.workspaceUI.setOpen('sidebar',true);return;} $('sidebar').hidden=false;$('sidebar').classList.add('is-open');$('layers-toggle').setAttribute('aria-expanded','true');document.querySelector('.drawer-scroll').scrollTop=0; }
