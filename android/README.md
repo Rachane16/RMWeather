@@ -42,3 +42,9 @@ Successful signed builds publish `RMWeather.apk`, its SHA-256 checksum and certi
 On Android, open the APK and allow installation from the browser/file app when Android prompts. Future APK updates must keep the same package, release key and a higher version code. This is direct APK distribution; it does not publish the app to Google Play.
 
 Android may apply additional installation/developer-verification steps depending on the device, installer and region. No Android Developer Console registration is performed by this project. See the [official installation and verification guidance](https://developer.android.com/developer-verification). The automated device test validates APK installation with ADB and live startup; it does not certify Play registration or every manufacturer's installer.
+
+## Updates in 1.1
+
+The installed app identifies its full version in the WebView user agent. The live site checks the public GitHub latest-release API on entry (then every six hours while open) and offers the signed APK when a newer 1.1 release is available. This also reaches the original 1.0 wrapper. The check sends no location or login data. Failures and rate limits leave the map usable. Downloads open the browser; Android requires installation confirmation and may ask for permission to install from that browser. Do not uninstall the previous app: the unchanged package and persistent signing certificate allow an update over it. No silent installation or install-package permission is used.
+
+Version names are 1.1.<CI run number>; version codes stay monotonic from 10000 + run number. Keep the existing release key. The app retries transient main-page DNS/connect/timeout failures twice, without bypassing TLS errors. CI disables opportunistic DNS-over-TLS only in the disposable emulator and still requires live map attribution before success.

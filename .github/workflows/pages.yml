@@ -34,6 +34,8 @@ jobs:
       - run: node --check assets/development.js
       - run: node --check assets/development-data.js
       - run: node --check assets/workspace-ui.js
+      - run: node --check assets/precipitation-legend.js
+      - run: node --check assets/app-update.js
       - run: node --test tests/*.test.js
       - name: Check public RadarGIS access from the runner
         if: github.event_name == 'pull_request'

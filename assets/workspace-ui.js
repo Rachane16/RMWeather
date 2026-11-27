@@ -24,6 +24,7 @@ function setWeatherCardVisible(on){window.workspaceUI?.setOpen('weather',on);}
 function setTimelineOpen(on){window.workspaceUI?.setOpen('timeline',on);}
 
 function initWorkspaceUI(){
+  document.querySelector('.right-launchers').append($('advance-forecast-toggle'));document.querySelector('.map-zoom-controls').prepend($('locate-quick'));
   const media=matchMedia('(max-width:700px)'),state=new WorkspacePanels(media.matches);
   const panels={sidebar:'sidebar',display:'display-panel',maptools:'maptools-panel',basemap:'basemap-panel',weather:'overview-panel',timeline:'radar-player',advance:'advance-forecast-panel',development:'development-timeline'};
   const launchers={sidebar:'layers-toggle',display:'display-toggle',maptools:'maptools-toggle',basemap:'basemap-toggle',timeline:'timeline-toggle',advance:'advance-forecast-toggle',development:'development-timeline-toggle'};
@@ -32,9 +33,8 @@ function initWorkspaceUI(){
   const advanceSelection=new WindyPointSelection();
 
   function renderAdvanceForecast(){
-    const toggle=$('advance-forecast-toggle'),container=state.open.advance?$('advance-forecast-header-actions'):$('bottom-map-actions');
-    if(toggle.parentElement!==container)container.prepend(toggle);
-    if(!state.open.advance&&toggle.previousElementSibling!==$('timeline-toggle'))container.insertBefore(toggle,$('timeline-toggle').nextSibling);
+    const toggle=$('advance-forecast-toggle'),container=state.open.advance?$('advance-forecast-header-actions'):document.querySelector('.right-launchers');
+    if(toggle.parentElement!==container){if(state.open.advance)container.prepend(toggle);else container.append(toggle);}
     $('advance-forecast-toggle-label').textContent=state.open.advance?'ย่อ':'การพยากรณ์ล่วงหน้า';
     toggle.setAttribute('aria-label',state.open.advance?'ย่อการพยากรณ์ล่วงหน้า':'เปิดการพยากรณ์ล่วงหน้า');
     const frame=$('advance-forecast-frame');
@@ -70,7 +70,7 @@ function initWorkspaceUI(){
     const forecast=radarKind==='radargis'&&currentRadarGISProduct()?.forecast;
     const latest=state.open.timeline?radarFrames[Number($('radar-slider').value)]:frames[defaultRadarIndex(radarKind,frames)];
     const source={rainviewer:'RainViewer',radar:'TMD',nowcast:'SWIRLS',rod:'RODDSS',radargis:'RadarGIS'}[radarKind];
-    $('timeline-summary').textContent=enabled.radar?`${source}${forecast?' พยากรณ์':''} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
+    $('timeline-summary').textContent=window.forecastLayers?.active('clppRadar')?'CLPP · เรดาร์ / Nowcast':enabled.radar?`${source}${forecast?' พยากรณ์':''} · ${latest?new Date(latest.frame_time).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}):'ล่าสุด'}`:'เลือกแหล่งภาพฝน';
   }
   function restoreLatest(){stopRadar();if(radarFrames.length)showRadarFrame(defaultRadarIndex(radarKind,radarFrames));}
   function setOpen(name,on){
@@ -90,7 +90,7 @@ function initWorkspaceUI(){
     if(key==='seven')$('seven-day-panel').classList.toggle('is-minimized',on);
     render();
   }
-  window.workspaceUI={setOpen,isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
+  window.workspaceUI={setOpen,minimize,isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
     const previous=state.open.timeline,catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;if(previous)restoreLatest();
     render();
   }};
@@ -113,7 +113,7 @@ function initWorkspaceUI(){
     button.addEventListener('click',()=>minimize(key,!state.minimized[key]));minimizeButtons[key]=button;
     header.insertBefore(actions,close);actions.append(button,close);
   });
-  $('timeline-toggle').addEventListener('click',()=>setOpen('timeline',!state.open.timeline));
+  $('timeline-toggle').addEventListener('click',()=>{if(window.forecastLayers?.active('clppRadar')){setOpen('development',!state.open.development);if(state.open.development)window.dispatchEvent(new Event('clpp-clock-open'));return;}setOpen('timeline',!state.open.timeline);});
   $('windy-controls-restore').addEventListener('click',()=>minimize('windy',false));
   $('advance-forecast-toggle').addEventListener('click',()=>setOpen('advance',!state.open.advance));
   $('advance-forecast-close').addEventListener('click',()=>setOpen('advance',false));

@@ -72,7 +72,7 @@ function selectView(next,{openDetails=true}={}){
  if($('multiview'))$('multiview').addEventListener('click',showMultiview);
  renderResults();document.querySelector('.drawer-scroll').scrollTop=0;if(openDetails)openPanel();else{$('layer-catalog').hidden=false;$('layer-details').hidden=true;}window.syncLayerMenu?.();
 }
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{if(b.classList.contains('active')){applyCategoryLayers('none');setActiveCategory(null);return;}if(b.dataset.view==='water')waterKind='water';applyCategoryLayers(b.dataset.view);selectView(b.dataset.view,{openDetails:!matchMedia('(max-width:700px)').matches});}));
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{if(b.classList.contains('active')){applyCategoryLayers('none');setActiveCategory(null);return;}if(b.dataset.view==='water')waterKind='water';applyCategoryLayers(b.dataset.view);selectView(b.dataset.view,{openDetails:!matchMedia('(max-width:700px)').matches});if(matchMedia('(max-width:700px)').matches)window.workspaceUI?.setOpen('sidebar',false);}));
 $('search').addEventListener('input',renderResults);
 function cameraType(row){return row.webcam_id!=null?'windycams':'cameras';}
 function songkhlaCamera(row){return row.region_code==='TH.68'||(!row.region_code&&row.region==='สงขลา');}
@@ -160,12 +160,12 @@ function stopRadar(){clearInterval(radarTimer);radarTimer=null;$('radar-play').t
 function defaultRadarIndex(kind,frames){return kind==='radargis'?radarGISDefaultIndex(frames):Math.max(0,frames.length-1);}
 function setRainEnabled(kind,on){
  rainVisibility[kind]=on;
- if(on){radarKind=kind;loadRadar(kind);}else{
+ if(on){radarKind=kind;window.renderPrecipitationLegend?.({source:'radar'});loadRadar(kind);}else{
   rainRequests[kind]=(rainRequests[kind]||0)+1;map.setRain(null,kind);
   if(radarKind===kind){stopRadar();radarKind=Object.keys(rainVisibility).find(k=>rainVisibility[k])||kind;if(rainVisibility[radarKind])loadRadar(radarKind);}
  }
  enabled.radar=Object.values(rainVisibility).some(Boolean);$('radar-player').hidden=true;window.syncTimelineUI?.();
- window.syncLayerMenu?.();
+ window.syncLayerMenu?.();window.renderPrecipitationLegend?.();
 }
 async function loadRadar(kind=radarKind){
  const request=rainRequests[kind]=(rainRequests[kind]||0)+1;
@@ -185,9 +185,9 @@ function showRadarFrame(index){
  const f=radarFrames[index];if(!f)return;const forecasting=radarKind==='nowcast'||(radarKind==='radargis'&&f.forecast);const sourceTime=forecasting?(f.base_time||radarFrames.at(-1)?.frame_time):radarKind==='radargis'?currentRadarGISProduct()?.frames.at(-1)?.frame_time:radarFrames.at(-1)?.frame_time;map.setRain(rainVisibility[radarKind]?f:null,radarKind);
  $('radar-slider').value=index;const d=new Date(f.frame_time);$('radar-time').textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});$('radar-date').textContent=time(f.frame_time);$('radar-mini-time').textContent=time(f.frame_time);$('radar-mini-time').dateTime=d.toISOString();$('radar-status').textContent=`${stale(sourceTime,radarKind==='radargis'?.75:2)?'ข้อมูลต้นทางยังเป็นเฟรมเก่า · ':''}${forecasting?'เวลาที่พยากรณ์':'เวลาตรวจวัด'} · เฟรม ${index+1}/${radarFrames.length}${radarKind==='rod'?' · TMD Composite / PSU':radarKind==='radargis'?' · '+radarGISDescription(currentRadarGISProduct(),f):radarKind!=='rainviewer'?' · ครอบคลุมภาคใต้':''}`;
  $('radar-slider').style.setProperty('--progress',`${radarFrames.length>1?index/(radarFrames.length-1)*100:0}%`);
- if($('radargis-origin'))$('radargis-origin').hidden=radarKind!=='radargis';document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';window.syncTimelineUI?.();
+ if($('radargis-origin'))$('radargis-origin').hidden=radarKind!=='radargis';document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';window.syncTimelineUI?.();window.renderPrecipitationLegend?.();
 }
-$('radar-timeline-source').addEventListener('change',event=>{radarKind=event.target.value;setRainEnabled(radarKind,true);});
+$('radar-timeline-source').addEventListener('change',event=>{if(event.target.value==='clpp'){window.workspaceUI?.setOpen('development',true);window.dispatchEvent(new Event('clpp-clock-open'));return;}radarKind=event.target.value;setRainEnabled(radarKind,true);});
 $('radar-slider').addEventListener('input',e=>{stopRadar();showRadarFrame(Number(e.target.value));});
 $('radar-play').addEventListener('click',()=>{if(radarTimer){stopRadar();return;}if(!radarFrames.length)return;$('radar-play').textContent='Ⅱ';$('radar-play').setAttribute('aria-label','หยุดภาพเรดาร์');radarTimer=setInterval(()=>{if(map.isRainReady(radarKind))showRadarFrame((Number($('radar-slider').value)+1)%radarFrames.length);},850);});
 const nationalRequests={},nationalLoading={};
