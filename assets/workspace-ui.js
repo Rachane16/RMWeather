@@ -133,7 +133,7 @@ function initWorkspaceUI(){
   document.querySelectorAll('#layers-toggle,#sidebar-close').forEach(button=>button.addEventListener('click',()=>{if(desktopWebsite())pinCatalogue();}));
   document.addEventListener('click',event=>{
     if(!desktopWebsite())return;
-    if(event.target.closest('#development-close')||event.target.closest('#development-open')&&$('development-open').getAttribute('aria-expanded')==='false')pinCatalogue();
+    if(event.target.closest('#development-close,#windy-back-main,[data-close-tool="weather-map"]')||event.target.closest('#development-open')&&$('development-open').getAttribute('aria-expanded')==='false')pinCatalogue();
   });
   window.workspaceUI={setOpen,minimize,pinCatalogue,desktopWebsite,selectRadarPlayback(){radarSelected=true;renderDock();},isOpen:name=>Boolean(state.open[name]),closeForWeatherTool(){
     const previous=state.open.timeline,catalogue=state.open.sidebar;state.closeAll();state.open.sidebar=catalogue;if(previous)restoreLatest();
