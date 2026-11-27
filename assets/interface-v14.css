@@ -11,6 +11,7 @@
 .workspace .right-launchers .map-button[aria-expanded=true]{color:var(--accent)}
 .workspace .right-launchers #advance-forecast-toggle{width:100%;max-width:none;min-width:0;align-self:stretch}
 .workspace #display-panel,.workspace #forecast-layer-panel,.workspace #maptools-panel{box-sizing:border-box;width:286px;max-width:calc(100vw - 96px);padding:14px;right:76px}
+.workspace #development-dialog{box-sizing:border-box;width:320px;max-width:calc(100vw - 96px)}
 .workspace #forecast-layer-panel h2,.workspace #maptools-panel h2,.workspace #display-panel h2{font-size:18px}
 .workspace #forecast-layer-panel .forecast-option,.workspace #display-panel .forecast-option{font-size:13px;gap:9px}
 .workspace #map-legend{display:none!important}
@@ -25,6 +26,7 @@
  .topbar .top-actions{gap:2px}.topbar .top-actions .icon-button{width:30px;height:32px;min-height:32px}
  .workspace .right-launchers,.workspace .map-zoom-controls{background:color-mix(in srgb,var(--surface) 62%,transparent);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);backdrop-filter:blur(10px)}
  .workspace #display-panel,.workspace #forecast-layer-panel,.workspace #maptools-panel{width:min(258px,calc(100vw - 92px));max-width:calc(100vw - 92px);right:64px;padding:12px;max-height:calc(100% - 64px)}
+ .workspace #development-dialog{width:min(280px,calc(100vw - 84px));max-width:calc(100vw - 84px)}
  .workspace #forecast-layer-panel .popup-body{max-height:calc(100dvh - 280px)}
  .workspace #forecast-layer-panel header{align-items:center}
  .workspace #forecast-layer-panel .icon-button{background:#ffffff10;color:inherit;width:30px;height:30px;flex:none}
