@@ -1,4 +1,10 @@
 /* Restore the original identity; retain both logo sets on disk. */
+.apk-download{margin:22px 0 16px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.apk-download h3{font-size:16px;margin:0 0 8px}
+.apk-download-link{display:inline-flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:40px;font-size:14px;font-weight:700;color:var(--accent)}
+.apk-download-link svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;flex:none}
+.apk-download-link .apk-link-label{font-size:12px;opacity:.8}
+.apk-download p{font-size:12px;color:var(--muted);margin:5px 0 0}
 .topbar .brand-logo{width:210px;height:48px;object-fit:contain;object-position:left center;margin:0}
 .topbar .brand-tagline{display:block;font-size:8px;letter-spacing:1.2px;line-height:11px}
 .topbar .top-actions{display:flex;align-items:center;gap:6px}

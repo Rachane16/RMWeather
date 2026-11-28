@@ -1,8 +1,9 @@
 {
   "schema_version": 1,
-  "active_profile": "tmd-rate-v1",
+  "active_profile": "windy-reference-v1",
   "profiles": {
     "tmd-rate-v1": {
+      "archived": true,
       "name": "TMD rain-rate comparison",
       "mode": "bands",
       "unit": "mm/h",
@@ -20,7 +21,7 @@
     },
     "windy-reference-v1": {
       "name": "Original RMWeather Windy reference",
-      "archived": true,
+      "archived": false,
       "mode": "continuous",
       "unit": "mm/h",
       "statistic": "preceding_3h_mean",

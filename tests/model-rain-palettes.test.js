@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const palettes=require('../assets/model-rain-palettes.js'),config=require('../data/config/model-rain-palettes.json');
 
 test('all model rain rates use the same inclusive TMD thresholds, without dBZ conversion',()=>{
- const p=palettes.createRegistry(config);
+ const p=palettes.createRegistry({...config,active_profile:'tmd-rate-v1'});
  assert.equal(p.id,'tmd-rate-v1');
  assert.deepEqual(p.colour(5),[0,255,0,205]);
  assert.equal(p.colour(5.001)[0],255);assert.equal(p.colour(5.001)[1],255);
@@ -19,7 +19,7 @@ test('all model rain rates use the same inclusive TMD thresholds, without dBZ co
 });
 
 test('a three-hour accumulation uses equivalent thresholds, never daily TMD totals or dBZ',()=>{
- const p=palettes.createRegistry(config);
+ const p=palettes.createRegistry({...config,active_profile:'tmd-rate-v1'});
  for(const rate of [.1,1,5,10,25,50,200])assert.deepEqual(p.colour(rate*3,'accum_3h'),p.colour(rate));
  const key=p.legend('IFS','accum_3h');assert.equal(key.unit,'mm/3h');
  assert.deepEqual(key.secondary,['0.3–15','>15–75','>75–150','>150']);
@@ -37,7 +37,7 @@ test('one configuration field restores the original palette and thresholds exact
  };
  for(const value of [null,0,.01,.1,.2,.6,1,3,7,12,25,50,100,200,800])assert.deepEqual(p.colour(value),old(value));
  assert.deepEqual(p.legend('IFS').ticks,['0','0.6','3','12','50','200']);
- assert.equal(JSON.stringify(config),snapshot);assert.equal(p.profiles['windy-reference-v1'].archived,true);
+ assert.equal(JSON.stringify(config),snapshot);assert.equal(p.profiles['windy-reference-v1'].archived,false);
  assert.ok(Object.isFrozen(p.profiles['windy-reference-v1'].stops));
 });
 
@@ -50,6 +50,6 @@ test('browser palette loading shares one request, rejects invalid configuration 
  vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../assets/model-rain-palettes.js'),'utf8')+'\nthis.palettes=ModelRainPalettes;',context);
  await assert.rejects(context.palettes.ready());bad=false;
  const [a,b]=await Promise.all([context.palettes.ready(),context.palettes.ready()]);assert.equal(a,b);assert.equal(calls,2);
- assert.equal(context.palettes.id(),'tmd-rate-v1');assert.equal(context.palettes.legend('IFS').unit,'mm/h');
+ assert.equal(context.palettes.id(),'windy-reference-v1');assert.equal(context.palettes.legend('IFS').unit,'mm/h');
  assert.throws(()=>palettes.createRegistry({...config,active_profile:'missing'}));
 });
