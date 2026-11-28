@@ -82,4 +82,6 @@ TMD RadarGIS เพิ่มเป็นแหล่งภาพเสริม�
 
 RainViewer uses locally recoloured, unsmoothed Universal Blue rain tiles with the TMD RadarGIS reflectivity classes (10.5–66.5+ dBZ). The map and legend share the same table; source attribution remains RainViewer. Web and Android WebView receive the same update. CLPP radar/nowcast and province rainfall layers, controls and collection have been retired.
 
-All ten forecast models now share TMD rain-rate categories for their three-hour mean rain (mm/h). Original model values are unchanged. The previous six-stop palette remains archived in the deployed configuration and can be restored by changing one profile ID. See [shared colours and restoration](docs/model-rain-palettes.md).
+All ten forecast models use the original six-stop Windy reference (0 / 0.6 / 3 / 12 / 50 / 200 mm/h) again. Original model values are unchanged; the TMD comparison palette remains inactive in the configuration. See [shared colours and restoration](docs/model-rain-palettes.md).
+
+The desktop model launcher enables ECMWF IFS HRES when no forecast model is active. About the Data includes a direct signed APK download link with the current release version, refreshed whenever the dialog opens. Rain stations use a radius one pixel smaller than national water-level stations while retaining the existing click target.

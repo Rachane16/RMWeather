@@ -126,7 +126,7 @@ class WeatherMap {
       this.gl.addLayer({id:`${sourceId}-count`,type:'symbol',source:sourceId,filter:['has','point_count'],layout:{'icon-image':['concat','rm-camera-cluster-',['to-string',['get','point_count']]],'icon-allow-overlap':true,'icon-ignore-placement':true}});
       if(['thaiwater','rain','dam','devstations'].includes(id)){
         const colors={thaiwater:'#247cce',rain:'#18a787',dam:'#8b62b0',devstations:'#df861c'};
-        this.gl.addLayer({id:`${sourceId}-point`,type:'circle',source:sourceId,paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,id==='dam'?6:5,12,id==='dam'?9:7],'circle-color':colors[id],'circle-opacity':['case',['get','old'],.45,.9],'circle-stroke-color':'#ffffff','circle-stroke-width':id==='dam'?2.5:1.2}});
+        this.gl.addLayer({id:`${sourceId}-point`,type:'circle',source:sourceId,paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,id==='dam'?6:id==='rain'?4:5,12,id==='dam'?9:id==='rain'?6:7],'circle-color':colors[id],'circle-opacity':['case',['get','old'],.45,.9],'circle-stroke-color':'#ffffff','circle-stroke-width':id==='dam'?2.5:1.2}});
       }else this.gl.addLayer({id:`${sourceId}-point`,type:'symbol',source:sourceId,filter:['!', ['has','point_count']],layout:{'icon-image':['case',['get','old'],`rm-${id}-old`,`rm-${id}-new`],'icon-anchor':'bottom','icon-size':['interpolate',['linear'],['zoom'],5,.83,12,1,16,1.1],'icon-allow-overlap':true,'icon-ignore-placement':true}});
       // Layer listeners survive style changes; register each pair just once.
       if(!this.boundGroups)this.boundGroups=new Set();

@@ -39,7 +39,7 @@
  const mobile=()=>matchMedia('(max-width:700px)').matches;
  function dismissModelMenus(){if(!mobile())return;open(false);quickOpen(false);window.workspaceUI?.setOpen('display',false);window.workspaceUI?.setOpen('sidebar',false);}
  launcher.addEventListener('click',()=>{
-  if(!mobile()){open(panel.hidden);return;}
+  if(!mobile()){if(!state.modelRain)selectModel('ecmwf_ifs');open(panel.hidden);return;}
   if(state.modelRain){selectModel($('development-model').value,false);open(false);window.workspaceUI?.setOpen('development',false);}
   else{selectModel('ecmwf_ifs');open(true);window.workspaceUI?.setOpen('sidebar',false);}
  });

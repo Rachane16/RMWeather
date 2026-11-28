@@ -1,10 +1,11 @@
 # Shared forecast rain colours
 
 All ten model maps and their legend use `data/config/model-rain-palettes.json`.
-The active profile is `tmd-rate-v1`. The original forecast grids, timestamps,
+The active profile is `windy-reference-v1` (restored at the owner's request).
+The TMD comparison profile remains inactive and stored for reference. The original forecast grids, timestamps,
 three-hour mean rates and point-popup values are not rewritten or converted to dBZ.
 
-For forecast mean rates in mm/h, the TMD rain-rate categories are light 0.1–5,
+For the inactive TMD comparison profile, the rain-rate categories are light 0.1–5,
 moderate >5–25, heavy >25–50, and very heavy >50. Values below 0.1 are transparent;
 missing values remain missing. The TMD document prints the next categories as
 5.1, 25.1 and 50.1; continuous model values use the preceding upper bound as the
@@ -19,16 +20,17 @@ The optional three-hour-total formatter multiplies rate boundaries by three;
 it describes equivalent three-hour mean intensity, not TMD daily rainfall classes.
 The current map still displays mean rate and its point popup retains both values.
 
-## Restore the previous display
+## Active original display and future switching
 
-Change only `active_profile` to `windy-reference-v1` in the JSON and publish.
+The active `windy-reference-v1` profile restores the original display for every model.
+To switch profiles later, change only `active_profile` in the JSON and publish.
 The renderer and legend both switch on the next page/app load. No data refresh,
 grid migration, APK reinstall or native code edit is needed. Both profiles remain
 stored in version control and in the deployed configuration; there is no public
 palette selector. This is a display-configuration registry, not private credentials
 or a new database service.
 
-The archived profile retains the original thresholds 0 / 0.6 / 3 / 12 / 50 / 200,
+The original profile retains the original thresholds 0 / 0.6 / 3 / 12 / 50 / 200,
 all six RGB colours, continuous interpolation, transparency and saturation exactly.
 The loader validates the active profile, retries failed loads and blocks model
 rendering until map and legend can use the same configuration. Texture cache keys
