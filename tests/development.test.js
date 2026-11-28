@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {developmentSample:sample,developmentWind:wind,developmentLatest:latest,developmentStations:stations,developmentPixelPosition:position,developmentColourRange:range}=require('../assets/development-data.js');
+const {developmentSample:sample,developmentWind:wind,developmentLatest:latest}=require('../assets/development-data.js');
 const {WeatherMap}=require('../assets/map-engine.js');
 const {developmentRainColour:rainColour}=require('../assets/development-data.js');
 const {developmentRegionMask:mask,developmentCurrentFrame:currentFrame}=require('../assets/development-data.js');
@@ -39,18 +39,6 @@ test('rectangular display includes every sampled corner and excludes unsampled t
  const records=wind({u:Array(1116).fill(2),v:Array(1116).fill(-1)},g);
  assert.equal(records[0].data[0],2);assert.equal(records[0].data.at(-1),2);
  assert.equal(records[1].data.at(-1),-1);
-});
-test('station compact field order is read dynamically; null is not zero',()=>{
- const result=stations({fields:['lon','name','obs24','lat','mm24','obs','mm'],stations:[[100,'test',null,7,null,null,0],[999,'invalid',null,7,0,null,0]]});
- assert.equal(result.length,1);assert.equal(result[0].mm24,null);assert.equal(result[0].mm,0);
-});
-test('PNG point sampling is bounds checked and reports colour intervals or unknown',()=>{
- assert.deepEqual(position([[4,96],[22,110]],96,22,100,200),[0,0]);
- assert.deepEqual(position([[4,96],[22,110]],110,4,100,200),[99,199]);
- assert.equal(position([[4,96],[22,110]],111,4,100,200),null);
- assert.equal(range([0,255,0,255],[[0,255,0],[255,0,0]],[1,5]).text,'1–5');
- assert.equal(range([0,255,0,0],[[0,255,0]],[1]).min,null);
- assert.equal(range([255,255,255,255],[[0,0,0]],[1]).min,null);
 });
 test('rain intensity follows the Windy reference thresholds in mm/h and preserves light rain',()=>{
  assert.deepEqual(rainColour(.6),[0,148,143,205]);assert.deepEqual(rainColour(3),[102,208,81,205]);

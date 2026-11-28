@@ -28,6 +28,7 @@ jobs:
       - run: node --check assets/hydro.js
       - run: node --check assets/radargis.js
       - run: node --check assets/map-engine.js
+      - run: node --check assets/rainviewer-tmd.js
       - run: node --check assets/weather-tools.js
       - run: node --check assets/windy-embed.js
       - run: node --check assets/display.js

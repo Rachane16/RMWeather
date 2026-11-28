@@ -21,7 +21,7 @@ class WorkspacePanels {
   closeAll(){Object.keys(this.open).forEach(key=>this.open[key]=false);}
 }
 
-function playbackAvailability({radarSelected=true,radarEnabled=false,clpp=false,model=false,advance=false}={}){return {radar:!advance&&(clpp||(radarSelected&&radarEnabled)),model:!advance&&model};}
+function playbackAvailability({radarSelected=true,radarEnabled=false,model=false,advance=false}={}){return {radar:!advance&&(radarSelected&&radarEnabled),model:!advance&&model};}
 
 function setWeatherCardVisible(on){window.workspaceUI?.setOpen('weather',on);}
 function setTimelineOpen(on){window.workspaceUI?.setOpen('timeline',on);}
@@ -35,8 +35,8 @@ function initWorkspaceUI(){
   for(const [kind,id] of [['radar','timeline-toggle'],['model','development-timeline-toggle']]){
    const chip=document.createElement('section');chip.id=kind+'-clock-chip';chip.className='playback-chip';chip.hidden=true;const toggle=$(id);toggle.className='playback-chip-heading';dock.append(chip);chip.append(toggle);
    const controls=document.createElement('div');controls.className='playback-chip-buttons';controls.innerHTML=`<button data-clock-step="-1" aria-label="เฟรมก่อนหน้า">‹</button><button data-clock-play aria-label="เล่นภาพ">▶</button><button data-clock-step="1" aria-label="เฟรมถัดไป">›</button>`;chip.append(controls);
-   controls.querySelector('[data-clock-play]').addEventListener('click',()=>{if(kind==='model'||window.forecastLayers?.active('clppRadar'))window.forecastLayers?.togglePlayback(kind==='model'?'model':'clpp');else $('radar-play').click();});
-   controls.querySelectorAll('[data-clock-step]').forEach(b=>b.addEventListener('click',()=>{const direction=Number(b.dataset.clockStep);if(kind==='model'||window.forecastLayers?.active('clppRadar'))window.forecastLayers?.step(kind==='model'?'model':'clpp',direction);else{stopRadar();if(radarFrames.length)showRadarFrame((Number($('radar-slider').value)+direction+radarFrames.length)%radarFrames.length);}}));
+   controls.querySelector('[data-clock-play]').addEventListener('click',()=>{if(kind==='model')window.forecastLayers?.togglePlayback('model');else $('radar-play').click();});
+   controls.querySelectorAll('[data-clock-step]').forEach(b=>b.addEventListener('click',()=>{const direction=Number(b.dataset.clockStep);if(kind==='model')window.forecastLayers?.step('model',direction);else{stopRadar();if(radarFrames.length)showRadarFrame((Number($('radar-slider').value)+direction+radarFrames.length)%radarFrames.length);}}));
   }
   const panels={sidebar:'sidebar',display:'display-panel',maptools:'maptools-panel',basemap:'basemap-panel',weather:'overview-panel',timeline:'radar-player',advance:'advance-forecast-panel',development:'development-timeline'};
   const launchers={sidebar:'layers-toggle',display:'display-toggle',maptools:'maptools-toggle',basemap:'basemap-toggle',timeline:'timeline-toggle',advance:'advance-forecast-toggle',development:'development-timeline-toggle'};
@@ -60,11 +60,11 @@ function initWorkspaceUI(){
   }
 
   function renderDock(){
-    const api=window.forecastLayers,clpp=Boolean(api?.active('clppRadar')),model=Boolean(api?.active('model'));
-    const available=playbackAvailability({radarSelected,radarEnabled:enabled.radar,clpp,model,advance:state.open.advance});
+    const api=window.forecastLayers,model=Boolean(api?.active('model'));
+    const available=playbackAvailability({radarSelected,radarEnabled:enabled.radar,model,advance:state.open.advance});
     for(const kind of ['radar','model']){
       const chip=$(kind+'-clock-chip');chip.hidden=!available[kind]||state.open.timeline||state.open.development;if(chip.hidden)continue;
-      const forecastClock=(kind==='model'||clpp)?api.clock(kind==='model'?'model':'clpp'):null;
+      const forecastClock=kind==='model'?api.clock('model'):null;
       const stamp=radarFrames[Number($('radar-slider').value)]?.frame_time;
       const info=forecastClock||{name:{rainviewer:'RainViewer',nowcast:'SWIRLS',radargis:'TMD RADARGIS',radar:'เรดาร์ฝน',rod:'RODDSS'}[radarKind],time:stamp?time(stamp):'กำลังโหลด',ready:Boolean(stamp),playing:Boolean(radarTimer)};
       const toggle=$(kind==='radar'?'timeline-toggle':'development-timeline-toggle');
@@ -75,8 +75,8 @@ function initWorkspaceUI(){
       const play=chip.querySelector('[data-clock-play]');play.textContent=info.playing?'Ⅱ':'▶';play.setAttribute('aria-label',info.playing?'หยุดภาพ':'เล่นภาพ');
     }
     dock.hidden=Boolean(state.open.timeline||state.open.development||(!available.radar&&!available.model));
-    if(!enabled.radar&&!clpp&&state.open.timeline){state.open.timeline=false;$('radar-player').hidden=true;}
-    if(!model&&!clpp&&state.open.development){state.open.development=false;$('development-timeline').hidden=true;}
+    if(!enabled.radar&&state.open.timeline){state.open.timeline=false;$('radar-player').hidden=true;}
+    if(!model&&state.open.development){state.open.development=false;$('development-timeline').hidden=true;}
   }
   window.syncPlaybackDock=renderDock;
   function render(){
@@ -159,7 +159,7 @@ function initWorkspaceUI(){
     button.addEventListener('click',()=>minimize(key,!state.minimized[key]));minimizeButtons[key]=button;
     header.insertBefore(actions,close);actions.append(button,close);
   });
-  $('timeline-toggle').addEventListener('click',()=>{if(window.forecastLayers?.active('clppRadar')){setOpen('development',!state.open.development);if(state.open.development)window.dispatchEvent(new Event('clpp-clock-open'));return;}setOpen('timeline',!state.open.timeline);});
+  $('timeline-toggle').addEventListener('click',()=>{setOpen('timeline',!state.open.timeline);});
   $('windy-controls-restore').addEventListener('click',()=>minimize('windy',false));
   $('advance-forecast-toggle').addEventListener('click',()=>setOpen('advance',!state.open.advance));
   $('advance-forecast-close').addEventListener('click',()=>setOpen('advance',false));

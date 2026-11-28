@@ -175,7 +175,7 @@ async function loadRadar(kind=radarKind){
  const request=rainRequests[kind]=(rainRequests[kind]||0)+1;
  if(kind===radarKind){stopRadar();radarFrames=[];$('radar-status').textContent='กำลังโหลดภาพ…';$('radar-play').disabled=true;}
  try{let frames;
-  if(kind==='rainviewer'){const j=await getJSON('https://api.rainviewer.com/public/weather-maps.json');frames=(j.radar?.past||[]).map(f=>({frame_time:new Date(f.time*1000).toISOString(),tile:`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`}));}
+  if(kind==='rainviewer'){const j=await getJSON('https://api.rainviewer.com/public/weather-maps.json');frames=(j.radar?.past||[]).map(f=>({frame_time:new Date(f.time*1000).toISOString(),colour_scheme:'tmd',tile:`${j.host}${f.path}/256/{z}/{x}/{y}/2/0_0.png`}));}
   else frames=(kind==='radargis'?radarGISTimeline(currentRadarGISProduct(),datasets.radargis?.products||[]):datasets[kind]||[]).filter(f=>f.bounds&&safeURL(f.image_url)).sort((a,b)=>Date.parse(a.frame_time)-Date.parse(b.frame_time));
   if(request!==rainRequests[kind]||!rainVisibility[kind])return;
   rainCollections[kind]=frames;map.setRain(frames[defaultRadarIndex(kind,frames)]||null,kind);
@@ -191,7 +191,7 @@ function showRadarFrame(index){
  $('radar-slider').style.setProperty('--progress',`${radarFrames.length>1?index/(radarFrames.length-1)*100:0}%`);
  if($('radargis-origin'))$('radargis-origin').hidden=radarKind!=='radargis';document.querySelector('.radar-gradient').hidden=radarKind!=='rainviewer';document.querySelector('.legend-scale').hidden=radarKind!=='rainviewer';window.syncTimelineUI?.();window.renderPrecipitationLegend?.();
 }
-$('radar-timeline-source').addEventListener('change',event=>{if(event.target.value==='clpp'){window.workspaceUI?.setOpen('development',true);window.dispatchEvent(new Event('clpp-clock-open'));return;}radarKind=event.target.value;setRainEnabled(radarKind,true);});
+$('radar-timeline-source').addEventListener('change',event=>{radarKind=event.target.value;setRainEnabled(radarKind,true);});
 $('radar-slider').addEventListener('input',e=>{stopRadar();showRadarFrame(Number(e.target.value));});
 $('radar-play').addEventListener('click',()=>{if(radarTimer){stopRadar();return;}if(!radarFrames.length)return;window.workspaceUI?.minimize('timeline',true);$('radar-play').textContent='Ⅱ';$('radar-play').setAttribute('aria-label','หยุดภาพเรดาร์');window.syncPlaybackDock?.();radarTimer=setInterval(()=>{if(map.isRainReady(radarKind))showRadarFrame((Number($('radar-slider').value)+1)%radarFrames.length);},850);window.syncPlaybackDock?.();});
 const nationalRequests={},nationalLoading={};

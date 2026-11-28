@@ -1,6 +1,6 @@
 import unittest
 import datetime as dt
-from scripts.sync_development import model_frames, clpp_frames, GRID, MODELS, MODEL_CACHE_HOURS, forecast_window, model_grid
+from scripts.sync_development import model_frames, GRID, MODELS, MODEL_CACHE_HOURS, forecast_window, model_grid
 
 
 class DevelopmentDataTests(unittest.TestCase):
@@ -56,19 +56,3 @@ class DevelopmentDataTests(unittest.TestCase):
         begin, end = forecast_window(dt.datetime(2026, 11, 26, 23, 59, tzinfo=dt.timezone.utc))
         self.assertEqual(begin, '2026-11-26T22:00')
         self.assertEqual(dt.datetime.fromisoformat(end)-dt.datetime.fromisoformat(begin), dt.timedelta(hours=98))
-
-    def frame(self, **changes):
-        frame = {'time': 0, 'time_utc': '1970-01-01T00:00:00Z', 'kind': 'present',
-                 'offset_min': 0, 'url': '/api/frames/0.png?v=1', 'bounds': [[4, 91], [22, 110]]}
-        return {**frame, **changes}
-
-    def test_explicit_utc_and_dynamic_image_query_are_preserved(self):
-        frames = clpp_frames({'frames': [self.frame()]})
-        self.assertEqual(frames[0]['time'], 0)
-        self.assertTrue(frames[0]['source_url'].endswith('?v=1'))
-
-    def test_ambiguous_times_or_untrusted_image_hosts_are_rejected(self):
-        for changes in ({'time_utc': '1970-01-01T00:00:00'}, {'time': 25200},
-                        {'url': 'https://example.org/api/frames/a.png'}, {'bounds': [[22, 91], [4, 110]]}):
-            with self.assertRaises(ValueError):
-                clpp_frames({'frames': [self.frame(**changes)]})
