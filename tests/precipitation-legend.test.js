@@ -6,21 +6,17 @@ test('radar reflection, model rain, and accumulation cannot share misleading uni
  assert.equal(key('radargis',{id:'rainrate',label:'Rain rate',unit:'mm/h'}).unit,'mm/h');
  assert.equal(key('radargis',{id:'accum-3h',unit:'mm'}).stops.length,0);
  assert.equal(key('radargis',{id:'lightning',unit:'risk'}).stops.length,0);
- assert.equal(key('rainviewer').unit,'dBZ');
+ assert.equal(key('rainviewer').unit,'');
  const model=key('radargis',{id:'dbz'},{modelOn:true,source:'model',model:{name:'IFS'}});
  assert.equal(model.unit,'mm/h');assert.deepEqual(model.ticks,['0','0.6','3','12','50','200']);
  assert.equal(key(null,null,{}),null);
 });
-test('CLPP legend uses the actual upstream palette and rain levels from its manifest',()=>{
- const c=key(null,null,{source:'clpp',clppOn:true,clpp:{levels_rgb:[[0,255,0],[255,0,0]],levels_mm_hr:[.21,636]}});
- assert.deepEqual(c.stops,['rgb(0,255,0)','rgb(255,0,0)']);assert.equal(c.unit,'');assert.deepEqual(c.ticks,['ฝนอ่อน','ปานกลาง','ฝนหนัก','หนักมาก']);assert.equal(c.secondary,undefined);
-});
 
-test('radar image sources use verbal levels while RainViewer and model units stay independent',()=>{
+test('radar image sources use verbal levels while RainViewer TMD levels and model units stay independent',()=>{
  for(const provider of ['nowcast','radargis','rod','radar']){
   const radar=key(provider,{id:'dbz'});assert.deepEqual(radar.ticks,['ฝนอ่อน','ปานกลาง','ฝนหนัก','หนักมาก']);assert.equal(radar.unit,'');
  }
- assert.equal(key('rainviewer').unit,'dBZ');
+ assert.equal(key('rainviewer').unit,'');
  assert.equal(key(null,null,{modelOn:true,model:{name:'IFS'},source:'model'}).unit,'mm/h');
 });
 

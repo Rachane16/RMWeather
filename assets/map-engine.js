@@ -1,10 +1,12 @@
 'use strict';
+const rainViewerRasterPalette=typeof require==='function'?require('./rainviewer-tmd.js'):typeof RainViewerTMD!=='undefined'?RainViewerTMD:null;
 
 // One MapLibre camera drives the basemap, terrain, rain and observation layers.
 // Rebuild overlay sources after a style change without changing the camera.
 class WeatherMap {
   constructor(container) {
     maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile);
+    rainViewerRasterPalette.install(maplibregl);
     this.gl = new maplibregl.Map({container, style:{version:8,sources:{},layers:[]},
       center:[100.4767,7.0084],zoom:10,maxZoom:19,maxPitch:70,attributionControl:false});
     this.gl.addControl(new maplibregl.ScaleControl({unit:'metric'}),'bottom-left');
@@ -295,7 +297,7 @@ class WindParticles {
   destroy(){cancelAnimationFrame(this.raf);this.map.off('resize',this.resize);this.canvas.remove();}
 }
 function makeRainSource(frame){
-  return frame.tile?{type:'raster',tiles:[frame.tile],tileSize:256,maxzoom:7,attribution:'Radar © <a href="https://www.rainviewer.com/">RainViewer</a>'}:
+  return frame.tile?{type:'raster',tiles:[frame.colour_scheme==='tmd'?rainViewerRasterPalette.tileURL(frame.tile):frame.tile],tileSize:256,maxzoom:7,attribution:'Radar © <a href="https://www.rainviewer.com/">RainViewer</a>'}:
       {type:'image',url:frame.image_url,coordinates:[[frame.bounds[0][1],frame.bounds[1][0]],[frame.bounds[1][1],frame.bounds[1][0]],[frame.bounds[1][1],frame.bounds[0][0]],[frame.bounds[0][1],frame.bounds[0][0]]]};
 }
 if(typeof module!=='undefined')module.exports={sampleWind,makeRainSource,WeatherMap,WindParticles};

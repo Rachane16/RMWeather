@@ -11,7 +11,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'data' / 'live' / 'development'
-PATTERN = re.compile(r'(?:(?:manifest|health|clpp|stations|provinces|ecmwf_ifs|google_weathernext3_ensemble_mean|best_match|ecmwf_ifs025|ecmwf_aifs025_single|icon_global|gfs_global|ukmo_global_deterministic_10km|meteofrance_arpege_world|jma_gsm|cma_grapes_global)\.json|frames/clpp-[a-f0-9]{20}\.png)')
+PATTERN = re.compile(r'(?:manifest|health|ecmwf_ifs|google_weathernext3_ensemble_mean|best_match|ecmwf_aifs025_single|icon_global|gfs_global|ukmo_global_deterministic_10km|meteofrance_arpege_world|jma_gsm|cma_grapes_global)\.json')
 
 
 def validate(files):
@@ -26,12 +26,9 @@ def validate(files):
         else:
             json.loads(content)
         decoded[name] = content
-    required = {'clpp.json', 'stations.json', 'provinces.json', 'manifest.json', 'health.json'}
+    required = {'manifest.json', 'health.json'}
     if not required.issubset(decoded):
         raise ValueError('Incomplete private snapshot')
-    catalog = json.loads(decoded['clpp.json'])
-    if any(frame.get('file') not in decoded for frame in catalog.get('frames', [])):
-        raise ValueError('Missing private radar frame')
     return decoded
 
 

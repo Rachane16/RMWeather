@@ -36,25 +36,4 @@ function developmentCurrentFrame(frames,now=Date.now()/1000){
 function developmentLatest(frames,now=Date.now()/1000){
   const i=frames.findIndex(f=>f.time>=now);return i<0?Math.max(0,frames.length-1):i;
 }
-function developmentStations(payload){
-  const fields=payload.fields;
-  if(!Array.isArray(fields)||!['lat','lon','name','mm','obs','mm24','obs24'].every(k=>fields.includes(k)))throw Error('รูปแบบสถานีไม่รองรับ');
-  return payload.stations.map(row=>Object.fromEntries(fields.map((key,i)=>[key,row[i]])))
-    .filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon)&&Math.abs(s.lat)<=90&&Math.abs(s.lon)<=180);
-}
-function developmentPixelPosition(bounds,lon,lat,width,height){
-  const [[south,west],[north,east]]=bounds;
-  if(lon<west||lon>east||lat<south||lat>north)return null;
-  // Match the displayed image quad in Mercator, including the nonlinear Y axis.
-  const merc=value=>Math.log(Math.tan(Math.PI/4+value*Math.PI/360));
-  return [Math.min(width-1,Math.floor((lon-west)/(east-west)*width)),Math.min(height-1,Math.floor((merc(north)-merc(lat))/(merc(north)-merc(south))*height))];
-}
-function developmentColourRange(rgba,colours,levels){
-  if(rgba[3]<20)return {text:'ไม่มีสีสะท้อน / ไม่มีข้อมูล',min:null,max:null};
-  let index=-1,distance=Infinity;
-  colours.forEach((c,i)=>{const d=c.reduce((s,v,k)=>s+(v-rgba[k])**2,0);if(d<distance){distance=d;index=i;}});
-  if(index<0||distance>1800)return {text:'อ่านระดับสีไม่ได้',min:null,max:null};
-  const low=levels[index],high=levels[index+1]??null;
-  return {min:low,max:high,text:high==null?`≥ ${low}`:`${low}–${high}`};
-}
-if(typeof module!=='undefined')module.exports={developmentSample,developmentWind,developmentLatest,developmentCurrentFrame,developmentRegionMask,developmentStations,developmentPixelPosition,developmentColourRange,developmentRainColour,DEVELOPMENT_RAIN_STOPS};
+if(typeof module!=='undefined')module.exports={developmentSample,developmentWind,developmentLatest,developmentCurrentFrame,developmentRegionMask,developmentRainColour,DEVELOPMENT_RAIN_STOPS};

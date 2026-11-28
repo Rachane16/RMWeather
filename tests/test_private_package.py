@@ -38,19 +38,17 @@ class PrivatePackageTests(unittest.TestCase):
                 package(root, root/'output')
 
     def snapshot(self):
-        items = {'clpp.json': {'frames': [{'file': 'frames/clpp-'+('a'*20)+'.png'}]},
-                 'stations.json': {}, 'provinces.json': {}, 'manifest.json': {}, 'health.json': {}}
-        files = {name: {'data': base64.b64encode(json.dumps(value).encode()).decode()} for name, value in items.items()}
-        files['frames/clpp-'+('a'*20)+'.png'] = {'data': base64.b64encode(b'\x89PNG\r\n\x1a\n').decode()}
-        return files
+        items = {'ecmwf_ifs.json': {'id': 'ecmwf_ifs'}, 'manifest.json': {}, 'health.json': {}}
+        return {name: {'data': base64.b64encode(json.dumps(value).encode()).decode()} for name, value in items.items()}
 
-    def test_private_cache_rejects_traversal_and_missing_image_references(self):
+    def test_model_only_snapshot_rejects_traversal_and_retired_data(self):
+        self.assertIn('ecmwf_ifs.json', validate(self.snapshot()))
+        for name in ('../secret.txt', 'clpp.json', 'provinces.json', 'stations.json', 'frames/clpp-'+('a'*20)+'.png'):
+            files = self.snapshot()
+            files[name] = {'data': base64.b64encode(b'{}').decode()}
+            with self.assertRaises(ValueError):
+                validate(files)
         files = self.snapshot()
-        self.assertIn('clpp.json', validate(files))
-        files['../secret.txt'] = {'data': ''}
-        with self.assertRaises(ValueError):
-            validate(files)
-        files = self.snapshot()
-        del files['frames/clpp-'+('a'*20)+'.png']
+        del files['manifest.json']
         with self.assertRaises(ValueError):
             validate(files)

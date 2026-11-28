@@ -5,7 +5,7 @@ test('default RainViewer includes a clock; categories can explicitly hide it',()
  assert.equal(visible({radarSelected:false,radarEnabled:true}).radar,false);
  assert.equal(visible({radarSelected:true,radarEnabled:true}).radar,true);
  assert.equal(visible({radarSelected:true,radarEnabled:false}).radar,false);
- assert.equal(visible({model:true}).model,true);assert.equal(visible({clpp:true}).radar,true);
+ assert.equal(visible({model:true}).model,true);
 });
 test('the forecast table hides both clocks and restores only active sources after closing',()=>{
  assert.deepEqual(visible({radarSelected:true,radarEnabled:true,model:true,advance:true}),{radar:false,model:false});

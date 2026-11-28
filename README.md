@@ -79,3 +79,5 @@ GitHub Pages ใช้ GitHub Actions workflow `.github/workflows/pages.yml` ต
 UI ใช้ Sarabun 4 น้ำหนักจากไฟล์ที่เจ้าของให้ พร้อมหมุดกล้อง/ระดับน้ำ/อากาศแบบแยกประเภท เส้นลมสีขาวขอบเข้ม และตัวปรับความชัดในเครื่องมือแผนที่
 
 TMD RadarGIS เพิ่มเป็นแหล่งภาพเสริมในหมวดภาพเรดาร์ โดยคง RainViewer และลมเคลื่อนไหวความชัด 3 เป็นค่าเริ่มต้น ดู [ข้อมูล การเก็บภาพ และป๊อปอัป ThaiWater](docs/radargis-hydro.md)
+
+RainViewer uses locally recoloured, unsmoothed Universal Blue rain tiles with the TMD RadarGIS reflectivity classes (10.5–66.5+ dBZ). The map and legend share the same table; source attribution remains RainViewer. Web and Android WebView receive the same update. CLPP radar/nowcast and province rainfall layers, controls and collection have been retired.
