@@ -81,3 +81,5 @@ UI ใช้ Sarabun 4 น้ำหนักจากไฟล์ที่เจ
 TMD RadarGIS เพิ่มเป็นแหล่งภาพเสริมในหมวดภาพเรดาร์ โดยคง RainViewer และลมเคลื่อนไหวความชัด 3 เป็นค่าเริ่มต้น ดู [ข้อมูล การเก็บภาพ และป๊อปอัป ThaiWater](docs/radargis-hydro.md)
 
 RainViewer uses locally recoloured, unsmoothed Universal Blue rain tiles with the TMD RadarGIS reflectivity classes (10.5–66.5+ dBZ). The map and legend share the same table; source attribution remains RainViewer. Web and Android WebView receive the same update. CLPP radar/nowcast and province rainfall layers, controls and collection have been retired.
+
+All ten forecast models now share TMD rain-rate categories for their three-hour mean rain (mm/h). Original model values are unchanged. The previous six-stop palette remains archived in the deployed configuration and can be restored by changing one profile ID. See [shared colours and restoration](docs/model-rain-palettes.md).

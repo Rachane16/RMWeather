@@ -40,9 +40,9 @@ test('rectangular display includes every sampled corner and excludes unsampled t
  assert.equal(records[0].data[0],2);assert.equal(records[0].data.at(-1),2);
  assert.equal(records[1].data.at(-1),-1);
 });
-test('rain intensity follows the Windy reference thresholds in mm/h and preserves light rain',()=>{
- assert.deepEqual(rainColour(.6),[0,148,143,205]);assert.deepEqual(rainColour(3),[102,208,81,205]);
- assert.deepEqual(rainColour(12),[244,184,18,205]);assert.deepEqual(rainColour(50),[204,74,83,205]);
- assert.deepEqual(rainColour(200),[155,15,109,205]);assert.deepEqual(rainColour(800),[155,15,109,205]);
- assert.ok(rainColour(.2)[3]>0&&rainColour(.2)[3]<rainColour(.6)[3]);assert.equal(rainColour(0)[3],0);assert.equal(rainColour(null)[3],0);
+test('all forecast maps use TMD mean-rate classes and preserve light rain and gaps',()=>{
+ assert.deepEqual(rainColour(5),[0,255,0,205]);assert.deepEqual(rainColour(25),[255,106,0,205]);
+ assert.deepEqual(rainColour(50),[224,0,60,205]);assert.deepEqual(rainColour(50.01),[255,0,245,205]);
+ assert.ok(rainColour(.2)[3]>0&&rainColour(.2)[3]<rainColour(.6)[3]);
+ for(const value of [0,.099,null,NaN,Infinity])assert.equal(rainColour(value)[3],0);
 });

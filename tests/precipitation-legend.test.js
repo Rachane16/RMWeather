@@ -1,5 +1,4 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-global.DEVELOPMENT_RAIN_STOPS=require('../assets/development-data.js').DEVELOPMENT_RAIN_STOPS;
 const {precipitationKey:key}=require('../assets/precipitation-legend.js');
 test('radar reflection, model rain, and accumulation cannot share misleading units',()=>{
  assert.equal(key('radargis',{id:'dbz'}).unit,'');
@@ -8,7 +7,7 @@ test('radar reflection, model rain, and accumulation cannot share misleading uni
  assert.equal(key('radargis',{id:'lightning',unit:'risk'}).stops.length,0);
  assert.equal(key('rainviewer').unit,'');
  const model=key('radargis',{id:'dbz'},{modelOn:true,source:'model',model:{name:'IFS'}});
- assert.equal(model.unit,'mm/h');assert.deepEqual(model.ticks,['0','0.6','3','12','50','200']);
+ assert.equal(model.unit,'mm/h');assert.deepEqual(model.ticks,['ฝนอ่อน','ปานกลาง','ฝนหนัก','หนักมาก']);assert.deepEqual(model.secondary,['0.1–5','>5–25','>25–50','>50']);assert.equal(model.profile,'tmd-rate-v1');
  assert.equal(key(null,null,{}),null);
 });
 
