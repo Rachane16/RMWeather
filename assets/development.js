@@ -79,7 +79,7 @@
  async function loadModel(){
   const request=++modelRequest,id=$('development-model').value;
   status('กำลังโหลดกริดแบบจำลอง…');
-  const result=await resource(id+'.json');
+  const [result]=await Promise.all([resource(id+'.json'),ModelRainPalettes.ready()]);
   if(request!==modelRequest)return;
   const model=result.payload;
   if(!model.grid||!model.frames?.length||model.id!==id||model.schema_version!==3||model.rain_unit!=='mm/h'||model.domain!=='Southeast Asia and surrounding seas')throw Error('ชุดข้อมูลขอบเขตใหม่ยังไม่พร้อม กรุณาลองอีกครั้ง');
@@ -111,7 +111,7 @@
   }catch(error){status(error.message);}
  }
  function texture(frame,model){
-  const key=model.id+model.collected_at+frame.time;if(textures.has(key))return textures.get(key);
+  const key=ModelRainPalettes.id()+model.id+model.collected_at+frame.time;if(textures.has(key))return textures.get(key);
   const g=model.grid,canvas=document.createElement('canvas');canvas.width=420;canvas.height=560;
   const c=canvas.getContext('2d'),pixels=c.createImageData(canvas.width,canvas.height);
   const south=g.north-(g.ny-1)*g.step,east=g.west+(g.nx-1)*g.step;

@@ -1,9 +1,10 @@
 'use strict';
 const rainViewerLegendPalette=typeof module!=='undefined'?require('./rainviewer-tmd.js'):RainViewerTMD;
+const modelLegendPalette=typeof module!=='undefined'?require('./model-rain-palettes.js'):ModelRainPalettes;
 
 // Source-specific keys. Never label accumulated rain or lightning with dBZ.
 function precipitationKey(kind,product,forecast){
- if(forecast?.modelOn&&forecast.model&&forecast.source==='model')return {label:forecast.model.name+' · อัตราฝนเฉลี่ย 3 ชม.',unit:'mm/h',stops:DEVELOPMENT_RAIN_STOPS.map(s=>`rgb(${s.slice(1).join(',')})`),ticks:['0','0.6','3','12','50','200']};
+ if(forecast?.modelOn&&forecast.model&&forecast.source==='model')return modelLegendPalette.legend(forecast.model.name);
  if(kind==='nowcast')return {label:'SWIRLS · พยากรณ์ฝนจากเรดาร์ · ระดับสีต้นทาง',unit:'',stops:['#00b900','#00ed00','#a5ff00','#ffff00','#ffc000','#ff6000','#ff0000','#c00060','#ff00ff'],ticks:['ฝนอ่อน','ปานกลาง','ฝนหนัก','หนักมาก']};
  if(kind==='rainviewer')return rainViewerLegendPalette.legend();
  if(kind==='radargis'&&!['dbz','dbz-nowcast'].includes(product?.id))return {label:(product?.label||'TMD RADARGIS')+' · โปรดอ่านเกณฑ์สีจากต้นทาง',unit:product?.unit||'',stops:[],ticks:[]};

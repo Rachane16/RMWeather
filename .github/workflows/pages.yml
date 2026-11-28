@@ -35,6 +35,7 @@ jobs:
       - run: node --check assets/development-access.js
       - run: node --check assets/development.js
       - run: node --check assets/development-data.js
+      - run: node --check assets/model-rain-palettes.js
       - run: node --check assets/workspace-ui.js
       - run: node --check assets/precipitation-legend.js
       - run: node --check assets/app-update.js

@@ -2,9 +2,9 @@ name: Build RMWeather Android APK
 on:
   push:
     branches: [main]
-    paths: ['android/**', '.github/workflows/android.yml', 'index.html', 'legacy.html', 'assets/**', 'tests/**']
+    paths: ['android/**', '.github/workflows/android.yml', 'index.html', 'legacy.html', 'assets/**', 'data/config/**', 'tests/**']
   pull_request:
-    paths: ['android/**', '.github/workflows/android.yml', 'index.html', 'legacy.html', 'assets/**', 'tests/**']
+    paths: ['android/**', '.github/workflows/android.yml', 'index.html', 'legacy.html', 'assets/**', 'data/config/**', 'tests/**']
   workflow_dispatch:
 permissions:
   contents: read

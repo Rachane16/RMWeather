@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "active_profile": "tmd-rate-v1",
+  "profiles": {
+    "tmd-rate-v1": {
+      "name": "TMD rain-rate comparison",
+      "mode": "bands",
+      "unit": "mm/h",
+      "statistic": "preceding_3h_mean",
+      "minimum_visible_rate": 0.1,
+      "alpha": {"base": 45, "range": 160, "full_at": 0.6},
+      "source": "https://ubonmet.tmd.go.th/files/KM-base/KM-2566-1.pdf#page=79",
+      "source_note": "TMD rain-rate classes, page 73 (PDF page 79). Applied to forecast 3-hour mean rates, not daily accumulation or radar dBZ. Colour shades use the TMD RadarGIS palette.",
+      "bands": [
+        {"max": 5, "label": "ฝนอ่อน", "colours": [[0, 224, 0], [0, 255, 0]]},
+        {"max": 25, "label": "ปานกลาง", "colours": [[255, 255, 0], [255, 106, 0]]},
+        {"max": 50, "label": "ฝนหนัก", "colours": [[255, 0, 0], [224, 0, 60]]},
+        {"max": null, "label": "หนักมาก", "colours": [[255, 0, 245], [255, 0, 245]]}
+      ]
+    },
+    "windy-reference-v1": {
+      "name": "Original RMWeather Windy reference",
+      "archived": true,
+      "mode": "continuous",
+      "unit": "mm/h",
+      "statistic": "preceding_3h_mean",
+      "minimum_visible_rate": 0,
+      "alpha": {"base": 45, "range": 160, "full_at": 0.6},
+      "stops": [[0, 39, 17, 158], [0.6, 0, 148, 143], [3, 102, 208, 81], [12, 244, 184, 18], [50, 204, 74, 83], [200, 155, 15, 109]]
+    }
+  }
+}
